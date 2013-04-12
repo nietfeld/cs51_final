@@ -54,6 +54,7 @@ end
 (* A signature for a module which defines a type and
  * how to compare values of that type, as well as ways of generating
  * values of that type. *)
+
 module type COMPARABLE_AND_GENABLE =
 sig
   type t
@@ -319,7 +320,6 @@ struct
 
 (*>* Problem 3.2 *>*)
   let is_empty (t : queue) = t = empty
-
 
   let rec add (e : elt) (q : queue) =
     match q with

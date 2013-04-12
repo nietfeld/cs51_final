@@ -1,5 +1,5 @@
 (* Here is where the module signature for the priority q module will go and all the functors that implement it *)
-exception TODO
+exception FINISH_THIS
 
 type Node = (* or edge??? or which definition do we need here ? *)
 
@@ -7,7 +7,7 @@ type order = Equal | Less | Greater
 
 
 (* this is the Module type that all of the below will return *)
-(* see if we want to add anything else to this *)
+(* do you think we need to add anything else to this? *)
 module type PRIOQUEUE =
 sig
   exception QueueEmpty
@@ -39,7 +39,8 @@ sig
 end
 
 
-
+(* would this still be com and gen and would it take an int compare or
+what exactly would it take? *)
 module type COMPARABLE_AND_GENABLE =
 sig
   type t
@@ -61,6 +62,8 @@ sig
 end
 
 
+
+(* this would just take some kind of q module *)
 (* An example implementation of the COMPARABLE_AND_GENABLE signature *)
 module IntCompare : COMPARABLE_AND_GENABLE with type t=int =
 struct
@@ -115,21 +118,38 @@ end
 
 (*******************************************************************************)
 (********************    Priority Q using Binary Heap   **************************)
-(*******************************************************************************)
-module BinaryHeap(C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
+(*******************************************************************************)module BinaryHeap(C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
 struct
 
   exception QueueEmpty
 
   type elt = C.t
 
+  (* Be sure to read the pset spec for hints and clarifications.
+   *
+   * Remember the invariants of the tree that make up your queue:
+   * 1) A tree is ODD if its left subtree has 1 more node than its right
+   * subtree. It is EVEN if its left and right subtrees have the same number of
+   * nodes. The tree can never be in any other state. This is the WEAK
+   * invariant, and should never be false.
+   *
+   * 2) All nodes in the subtrees of a node should be *greater* than (or equal
+   * to) the value of that node. This, combined with the previous invariant,
+   * makes a STRONG invariant. Any tree that a user passes in to your module
+   * and receives back from it should satisfy this invariant.  However, in the
+   * process of, say, adding a node to the tree, the tree may intermittently
+   * not satisfy the order invariant. If so, you *must* fix the tree before
+   * returning it to the user.  Fill in the rest of the module below!
+   *)
+  (* A node in the tree is either even or odd *)
   type balance = Even | Odd
 
   (* A tree is either just a single element, has one branch (the first elt in
    * the tuple is the element at this node, and the second elt is the element
    * down the branch), or has two branches (with the node being even or odd) *)
   type tree =   TwoBranch of balance * elt * tree * tree
-              | Leaf 
+              | OneBranch of elt * elt
+              | Leaf of elt
 
   (* A queue is either empty, or a tree *)
   type queue = Empty | Tree of tree
@@ -140,6 +160,11 @@ struct
 
   (* Adds element e to the queue q *)
   let add (e : elt) (q : queue) : queue =
+    (* Given a tree, where e will be inserted is deterministic based on the
+     * invariants. If we encounter a node in the tree where its value is greater
+     * than the element being inserted, then we place the new elt in that spot
+     * and propagate what used to be at that spot down toward where the new
+     * element would have been inserted *)
     let rec add_to_tree (e : elt) (t : tree) : tree =
       match t with
       (* If the tree is just a Leaf, then we end up with a OneBranch *)
@@ -224,6 +249,19 @@ struct
     | Empty -> raise QueueEmpty
     | Tree t -> t
 
+  (* Takes a tree, and returns the item that was most recently inserted into
+   * that tree, as well as the queue that results from removing that element.
+   * Notice that a queue is returned (since removing an element from just a leaf
+   * would result in an empty case, which is captured by the queue type
+   *
+   * By "item most recently inserted", we don't mean the
+   * most recently inserted *value*, but rather the newest node that was
+   * added to the bottom-level of the tree. If you follow the implementation
+   * of add carefully, you'll see that the newest value may end up somewhere
+   * in the middle of the tree, but there is always *some* value brought
+   * down into a new node at the bottom of the tree. *This* is the node
+   * that we want you to return.
+   *)
   let rec get_last (t : tree) : elt * queue =
     match t with
     | Leaf e -> e, Empty
@@ -340,11 +378,13 @@ struct
 
 end
 
-
 (*******************************************************************************)
 (********************    Priority Q using D-ary Heap   **************************)
 (*******************************************************************************)
 
 
 
-(* Fib heap *)
+
+(*******************************************************************************)
+(********************    Priority Q using Fib Heap    **************************)
+(*******************************************************************************)
