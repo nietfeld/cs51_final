@@ -1,8 +1,6 @@
 (* Here is where the module signature for the priority q module will go and all the functors that implement it *)
 exception TODO
 
-type Node = (* or edge??? or which definition do we need here ? *)
-
 type order = Equal | Less | Greater
 
 (* this is the Module type that all of the below will return *)
@@ -77,7 +75,6 @@ struct
     let (lower, higher) = (min x y, max x y) in
     if higher - lower < 2 then None else Some (higher - 1)
 end
-
 
 
 (*******************************************************************************)
@@ -391,7 +388,7 @@ end
 
 
 (* make the actual modules -- something along these lines *)
-module IntTree = BinSTree(IntCompare)
+module ListPQ = ListQueue(???)
 
 (* Please read the entirety of "testing.ml" for an explanation of how
  * testing works.
