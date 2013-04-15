@@ -1,5 +1,5 @@
-
-
+(* PUT INTO GRAPH.ML *)
+(* PUT myset.ml and dict.ml into cs51_final *)
 
 module type NODE = 
 sig 
@@ -168,3 +168,4 @@ struct
   let from_edges (es: (string * string) list) : graph =
     List.fold_left (fun g (src, dst) -> add_edge g src dst) empty es
 end
+

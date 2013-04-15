@@ -1,3 +1,4 @@
+(*
 (* this is going to be very similar *)
 
 let sort (m : (module PRIOQUEUE with type elt=IntCompare.t)) (lst : int list) =
@@ -28,4 +29,4 @@ let treesort = sort tree_module
  * implementation is equivalent to heap sort! If your implementation of
  * ListQueue used ordered ilsts, then this is really insertion sort *)
 let selectionsort = sort list_module
-
+*)
