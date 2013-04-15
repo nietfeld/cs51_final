@@ -1,8 +1,6 @@
 (* Here is where the module signature for the priority q module will go and all the functors that implement it *)
 exception TODO
 
-(* type Node = or edge??? or which definition do we need here ? *)
-
 type order = Equal | Less | Greater
 
 (* this is the Module type that all of the below will return *)
@@ -79,7 +77,6 @@ struct
 end
 
 
-
 (*******************************************************************************)
 (********************    Priority Q using Lists   ******************************)
 (*******************************************************************************)
@@ -88,7 +85,7 @@ module ListQueue (C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
 struct
   exception QueueEmpty
 
-  type elt = C.t
+  type elt =
   type queue = elt list
 
   let empty = []
@@ -391,7 +388,7 @@ end
 
 
 (* make the actual modules -- something along these lines *)
-module IntTree = BinSTree(IntCompare)
+module ListPQ = ListQueue(???)
 
 (* Please read the entirety of "testing.ml" for an explanation of how
  * testing works.
