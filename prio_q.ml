@@ -1,7 +1,7 @@
 (* Here is where the module signature for the priority q module will go and all the functors that implement it *)
 exception TODO
 
-type Node = (* or edge??? or which definition do we need here ? *)
+(* type Node = or edge??? or which definition do we need here ? *)
 
 type order = Equal | Less | Greater
 
@@ -88,7 +88,7 @@ module ListQueue (C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
 struct
   exception QueueEmpty
 
-  type elt =
+  type elt = C.t
   type queue = elt list
 
   let empty = []

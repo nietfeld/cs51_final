@@ -1,3 +1,4 @@
+(*
 (* Here is where the graph signature and the modules that implement it go *)
 
 module type GRAPH =
@@ -64,3 +65,4 @@ struct
 
   let run_tests () = ()
 end
+*)
