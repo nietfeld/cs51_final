@@ -1,4 +1,24 @@
-(* Here is where the graph signature and the modules that implement it go *)
+module type NODE = 
+sig 
+  type node
+
+  val id : int 
+  
+  val name : string 
+
+  (* Require that nodes be comparable for efficiency. *)
+  val compare : node -> node -> Order.order
+  val string_of_node : node -> string
+  val gen : unit -> node
+end
+
+module OurNode = 
+  id = 0 
+  name = "course name" 
+  
+  
+  string_of_node = Printf.printf name 
+  
 
 module type GRAPH =
 sig
