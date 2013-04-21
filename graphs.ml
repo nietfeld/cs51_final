@@ -1,16 +1,19 @@
-(* PUT INTO GRAPH.ML *)
-(* PUT myset.ml and dict.ml into cs51_final *)
+(*open Order *)
+(* The type order is used for comparison operations *)
+type order = Less | Eq | Greater ;;
 
-open Myset;;
-open Dict;;
+let string_compare x y = 
+  let i = String.compare x y in
+    if i = 0 then Eq else if i < 0 then Less else Greater ;;
+
+let int_compare x y = 
+  let i = x - y in 
+    if i = 0 then Eq else if i < 0 then Less else Greater ;;
 
 
 module type NODE = 
 sig 
   type node
-
-
-  (* Require that nodes be comparable for efficiency. *)
 (*  val compare : node -> node -> Order.order *)
   val string_of_node : node -> string
   val gen : unit -> node
@@ -50,7 +53,7 @@ end
   
 module Graph (NA: NODE) : (GRAPH with module N = NA) =
 struct
-  open Order;;
+  open Order;; 
   module N = NA
   type node = N.node
       
