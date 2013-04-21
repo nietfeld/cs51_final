@@ -1,20 +1,9 @@
-open Order 
-(* The type order is used for comparison operations *)
-(*type order = Less | Eq | Greater ;;
-
-let string_compare x y = 
-  let i = String.compare x y in
-    if i = 0 then Eq else if i < 0 then Less else Greater ;;
-
-let int_compare x y = 
-  let i = x - y in 
-    if i = 0 then Eq else if i < 0 then Less else Greater ;;
-*)
+open Order
 
 module type NODE = 
 sig 
   type node
-(*  val compare : node -> node -> Order.order *)
+  val compare : node -> node -> Order.order 
   val string_of_node : node -> string
   val gen : unit -> node
 end
@@ -35,13 +24,13 @@ sig
   val add_node : graph -> node -> graph
 
   (* Adds the nodes if they aren't already present. *)
-  val add_edge : graph -> node -> node -> graph
+  val add_edge : graph -> node -> node -> int -> graph
     
   (* Return None if node isn't in the graph *)
-  val neighbors : graph -> node -> node list option
+  val neighbors : graph -> node -> (node * int) list option
 
   (* Return None if node isn't in the graph *)
-  val outgoing_edges : graph -> node -> (node * node) list option
+  val outgoing_edges : graph -> node -> (node * int * node) list option
     
   val has_node : graph -> node -> bool
 
@@ -64,8 +53,8 @@ struct
 
   module NeighborSet = Myset.Make(
      struct
-        type t = node
-      (*  let compare = N.compare *)
+        type t = node * int
+        let compare = N.compare
         let string_of_t = N.string_of_node
         let gen = N.gen
         let gen_random = N.gen
@@ -128,10 +117,10 @@ struct
   let is_empty g = (g.num_nodes = 0)
           
   (* Adds the nodes if they aren't already present. *)
-  let add_edge g src dst =
+  let add_edge g src dst wt =
     let new_neighbors = match EdgeDict.lookup g.edges src with
-      | None -> NeighborSet.insert dst NeighborSet.empty 
-      | Some s -> NeighborSet.insert dst s
+      | None -> NeighborSet.insert (dst, wt) NeighborSet.empty 
+      | Some s -> NeighborSet.insert (dst, wt) s
     in
       (* ensure both src and dst in the graph before adding edge *)
     let g' = (add_node (add_node g src) dst) in
@@ -139,16 +128,16 @@ struct
        num_nodes = g'.num_nodes;
        index_to_node_map = g'.index_to_node_map}
 
-  let neighbors g n : node list option = 
+  let neighbors g n : (node * int) list option = 
     match EdgeDict.lookup g.edges n with
       | None -> None
       | Some s -> Some (NeighborSet.fold (fun neigh r -> neigh :: r) [] s)
           
-  let outgoing_edges g src : (node * node) list option = 
+  let outgoing_edges g src : (node * int * node) list option = 
     match EdgeDict.lookup g.edges src with
       | None -> None
-      | Some s -> Some (NeighborSet.fold (fun dst r -> 
-                                             (src, dst) :: r) [] s)
+      | Some s -> Some (NeighborSet.fold (fun (dst, wt) r -> 
+                                             (src, wt, dst) :: r) [] s)
 
   let has_node g n = 
     match EdgeDict.lookup g.edges n with
@@ -172,6 +161,6 @@ struct
                   let string_of_node = fun x -> x
                   let gen () = ""
                 end))
-  let from_edges (es: (string * string) list) : graph =
-    List.fold_left (fun g (src, dst) -> add_edge g src dst) empty es
+  let from_edges (es: (string *  int * string) list) : graph =
+    List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) empty es
 end
