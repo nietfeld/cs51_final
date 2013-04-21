@@ -1,4 +1,14 @@
+(*open Order *)
+(* The type order is used for comparison operations *)
+type order = Less | Eq | Greater ;;
 
+let string_compare x y = 
+  let i = String.compare x y in
+    if i = 0 then Eq else if i < 0 then Less else Greater ;;
+
+let int_compare x y = 
+  let i = x - y in 
+    if i = 0 then Eq else if i < 0 then Less else Greater ;;
 
 
 module type NODE = 
@@ -43,7 +53,7 @@ end
   
 module Graph (NA: NODE) : (GRAPH with module N = NA) =
 struct
-  open Order;;
+  open Order;; 
   module N = NA
   type node = N.node
       
