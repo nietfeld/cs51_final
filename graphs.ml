@@ -1,8 +1,4 @@
-(* PUT INTO GRAPH.ML *)
-(* PUT myset.ml and dict.ml into cs51_final *)
 
-open Myset;;
-open Dict;;
 
 
 module type NODE = 
