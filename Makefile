@@ -1,10 +1,10 @@
 all: cs51_final
 
 # These must be in the right order--no forward refs
-FILES = order.ml dijkstras.ml prio_q.ml graphs.ml
+FILES = order.ml prio_q.ml graphs.ml dijkstras.ml
 
 cs51_final: $(FILES)
-	ocamlc -g -o cs51_final  str.cma $(FILES)
+	ocamlc -g -o cs51_final unix.cma str.cma $(FILES)
 #unix.cma
 clean: 
-	rm -f *.cmi *.cmo
+	rm -f *.cmi *.cmo cs51_final

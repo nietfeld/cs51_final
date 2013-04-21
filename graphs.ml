@@ -1,6 +1,6 @@
-(*open Order *)
+open Order 
 (* The type order is used for comparison operations *)
-type order = Less | Eq | Greater ;;
+(*type order = Less | Eq | Greater ;;
 
 let string_compare x y = 
   let i = String.compare x y in
@@ -9,7 +9,7 @@ let string_compare x y =
 let int_compare x y = 
   let i = x - y in 
     if i = 0 then Eq else if i < 0 then Less else Greater ;;
-
+*)
 
 module type NODE = 
 sig 
@@ -65,7 +65,7 @@ struct
   module NeighborSet = Myset.Make(
      struct
         type t = node
-        let compare = N.compare
+      (*  let compare = N.compare *)
         let string_of_t = N.string_of_node
         let gen = N.gen
         let gen_random = N.gen

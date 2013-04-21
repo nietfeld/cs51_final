@@ -8,8 +8,6 @@ exception Not_found
 (* for the prioqs, we'll have some initializers *)
 
 
-
-
 (* Nan is infinitity *)
  type  cost  = Nan | Cost of float;;
  type  adj_mat =  cost array array;;
@@ -23,10 +21,8 @@ exception Not_found
    { ind = 0; size = s; nodes = Array.create s n; 
      m = Array.create_matrix s s Nan } ;;
 
-
 (* this should be the return type
  val create_graph : 'a -> int -> 'a graph = <fun> *)
-
 
 (*The function belongs_to checks if the node n is contained in the graph g. *)
 
@@ -168,7 +164,6 @@ let least_not_treated p cs =
   !ni,!nd;;
 (* val least_not_treated : int -> comp_state -> int * cost = <fun> *)
 
-
  exception No_way;;
 
  let one_round cs g = 
@@ -190,29 +185,42 @@ let least_not_treated p cs =
 (*val one_round : comp_state -> 'a graph -> comp_state = <fun> *)
 
 
- let dij s g = 
-   if belongs_to s g then 
-     begin
-       let i = index s g in 
-       let cs = { paths = Array.create g.ind (-1) ;
-                  already_treated = Array.create g.ind false;
-                  distances = Array.create g.ind Nan;
-                  nn = g.ind;
-                  source = i}  in
-       cs.already_treated.(i) <- true; 
-       for j=0 to g.ind-1 do 
-         let c = g.m.(i).(j) in 
-         cs.distances.(j) <- c;
-         if a_cost c then cs.paths.(j) <- i 
-       done;
-       try
-         for k = 0 to cs.nn-2 do 
-           ignore(one_round cs g) 
-         done;
-         cs
-       with No_way -> cs
-     end
-   else failwith "dij: node unknown";;
+module IntListQueue = (ListQueue(IntCompare) :
+                        PRIOQUEUE with type elt = IntCompare.t)
+
+module IntHeapQueue = (BinaryHeap(IntCompare) :
+                        PRIOQUEUE with type elt = IntCompare.t)
+
+let list_module = (module IntListQueue : PRIOQUEUE with type elt = IntCompare.t)
+
+let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = IntCompare.t)
+
+
+let dij s g (pq : (module PRIOQUEUE with type elt=IntCompare.t)) = 
+  let module P = (val (m) : PRIOQUEUE with type elt = IntCompare.t) in
+  let prioq = P.empty in
+  if belongs_to s g then 
+    begin
+      let i = index s g in 
+      let cs = { paths = Array.create g.ind (-1) ;
+                 already_treated = Array.create g.ind false;
+                 distances = Array.create g.ind Nan;
+                 nn = g.ind;
+                 source = i}  in
+      cs.already_treated.(i) <- true; 
+      for j=0 to g.ind-1 do 
+        let c = g.m.(i).(j) in 
+        cs.distances.(j) <- c;
+        if a_cost c then cs.paths.(j) <- i 
+      done;
+      try
+        for k = 0 to cs.nn-2 do 
+          ignore(one_round cs g) 
+        done;
+        cs
+      with No_way -> cs
+    end
+  else failwith "dij: node unknown";;
 (* val dij : 'a -> 'a graph -> comp_state = <fun> *)
 
 
@@ -239,7 +247,7 @@ let least_not_treated p cs =
 
 
 let g = test_aho ();;
-let r = dij "A" g;;
+let r = dij "A" g ListQ;;
 
 display_state (fun x y -> Printf.printf "%s!" y) (a,r) "E";; 
 
