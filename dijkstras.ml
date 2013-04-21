@@ -1,4 +1,32 @@
 (*
+Djikstra's 
+deletemin(h) - pop off top of heap
+insert(x,y,h) -  
+change(x,y,h) - 
+insert and change is pretty much the same. 
+
+let s be the start
+
+distance array = s= 0, infinity 
+prevarray = NULL
+priority queue = {s = 0} // distance to self is zero
+
+delete min off the heap. 
+get s. 
+
+look at all of s's neighbor. Can  we improve the distance of any of them? (look up in array and compare)
+if diet(w) > dist(u) + lenght(u,v)
+	// UPDATE VALUES 
+	diet (w) = diet u + length(u,v) 
+	prev(w) = v
+	// put vertices on the heap 
+	insert/change (w, dist[w], [H])
+
+pop one off the heap 
+	go through code above 
+	*)
+
+(*
 (* this is going to be very similar *)
 
 let sort (m : (module PRIOQUEUE with type elt=IntCompare.t)) (lst : int list) =
