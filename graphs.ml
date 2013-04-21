@@ -8,9 +8,6 @@ open Dict;;
 module type NODE = 
 sig 
   type node
-
-
-  (* Require that nodes be comparable for efficiency. *)
 (*  val compare : node -> node -> Order.order *)
   val string_of_node : node -> string
   val gen : unit -> node
