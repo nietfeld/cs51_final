@@ -388,7 +388,7 @@ end
 (*******************************************************************************)
 
 
-
+(*
 
 (* make the actual modules -- something along these lines *)
 module IntTree = BinSTree(IntCompare)
@@ -397,3 +397,4 @@ module IntTree = BinSTree(IntCompare)
  * testing works.
  *)
 let _ = IntTree.run_tests ()
+*)
