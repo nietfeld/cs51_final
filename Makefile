@@ -1,7 +1,7 @@
 all: cs51_final
 
 # These must be in the right order--no forward refs
-FILES = dijkstras.ml #graphs.ml prio_q.ml
+FILES = order.ml dijkstras.ml prio_q.ml graphs.ml
 
 cs51_final: $(FILES)
 	ocamlc -g -o cs51_final  str.cma $(FILES)

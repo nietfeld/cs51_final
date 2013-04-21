@@ -1,10 +1,14 @@
 (* from http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora125.html *)
 
+(* this is a very exposed version of the graph implementation,
+so we'll just make it into a modulde with a get_neighbors function *)
 
 open Array
-exception Not_found;;
+exception Not_found
+(* for the prioqs, we'll have some initializers *)
 
-(* we will need s, the maximum size of a graph *)
+
+
 
 (* Nan is infinitity *)
  type  cost  = Nan | Cost of float;;
@@ -95,15 +99,19 @@ val a : string graph =
 
 (* ----- DIJK CODE _____ *)
 
+
+(* initializers for the prioq *)
+
+
 type comp_state = { paths : int array;
                      already_treated : bool array;
                      distances : cost array;
                      source : int; 
-                     nn : int};;
+                     nn : int};; (* nn is the total number of the graph's nodes *)
+(* considered having the prioq as a part of this record *)
 
 let create_state () =  { paths = [||]; already_treated = [||]; distances = [||];
                          nn = 0; source = 0};;
-
 
 (* cost functions *)
 
@@ -128,19 +136,26 @@ let add_cost  c1 c2 = match (c1,c2) with
  | _, _ ->  false;;
 (* val less_cost : cost -> cost -> bool = <fun> *)
 
-
 exception Found of int;;
+
+(* this is where we need to replace with our prioq *)
+(* this is likely going to be deletemin from the prioq *)
+(* also here we will insert the edges that are connected to the 
+current node ?????????????????????????????????????????/ *)
 
 let first_not_treated cs = 
   try 
     for i=0 to cs.nn-1 do 
       if not cs.already_treated.(i) then raise (Found i)
     done;
-   (* raise Not_found ;*) (* ask Willie about this *)
+    (*raise Not_found ;*) (* ask Willie about this *)(* gives a warning - why *)
     0
   with Found i -> i ;;
 
 (* val first_not_treated : comp_state -> int = <fun> *)
+
+
+(* inserting into the prioq *)
 let least_not_treated p cs =
   let ni = ref p  
   and nd = ref cs.distances.(p) in 
@@ -167,12 +182,10 @@ let least_not_treated p cs =
          if not cs.already_treated.(i) then 
            if a_cost g.m.(np).(i) then
              let ic = add_cost cs.distances.(np)  g.m.(np).(i) in 
-             if less_cost ic cs.distances.(i)   then (
-               cs.paths.(i) <- np;
-               cs.distances.(i) <- ic
-             ) 
-       done;
-       cs
+             if less_cost ic cs.distances.(i)   
+	     then (cs.paths.(i) <- np;
+               cs.distances.(i) <- ic) 
+       done; cs
      end;;
 (*val one_round : comp_state -> 'a graph -> comp_state = <fun> *)
 
@@ -229,8 +242,6 @@ let g = test_aho ();;
 let r = dij "A" g;;
 
 display_state (fun x y -> Printf.printf "%s!" y) (a,r) "E";; 
-
-
 
 
 (*
