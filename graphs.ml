@@ -51,6 +51,7 @@ struct
      Every node in the graph must be a key in the dictionary.
   *)
 
+(* not sure which one is correct here because of the merge *)
   module NeighborSet = Myset.Make(
      struct
         type t = N.node * int
@@ -60,6 +61,15 @@ struct
         let gen_random () = (N.gen (), 1)
         let gen_gt x () = (N.gen (), 2)
         let gen_lt x () = (N.gen (), 0)
+(*
+        type t = node * int
+        let compare = N.compare
+        let string_of_t = N.string_of_node
+        let gen = N.gen
+        let gen_random = N.gen
+        let gen_gt x () = N.gen ()
+        let gen_lt x () = N.gen ()
+*)
         let gen_between x y () = None
       end)
     

@@ -116,7 +116,8 @@ end
 
 (*******************************************************************************)
 (********************    Priority Q using Binary Heap   **************************)
-(*******************************************************************************)module BinaryHeap(C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
+(*******************************************************************************)
+module BinaryHeap(C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
 struct
 
   exception QueueEmpty
