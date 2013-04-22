@@ -61,7 +61,6 @@ sig
 end
 
 
-
 (* this would just take some kind of q module *)
 (* An example implementation of the COMPARABLE_AND_GENABLE signature *)
 module NodeCompare : COMPARABLE_AND_GENABLE with type t=int =
@@ -116,8 +115,7 @@ end
 
 (*******************************************************************************)
 (********************    Priority Q using Binary Heap   **************************)
-(*******************************************************************************)
-module BinaryHeap(C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
+(*******************************************************************************)module BinaryHeap(C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
 struct
 
   exception QueueEmpty
