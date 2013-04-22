@@ -614,7 +614,7 @@ let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = NodeCompare.t
 
 let dij s g (pq : (module PRIOQUEUE with type elt=NodeCompare.t)) = 
   let module P = (val (pq) : PRIOQUEUE with type elt = NodeCompare.t) in
-  let prioq = P.empty in
+  (*let prioq = P.empty in*)
   (* make a prioq with all nodes in graph set to infinity *) 
   if belongs_to s g then 
     begin
