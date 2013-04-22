@@ -3,14 +3,11 @@
 (* this is a very exposed version of the graph implementation,
 so we'll just make it into a modulde with a get_neighbors function *)
 
-
 (* Here is where the module signature for the priority q module will go and all the functors that implement it -- try to use this code from the prio-q file *)
 exception TODO
 
 type order = Equal | Less | Greater
 
-(* this is the Module type that all of the below will return *)
-(* do you think we need to add anything else to this? *)
 module type PRIOQUEUE =
 sig
   exception QueueEmpty
@@ -20,17 +17,12 @@ sig
   val empty : queue
   val is_empty : queue -> bool
   val add : elt -> queue -> queue
-  (* Pulls the highest priority element out of the passed-in queue,
-   * also returning the queue with that element
-   * removed. Can raise the QueueEmpty exception. *)
   val take : queue -> elt * queue
 
   (************** WE NEED **************************************)
   (* UPDATE THE VALUE ASSOCIATED WITH A KEY *) 
   (* val update : elt -> queue -> queue *) 
  
-  (* Run invariant checks on the implementation of this binary tree.
-   * May raise Assert_failure exception *)
   val run_tests : unit -> unit
 end
 
@@ -40,14 +32,9 @@ sig
   type t
   val compare : t -> t -> order
   val to_string : t -> string
-  (* Generate a value of type t *)
   val generate: unit -> t
-  (* Generate a value of type t that is greater than the argument. *)
   val generate_gt: t -> unit -> t
-  (* Generate a value of type t that is less than the argument. *)
   val generate_lt: t -> unit -> t
-  (* Generate a value of type t that is between argument 1 and argument 2.
-   * Returns None if there is no value between argument 1 and argument 2. *)
   val generate_between: t -> t -> unit -> t option
 end
 
@@ -125,44 +112,30 @@ struct
 
   let is_empty (q : queue) = q = Empty
 
-  (* Adds element e to the queue q *)
   let add (e : elt) (q : queue) : queue =
     let rec add_to_tree (e : elt) (t : tree) : tree =
       match t with
-      (* If the tree is just a Leaf, then we end up with a OneBranch *)
       | Leaf e1 ->
         (match C.compare e e1 with
          | Equal | Greater -> OneBranch (e1, e)
          | Less -> OneBranch (e, e1))
-
-      (* If the tree was a OneBranch, it will now be a TwoBranch *)
       | OneBranch(e1, e2) ->
         (match C.compare e e1 with
          | Equal | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
          | Less -> TwoBranch (Even, e, Leaf e2, Leaf e1))
-
-      (* If the tree was even, then it will become an odd tree (and the element
-       * is inserted to the left *)
       | TwoBranch(Even, e1, t1, t2) ->
         (match C.compare e e1 with
          | Equal | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
          | Less -> TwoBranch(Odd, e, add_to_tree e1 t1, t2))
-
-      (* If the tree was odd, then it will become an even tree (and the element
-       * is inserted to the right *)
       | TwoBranch(Odd, e1, t1, t2) ->
         match C.compare e e1 with
         | Equal | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
         | Less -> TwoBranch(Even, e, t1, add_to_tree e1 t2)
     in
-    (* If the queue is empty, then e is the only Leaf in the tree.
-     * Else, insert it into the proper location in the pre-existing tree *)
     match q with
     | Empty -> Tree (Leaf e)
     | Tree t -> Tree (add_to_tree e t)
 
-  (* Simply returns the top element of the tree t (i.e., just a single pattern
-   * match in *)
   let get_top (t : tree) : elt =
     match t with
     | Leaf e
@@ -322,7 +295,7 @@ end
 (*******************************************************************************)
 
 
-(* end *)
+(* end of prioqs which we could hopefully move into a different file *)
 
 
 open Array
@@ -421,7 +394,6 @@ let add_cost  c1 c2 = match (c1,c2) with
    Cost x, Cost y -> x < y
  | Cost x, Nan -> true
  | _, _ ->  false;;
-(* val less_cost : cost -> cost -> bool = <fun> *)
 
 exception Found of int;;
 
