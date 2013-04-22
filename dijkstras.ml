@@ -40,6 +40,10 @@ sig
    * removed. Can raise the QueueEmpty exception. *)
   val take : queue -> elt * queue
 
+  (************** WE NEED **************************************)
+  (* UPDATE THE VALUE ASSOCIATED WITH A KEY *) 
+  (* val update : elt -> queue -> queue *) 
+ 
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
   val run_tests : unit -> unit
@@ -109,6 +113,10 @@ struct
       match C.compare e hd with
       | Less -> e::q
       | Greater | Equal -> hd::(add e tl)
+
+  (* ADD UPDATE *) 
+  (* FIND THE KEY, FIX THE VALUE *) 
+  (* REORDER STUFF IN QUEUE *) 
 
 
   let rec take (q : queue) =
@@ -233,6 +241,9 @@ struct
     | Leaf _ -> Leaf e
     | OneBranch (_,e1) -> OneBranch (e,e1)
     | TwoBranch (b,_,t1,t2) -> TwoBranch (b,e,t1,t2)
+
+  (*************************** NEED UPDATE **********************)
+  (* Find, update, fix tree *) 
 
   let rec fix (t : tree) : tree =
     match t with
@@ -503,10 +514,6 @@ val a : string graph =
 
 (* ----- DIJK CODE _____ *)
 
-
-(* initializers for the prioq *)
-
-
 type comp_state = { paths : int array;
                      already_treated : bool array;
                      distances : cost array;
@@ -547,6 +554,8 @@ exception Found of int;;
 (* also here we will insert the edges that are connected to the 
 current node ?????????????????????????????????????????/ *)
 
+
+(************************ CHANGE TO DELETE-MIN FROM PRIOQUEUE **************)
 let first_not_treated cs = 
   try 
     for i=0 to cs.nn-1 do 
@@ -559,7 +568,7 @@ let first_not_treated cs =
 (* val first_not_treated : comp_state -> int = <fun> *)
 
 
-(* inserting into the prioq *)
+(**************** CHANGE TO UPDATING VALUE IN PRIOQUEU ****************)
 let least_not_treated p cs =
   let ni = ref p  
   and nd = ref cs.distances.(p) in 
@@ -570,44 +579,43 @@ let least_not_treated p cs =
           ni := i )
   done;
   !ni,!nd;;
-(* val least_not_treated : int -> comp_state -> int * cost = <fun> *)
 
  exception No_way;;
 
  let one_round cs g = 
+   (*********** DELETE MIN, update prev and dist array  *****************)
    let p = first_not_treated cs  in 
+   (*********** get neighbors from graph ***********)
    let np,nc = least_not_treated p cs in
    if not(a_cost nc  ) then raise No_way 
    else 
      begin
        cs.already_treated.(np) <- true;
+       (* for each neighbor *) 
        for i = 0 to cs.nn -1 do
          if not cs.already_treated.(i) then 
            if a_cost g.m.(np).(i) then
+	     (* update priority queue values *) 
              let ic = add_cost cs.distances.(np)  g.m.(np).(i) in 
              if less_cost ic cs.distances.(i)   
 	     then (cs.paths.(i) <- np;
                cs.distances.(i) <- ic) 
        done; cs
      end;;
-(*val one_round : comp_state -> 'a graph -> comp_state = <fun> *)
 
-
+(* Need to finish implementing prioq *) 
 module IntListQueue = (ListQueue(NodeCompare) :
                         PRIOQUEUE with type elt = NodeCompare.t)
-
 module IntHeapQueue = (BinaryHeap(NodeCompare) :
                         PRIOQUEUE with type elt = NodeCompare.t)
-
 let list_module = (module IntListQueue : PRIOQUEUE with type elt = NodeCompare.t)
-
 let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = NodeCompare.t)
 
 
 let dij s g (pq : (module PRIOQUEUE with type elt=NodeCompare.t)) = 
   let module P = (val (pq) : PRIOQUEUE with type elt = NodeCompare.t) in
   let prioq = P.empty in
-  (*prioq.add 1; *)
+  (* make a prioq with all nodes in graph set to infinity *) 
   if belongs_to s g then 
     begin
       let i = index s g in 
@@ -617,6 +625,7 @@ let dij s g (pq : (module PRIOQUEUE with type elt=NodeCompare.t)) =
                  nn = g.ind;
                  source = i}  in
       cs.already_treated.(i) <- true; 
+      (* make this recursive *) 
       for j=0 to g.ind-1 do 
         let c = g.m.(i).(j) in 
         cs.distances.(j) <- c;
@@ -634,6 +643,7 @@ let dij s g (pq : (module PRIOQUEUE with type elt=NodeCompare.t)) =
 
 
 (* displaying the results here *)
+(* Will update for better display *) 
  let display_state f (g,st)  dest = 
    if belongs_to dest g then 
       let d = index dest g in
