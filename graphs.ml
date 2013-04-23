@@ -24,6 +24,7 @@ sig
   val add_node : graph -> node -> graph
 
   (* Adds the nodes if they aren't already present. *)
+  (* and the weight of that edge *)
   val add_edge : graph -> node -> node -> int -> graph
     
   (* Return None if node isn't in the graph *)
@@ -38,6 +39,7 @@ sig
   val get_random_node : graph -> node option
 
   val string_of_graph : graph -> string
+
 end
   
 module Graph (NA: NODE) : (GRAPH with module N = NA) =
@@ -148,7 +150,6 @@ struct
       | None -> None
       | Some s -> Some (NeighborSet.fold (fun (dst, wt) r -> 
                                              (src, wt, dst) :: r) [] s)
-
   let has_node g n = 
     match EdgeDict.lookup g.edges n with
       | None -> false
@@ -161,7 +162,11 @@ struct
 
   let string_of_graph g = 
     "Graph: " ^ (EdgeDict.string_of_dict g.edges)
+
 end
+
+(* implement the module graph and test it *)
+
 
 module NamedGraph = 
 struct
@@ -173,4 +178,55 @@ struct
                 end))
   let from_edges (es: (string *  int * string) list) : graph =
     List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) empty es
+end
+
+
+module TestGraph = 
+struct 
+  module G = NamedGraph
+
+  let g = G.add_edge G.empty "a" "b" 3;;
+  let g2 = G.add_edge g "a" "c" 4;;
+
+  let deopt_len lo =
+    match lo with
+      | None -> 0
+      | Some xs -> List.length xs;;
+
+  let deopt_lst lo =
+    match lo with
+      | None -> []
+      | Some xs -> xs;;
+
+  let deopt_node no =
+    match no with
+      | None -> "None"
+      | Some n -> n;;
+
+  let _ = (
+    assert (G.has_node g "a");
+    assert (G.has_node g "b");
+    assert (G.has_node g "c" = false);
+    assert (G.has_node g2 "c");
+    assert (G.has_node g2 "d" = false);
+
+    assert (List.length (G.nodes G.empty) = 0) ;
+    assert (List.length (G.nodes (G.add_node G.empty "a")) = 1) ;
+
+    assert (List.length (G.nodes g) = 2) ;
+
+    assert (List.length (G.nodes g2) = 3) ;
+
+    assert (deopt_len (G.outgoing_edges g2 "a") = 2) ;
+    assert (deopt_len (G.outgoing_edges g2 "b") = 0) ;
+    assert (deopt_len (G.outgoing_edges g2 "c") = 0) ;
+    assert (G.outgoing_edges g2 "d" = None) ;
+
+    assert (deopt_len (G.neighbors g2 "a") = 2) ;
+    assert (deopt_len (G.neighbors g2 "b") = 0) ;
+    assert (deopt_len (G.neighbors g2 "c") = 0) ;
+    assert (G.neighbors g2 "d" = None) ;
+
+    assert (let t = deopt_lst (G.neighbors g2 "a") in
+              t = ["b";"c"] or t = ["c";"b"]) )
 end

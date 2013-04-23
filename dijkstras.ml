@@ -72,21 +72,18 @@ val a : string graph =
 
 
 (* ----- DIJK CODE _____ *)
-
 type comp_state = { paths : int array;
                      already_treated : bool array;
                      distances : cost array;
                      source : int; 
                      nn : int};; (* nn is the total number of the graph's nodes *)
-(* considered having the prioq as a part of this record *)
-
 
 let create_state () =  { paths = [||]; already_treated = [||]; distances = [||];
                          nn = 0; source = 0};;
 
 (* cost functions *)
 
- let a_cost c = match c with Nan -> false | _-> true;;
+let a_cost c = match c with Nan -> false | _-> true;;
 
 let float_of_cost c = match c with 
    Nan -> failwith "float_of_cost"
