@@ -1,7 +1,9 @@
 (* from http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora125.html *)
 
-(* this is a very exposed version of the graph implementation,
-so we'll just make it into a modulde with a get_neighbors function *)
+(* TODO:
+    - take care of abstracting the dictionary implementation
+    - make sure dij uses a prioq
+*)
 
 open Prio_q
 open Array
@@ -14,7 +16,6 @@ exception Not_found
                    size : int; (* max number of nodes *)
                    nodes : 'a array;  (* the actual array of nodes *)
                    m : adj_mat};; (* the costs between any two nodes *)
-
 
  let create_graph n s = 
    { ind = 0; size = s; nodes = Array.create s n; 
