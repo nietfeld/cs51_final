@@ -58,6 +58,13 @@ struct
      struct
         type t = N.node * float
         let compare (n1, w1) (n2, w2) = N.compare n1 n2
+(*
+        let string_of_t (n, w) = N.string_of_node n ^ ", " ^ string_of_int w
+        let gen () = (N.gen (), 1)
+        let gen_random () = (N.gen (), 1)
+        let gen_gt x () = (N.gen (), 2)
+        let gen_lt x () = (N.gen (), 0)
+*)
         let string_of_t (n, w) = N.string_of_node n ^ ", " ^ string_of_float w
         let gen () = (N.gen (), 1.)
         let gen_random () = (N.gen (), 1.)
