@@ -1,3 +1,10 @@
+open Prio_q
+open Array
+
+exception Not_found
+
+type elt = int
+type queue = elt list 
 
 (* Need to finish implementing prioq *) 
 module IntListQueue = (ListQueue(NodeCompare) :
@@ -12,9 +19,9 @@ let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = NodeCompare.t
 (* type in prio_q *) 
 let delete_min (pq : queue) : ((int*float) * queue) = 
   try 
-    let new_elt = pq.take
+     pq.take
     (* but we don't want to fail just end try display_state from djikstras.ml *)
-  with QueueEmpty -> Printf.printf "done" ;;
+  with QueueEmpty -> failwith "done" ;;
 
 (* loop through neighbors list (assume for now int * float) *) 
 (* FIX CURR_NODE TO BETTER TYPE *) 
