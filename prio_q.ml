@@ -1,12 +1,13 @@
 (* Here is where the module signature for the priority q module will go and all the functors that implement it *)
 exception TODO
 
-(* type Node = or edge??? or which definition do we need here ? *)
 
-
-(* add look up funciton to the prioqs *)
-
-type order = Equal | Less | Greater
+module type ELT =
+sig
+  type elt
+  val compare : elt -> elt -> Order.order
+  val to_string : elt -> string
+end
 
 (* this is the Module type that all of the below will return *)
 (* do you think we need to add anything else to this? *)
@@ -14,9 +15,11 @@ module type PRIOQUEUE =
 sig
   exception QueueEmpty
 
+  module E : ELT
+    
   (* What's being stored in the priority queue *)
-  type elt
-
+  type elt = E.elt
+    
   (* The queue itself (stores things of type elt) *)
   type queue
 
@@ -34,6 +37,9 @@ sig
    * also returning the queue with that element
    * removed. Can raise the QueueEmpty exception. *)
   val take : queue -> elt * queue
+    
+  (* Given an id, gives back the corresponding node with that id *)
+  val lookup : int -> queue -> elt
 
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
@@ -41,40 +47,18 @@ sig
 end
 
 
-(* would this still be com and gen and would it take an int compare or
-what exactly would it take? *)
-module type COMPARABLE_AND_GENABLE =
-sig
-  type t
-  val compare : t -> t -> order
-  val to_string : t -> string
-
-  (* See the testing.ml for an explanation of
-   * what these "generate*" functions do, and why we included them in
-   * this signature. *)
-  (* Generate a value of type t *)
- (* val generate: unit -> t
-  (* Generate a value of type t that is greater than the argument. *)
-  val generate_gt: t -> unit -> t
-  (* Generate a value of type t that is less than the argument. *)
-  val generate_lt: t -> unit -> t
-  (* Generate a value of type t that is between argument 1 and argument 2.
-   * Returns None if there is no value between argument 1 and argument 2. *)
-  val generate_between: t -> t -> unit -> t option *)
-end
-
-
 (* this would just take some kind of q module *)
 (* An example implementation of the COMPARABLE_AND_GENABLE signature *)
 
 (* the float here is what represents the edge weight *)
-module NodeCompare : COMPARABLE_AND_GENABLE with type t=(int*float) =
+module IdCompare : ELT with type elt = (int*float) =
 struct
-  type t = (int*float)
+  open Order
+  type elt = (int*float)
   let compare x y = 
     let (i1, f1) = x in
     let (i2, f2) = y in
-    if f1 < f2 then Less else if f1 > f2 then Greater else Equal
+    if f1 < f2 then Less else if f1 > f2 then Greater else Eq
 
   let to_string p =
     let (x,y) = p in 
@@ -94,11 +78,16 @@ end
 (********************    Priority Q using Lists   ******************************)
 (*******************************************************************************)
 
-module ListQueue (C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
+
+module ListQueue : PRIOQUEUE = 
 struct
   exception QueueEmpty
-
-  type elt = C.t
+  exception Impossible
+  
+  module E = IdCompare
+    
+  open Order
+  type elt = E.elt
   type queue = elt list
 
   let empty = []
@@ -109,15 +98,22 @@ struct
     match q with
     | [] -> [e]
     | hd::tl ->
-      match C.compare e hd with
+      match E.compare e hd with
       | Less -> e::q
-      | Greater | Equal -> hd::(add e tl)
-
+      | Greater | Eq -> hd::(add e tl)
 
   let rec take (q : queue) =
     match q with
     | [] -> raise QueueEmpty (* might want to do something about this later *)
     | hd::tl -> hd, tl
+
+  let rec lookup (id: int) (q: queue) : elt =
+(*    match q with
+    | [] -> raise NotPossible
+    | ((id, dst) as e) :: tail -> if id = a then e else lookup a tail
+*)	
+    List.fold_right (fun (a, b) y -> if id = a then (a,b) else y) 
+      q (raise Impossible)
 
   let run_tests () = ()
 end
@@ -126,12 +122,16 @@ end
 
 (*******************************************************************************)
 (********************    Priority Q using Binary Heap   **************************)
-(*******************************************************************************)module BinaryHeap(C : COMPARABLE_AND_GENABLE) : PRIOQUEUE with type elt = C.t =
+(*******************************************************************************)
+module BinaryHeap : PRIOQUEUE =
 struct
-
+  
   exception QueueEmpty
-
-  type elt = C.t
+  exception Impossible
+  open Order
+  module E = IdCompare
+    
+  type elt = E.elt
 
   (* Be sure to read the pset spec for hints and clarifications.
    *
@@ -177,28 +177,28 @@ struct
       match t with
       (* If the tree is just a Leaf, then we end up with a OneBranch *)
       | Leaf e1 ->
-        (match C.compare e e1 with
-         | Equal | Greater -> OneBranch (e1, e)
+        (match E.compare e e1 with
+         | Eq | Greater -> OneBranch (e1, e)
          | Less -> OneBranch (e, e1))
 
       (* If the tree was a OneBranch, it will now be a TwoBranch *)
       | OneBranch(e1, e2) ->
-        (match C.compare e e1 with
-         | Equal | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
+        (match E.compare e e1 with
+         | Eq | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
          | Less -> TwoBranch (Even, e, Leaf e2, Leaf e1))
 
       (* If the tree was even, then it will become an odd tree (and the element
        * is inserted to the left *)
       | TwoBranch(Even, e1, t1, t2) ->
-        (match C.compare e e1 with
-         | Equal | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
+        (match E.compare e e1 with
+         | Eq | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
          | Less -> TwoBranch(Odd, e, add_to_tree e1 t1, t2))
 
       (* If the tree was odd, then it will become an even tree (and the element
        * is inserted to the right *)
       | TwoBranch(Odd, e1, t1, t2) ->
-        match C.compare e e1 with
-        | Equal | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
+        match E.compare e e1 with
+        | Eq | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
         | Less -> TwoBranch(Even, e, t1, add_to_tree e1 t2)
     in
     (* If the queue is empty, then e is the only Leaf in the tree.
@@ -221,14 +221,14 @@ struct
   type dir = Left | Right | Neither
 
   let compare3 (e1 : elt) (e2 : elt) (e3 : elt) =
-    match C.compare e2 e3 with
-    | Less | Equal ->
-      (match C.compare e1 e2 with
-      | Less | Equal -> Neither
+    match E.compare e2 e3 with
+    | Less | Eq ->
+      (match E.compare e1 e2 with
+      | Less | Eq -> Neither
       | Greater -> Left)
     | Greater ->
-      match C.compare e1 e3 with
-      | Less | Equal -> Neither
+      match E.compare e1 e3 with
+      | Less | Eq -> Neither
       | Greater -> Right
 
   let swap (e : elt) (t : tree) =
@@ -241,8 +241,8 @@ struct
     match t with
     | Leaf e -> t
     | OneBranch (e1,e2) ->
-      (match C.compare e1 e2 with
-      | Less | Equal -> t
+      (match E.compare e1 e2 with
+      | Less | Eq -> t
       | Greater -> OneBranch(e2,e1))
     | TwoBranch (b,e,t1,t2) ->
       let top1, top2 = get_top t1, get_top t2 in
@@ -313,41 +313,62 @@ struct
       | Empty -> raise (Failure "The weak invariant has been broken")
       | Tree t1' -> e, Tree (fix (TwoBranch (Even, last, t1', t2)))
 
+  let lookup (id: int) (q: queue) : elt =
+    let rec optedlookup (a : int) (t : tree) : elt option = 
+      match t with
+      | Leaf (x,y) -> if a = x then Some (x,y) else None
+      | OneBranch ((x1,y1), (x2,y2)) ->
+	(if x1 = a then Some (x1,y1) 
+	 else if x2 = a then Some (x2,y2)
+	 else None)
+      | TwoBranch (b, (x,y), lt, rt) ->
+	if a = x then Some (x,y)
+	else if a > x then optedlookup id rt
+	else optedlookup id lt
+    in
+    match q with
+    | Empty -> raise EmptyQueue
+    | Tree t ->
+      match optedlookup id t with
+      | None -> raise Impossible
+      | Some e -> e
+	  
+	    
 (*
   let test_get_top () =
-    let x = C.generate () in
+    let x = E.generate () in
     let t = Leaf x in
     assert (get_top t = x);
-    let y = C.generate_gt x () in
+    let y = E.generate_gt x () in
     let t = OneBranch (x, y) in
     assert (get_top t = x);
-    let z = C.generate_gt y () in
+    let z = E.generate_gt y () in
     let t = TwoBranch (Even, x, Leaf y, Leaf z) in
     assert (get_top t = x);
-    let w = C.generate_gt z () in
+    let w = E.generate_gt z () in
     let t = TwoBranch (Odd, x, OneBranch (y, w), Leaf z) in
     assert (get_top t = x);
-    let q = C.generate_gt w () in
+    let q = E.generate_gt w () in
     let t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)) in
     assert (get_top t = x)
 
   let test_fix () =
-    let x = C.generate () in
+    let x = E.generate () in
     let t = Leaf x in
     assert (fix t = t);
-    let y = C.generate_gt x () in
+    let y = E.generate_gt x () in
     let t = OneBranch (y, x) in
     assert (fix t = OneBranch (x, y));
     let t = OneBranch (x, y) in
     assert (fix t = OneBranch (x, y));
-    let z = C.generate_gt y () in
+    let z = E.generate_gt y () in
     let t = TwoBranch (Even, x, Leaf y, Leaf z) in
     assert (fix t = t);
     let t = TwoBranch (Even, z, Leaf x, Leaf y) in
     assert (fix t = TwoBranch (Even, x, Leaf z, Leaf y));
     let t = TwoBranch (Even, y, Leaf z, Leaf x) in
     assert (fix t = TwoBranch (Even, x, Leaf z, Leaf y));
-    let w = C.generate_gt z () in
+    let w = E.generate_gt z () in
     let t = TwoBranch (Odd, x, OneBranch (y, w), Leaf z) in
     assert (fix t = t);
     let t = TwoBranch (Odd, z, OneBranch (x, y), Leaf w) in
@@ -356,7 +377,7 @@ struct
     assert (fix t = TwoBranch (Odd, x, OneBranch (y, z), Leaf w));
     let t = TwoBranch (Odd, w, OneBranch (x, z), Leaf y) in
     assert (fix t = TwoBranch (Odd, x, OneBranch (z, w), Leaf y));
-    let q = C.generate_gt w () in
+    let q = E.generate_gt w () in
     let t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)) in
     assert (fix t = t);
     let t = TwoBranch (Even, y, OneBranch (x, w), OneBranch (z, q)) in
@@ -371,10 +392,10 @@ struct
     assert (fix t = TwoBranch (Even, x, OneBranch (y, z), OneBranch (w, q)))
 
   let test_take () =
-    let x = C.generate () in
-    let y = C.generate_gt x () in
-    let z = C.generate_gt y () in
-    let w = C.generate_gt z () in
+    let x = E.generate () in
+    let y = E.generate_gt x () in
+    let z = E.generate_gt y () in
+    let w = E.generate_gt z () in
     let t = Tree (TwoBranch (Odd, x, OneBranch (y, w), Leaf z)) in
     assert (take t = (x, Tree (TwoBranch (Even, y, Leaf w, Leaf z))))
 *)
