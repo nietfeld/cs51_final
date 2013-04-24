@@ -3,7 +3,6 @@ exception TODO
 
 (* type Node = or edge??? or which definition do we need here ? *)
 
-
 (* add look up funciton to the prioqs *)
 
 type order = Equal | Less | Greater
