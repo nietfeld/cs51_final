@@ -1,57 +1,43 @@
 open Prio_q
 open Array
+open Graphs
 
 exception Not_found
-
-type elt = int
-type queue = elt list 
+exception QueueEmpty
 
 (* Need to finish implementing prioq *) 
-module IntListQueue = (ListQueue(NodeCompare) :
-                        PRIOQUEUE with type elt = NodeCompare.t)
-module IntHeapQueue = (BinaryHeap(NodeCompare) :
-                        PRIOQUEUE with type elt = NodeCompare.t)
-let list_module = (module IntListQueue : PRIOQUEUE with type elt = NodeCompare.t)
-let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = NodeCompare.t)
+module IntListQueue =  ListQueue(* (ListQueue(IdCompare) :
+                        PRIOQUEUE with type elt = IdCompare.t);; *)
+module IntHeapQueue =  BinaryHeap(*(BinaryHeap(IdCompare) :
+                        PRIOQUEUE with type elt = IdCompare.t);; *)
+(*let list_module = (module IntListQueue : PRIOQUEUE with type elt = IdCompare.t);;
+let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = IdCompare.t);; *)
+
+module My_graph = IdGraph;;
+
+module My_queue = IntHeapQueue ;;
+
+(* see if we could use these definitions from modules *)
+(*
+type queue = IntListQueue;;
+type node = { id: int; name: string};; *)
 
 (* the thing we're popping off prioq *)
 (* will make tuple more general type later - now node ID in graph and tentative distance from A *)
-(* type in prio_q *) 
-let delete_min (pq : queue) : ((int*float) * queue) = 
+
+let delete_min pq =
   try 
-     pq.take
-    (* but we don't want to fail just end try display_state from djikstras.ml *)
+    (* ASK ABOUT THIS *)
+    (*???*)My_queue.take pq
+  (* but we don't want to fail just end try display_state from djikstras.ml *)
   with QueueEmpty -> failwith "done" ;;
 
 (* loop through neighbors list (assume for now int * float) *) 
 (* FIX CURR_NODE TO BETTER TYPE *) 
- let rec update_queue (pq : queue) (curr_node: int*float) (neighbor_list : (node * float) list) : queue = 
-   let (node_id, distance_from_start) = curr_node in 
-   match neighbor_list with 
-   | [] -> pq 
-   | (n,e)::tl -> 
-     (* assume look up k is a function into index k of the array *) 
-     (match Array.get n.id dist with
-     (* CHANGE TO NEW DISTANCE NOTATION *) 
-     | Nan -> 
-       (* look up id n in prioq- is there a way to only do this way? *) 
-       let (k, tent_dist) = pq.lookup n.id in
-       let new_dist = e +. distance_to in 
-       if new_dist < tent_dist then 
-	 (* update priority q *)
-	 (let new_pq = pq.update_key k new_dist in 
-	 (* we have a new shorter path to k through n *) 
-	  Array.set prev k n.id;
-	  (* ARE WE PUTTING IN THE RIGHT THING FOR CURRENT NODE *) 
-	  update_queue new_pq curr_node tl)
-       (* don't update, do next neighbor *) 
-       else update_queue pq curr_node tl
-     | _ -> update_queue pq curr_node tl) 
-      
 
- let one_round (pq: queue) (my_graph: node graph) : queue = 
+ let one_round pq my_graph = 
    let (curr_node, distance_to) = delete_min pq in 
-   let neighbor_list = neighbors n my_graph in 
+   let neighbor_list = My_graph.neighbors my_graph curr_node in (* was expecting a graph but got a prioq *)
    (* for more general elements, use node int compare to get string to an int *)
    (* update the distance array *) 
    Array.set dist curr_node distance_to;
@@ -68,7 +54,34 @@ let initialize_queue (n: int) (start: queue) : queue =
  (* add the starting node with dist 0*) 
 
 let dij start g (pq : (module PRIOQUEUE with type elt=NodeCompare.t)) = 
-  let module P = (val (pq) : PRIOQUEUE with type elt = NodeCompare.t) in
+  let module P = (val (pq) : PRIOQUEUE with type elt = NodeCompare.t)
+  in
+
+  let rec update_queue (pq : queue) (curr_node: int*float) (neighbor_list : (node * float) list) : queue = 
+    let (node_id, distance_from_start) = curr_node in 
+    match neighbor_list with 
+    | [] -> pq 
+    | (n,e)::tl -> 
+     (* assume look up k is a function into index k of the array *) 
+      (match Array.get dist n.id  with
+     (* CHANGE TO NEW DISTANCE NOTATION *) 
+      | Nan -> 
+       (* look up id n in prioq- is there a way to only do this way? *) 
+	let (k, tent_dist) = pq.lookup n.id in (* give it the queue *)
+	let new_dist = e +. distance_to in 
+	if new_dist < tent_dist then 
+	 (* update priority q *)
+	  (let new_pq = pq.update_key k new_dist in 
+	  (* we have a new shorter path to k through n *) 
+	   Array.set prev k n.id;
+	  (* ARE WE PUTTING IN THE RIGHT THING FOR CURRENT NODE *) 
+	   update_queue new_pq curr_node tl)
+       (* don't update, do next neighbor *) 
+	else update_queue pq curr_node tl
+      | _ -> update_queue pq curr_node tl) 
+  in
+
+
   (*let prioq = P.empty in*)
   (* make a prioq with all nodes in graph set to infinity *) 
   if g.has_node start g then 
@@ -84,8 +97,7 @@ let dij start g (pq : (module PRIOQUEUE with type elt=NodeCompare.t)) =
       match n with 
       | 0 -> Printf.printf "Finished bitches" 
       | _ -> let new_q = one_round pq g in 
-             iterate new_q (n-1)
-    (* HOW TO MAKE TAIL RECURSIVE ????? *) 
+             iterate new_q (n-1) (* make this tail recursive maybe? *)
     in iterate pq graph_size
   else failwith "dij: node unknown";;
 
