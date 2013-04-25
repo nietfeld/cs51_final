@@ -29,7 +29,7 @@ sig
   val add_edge : graph -> node -> node -> float -> graph
     
   (* Return None if node isn't in the graph *)
-  val neighbors : graph -> node -> (node * float) list option
+  val neighbors : graph -> int -> (node * float) list option
 
   (* Return None if node isn't in the graph *)
   val outgoing_edges : graph -> node -> (node * float * node) list option
@@ -82,6 +82,7 @@ struct
 *)
         let gen_between x y () = None
       end)
+
     
   module EdgeDict = Dict.Make(
     struct
