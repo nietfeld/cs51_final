@@ -58,10 +58,6 @@ sig
   val run_tests : unit -> unit
 end
 
-
-(* this would just take some kind of q module *)
-(* An example implementation of the COMPARABLE_AND_GENABLE signature *)
-
 (* the float here is what represents the edge weight *)
 (*
 module IdCompare : ELT with type elt = (int*float) =
@@ -119,11 +115,7 @@ struct
     | [] -> raise QueueEmpty (* might want to do something about this later *)
     | hd::tl -> hd, tl
 
-  let rec lookup (l_id: int) (q: queue) : elt =
-(*    match q with
-    | [] -> raise NotPossible
-    | ((id, dst) as e) :: tail -> if id = a then e else lookup a tail
-*)	
+  let rec lookup (l_id: int) (q: queue) : elt =	
     List.fold_right (fun a y -> if a.id = l_id then a else y) 
       q (raise Impossible)
       
@@ -133,8 +125,9 @@ end
 
 
 (*******************************************************************************)
-(********************    Priority Q using Binary Heap   **************************)
+(********************    Priority Q using Binary Heap   ************************)
 (*******************************************************************************)
+
 module BinaryHeap : PRIOQUEUE =
 struct
   
@@ -420,7 +413,7 @@ struct
 end
 
 (*******************************************************************************)
-(********************    Priority Q using D-ary Heap   **************************)
+(********************    Priority Q using D-ary Heap   *************************)
 (*******************************************************************************)
 
 
@@ -429,7 +422,33 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
+(*
+module FibHeap : PRIOQUEUE
+struct
 
+  module F = Make(
+    struct
+      let min = (0, 0.)
+    end)
+
+  type elt = F.
+    
+  type queue = elt F.fibheap
+
+  let empty = {min = None; n = 0; num_marked = 0}
+
+  let is_empty (q: queue) : bool = q = empty
+
+  let add (e: elt) (q: queue) : queue =
+    F.fibheap_insert q e
+
+  val take : queue -> elt * queue
+    
+  val lookup : int -> queue -> elt
+
+  val run_tests : unit -> unit
+end
+*)
 
 (*
 
