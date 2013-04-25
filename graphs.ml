@@ -42,18 +42,18 @@ sig
   val string_of_graph : graph -> string
 
 end
-  
+   
 module Graph (NA: NODE) : (GRAPH with module N = NA) =
 struct
-  open Order;; 
+  open Order
   module N = NA
   type node = N.node
-      
+    
   (* We'll represent a graph as an edge dictionary:
      dictionary: node -> neighbor set
      Every node in the graph must be a key in the dictionary.
   *)
-
+    
 (* not sure which one is correct here because of the merge *)
   module NeighborSet = Myset.Make(
      struct
@@ -87,7 +87,7 @@ struct
     struct
       type key = node
       type value = NeighborSet.set
-      let compare = N.compare
+      let compare = N.compare 
       let string_of_key = N.string_of_node
       let string_of_value ns = NeighborSet.string_of_set ns
       let gen_key = N.gen
@@ -148,8 +148,8 @@ struct
        num_nodes = g'.num_nodes;
        index_to_node_map = g'.index_to_node_map}
 
-  let neighbors g n : (node * float) list option = 
-    match EdgeDict.lookup g.edges n with
+  let neighbors g node_id : (node * float) list option = 
+    match EdgeDict.lookup g.edges node_id with
       | None -> None
       | Some s -> Some (NeighborSet.fold (fun neigh r -> neigh :: r) [] s)
           
@@ -274,10 +274,10 @@ assert(tester (G.outgoing_edges g3 "h") = ())
 end
 
 module IdGraph = (Graph(struct
-  type node = {name : string; id : int}
-  let compare = fun a b -> Order.int_compare a.id b.id
-  let string_of_node = fun a -> a.name
-  let gen () = {name = "A"; id = 1}
+  type node = int
+  let compare = Order.int_compare
+  let string_of_node = string_of_int
+  let gen () = 0
 (*  let from_edges (es: (node *  float * node) list) : graph =
     List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) empty es *)
 end))
