@@ -103,9 +103,12 @@ let dij start g pq =
             aux d;
             Printf.printf " = %4.1f\n" (float_of_cost st.distances.(d)));;
  *)
+
+(*
+
 let g = test_aho ();;
 let r = dij "A" g My_queue;;
-
+*)
 
 (*
 display_state (fun x y -> Printf.printf "%s!" y) (a,r) "E";; 
