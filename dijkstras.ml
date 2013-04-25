@@ -4,7 +4,6 @@
     - take care of abstracting the dictionary implementation
     - make sure dij uses a prioq
 *)
-
 open Prio_q
 open Array
 
@@ -17,7 +16,7 @@ exception Not_found
                    nodes : 'a array;  (* the actual array of nodes *)
                    m : adj_mat};; (* the costs between any two nodes *)
 
- let create_graph n s = 
+ let create_graphf n s = 
    { ind = 0; size = s; nodes = Array.create s n; 
      m = Array.create_matrix s s Nan } ;;
 

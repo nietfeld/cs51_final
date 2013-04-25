@@ -86,18 +86,18 @@ struct
     
   module EdgeDict = Dict.Make(
     struct
-      type key = node
+      type key = int (*node*)
       type value = NeighborSet.set
-      let compare = N.compare 
-      let string_of_key = N.string_of_node
+      let compare = int_compare
+      let string_of_key = string_of_int
       let string_of_value ns = NeighborSet.string_of_set ns
-      let gen_key = N.gen
-      let gen_key_random = N.gen
-      let gen_key_gt x () = N.gen ()
-      let gen_key_lt x () = N.gen ()
+      let gen_key () = 0
+      let gen_key_random () = 0
+      let gen_key_gt x () = 1
+      let gen_key_lt x () = (-1)
       let gen_key_between x y () = None
-      let gen_value () = NeighborSet.empty
-      let gen_pair () = (gen_key(),gen_value())
+      let gen_value = N.gen
+      let gen_pair () = (gen_key(),gen_value()) 
     end)
     
   module IntNode = Dict.Make(

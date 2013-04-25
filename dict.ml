@@ -42,7 +42,7 @@ sig
   val gen_key_lt : key -> unit -> key
   val gen_key_between : key -> key -> unit -> key option
   val gen_value : unit -> value
-  val gen_pair : unit -> key * value
+  val gen_pair : unit -> key * value 
 end
 
 
