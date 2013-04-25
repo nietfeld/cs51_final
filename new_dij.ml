@@ -35,53 +35,49 @@ let delete_min pq =
 (* loop through neighbors list (assume for now int * float) *) 
 (* FIX CURR_NODE TO BETTER TYPE *) 
 
- let one_round pq my_graph = 
-   let (curr_node, distance_to) = delete_min pq in 
-   let neighbor_list = My_graph.neighbors my_graph curr_node in (* was expecting a graph but got a prioq *)
-   (* for more general elements, use node int compare to get string to an int *)
-   (* update the distance array *) 
-   Array.set dist curr_node distance_to;
-   update_queue pq (curr_node, distance_to) neighbor_list
-
-
-let initialize_queue (n: int) (start: queue) : queue = 
-  let rec add_nodes (pq: queue) (to_add: int) : queue = 
+let initialize_queue (n: int) start =
+  let rec add_nodes pq (to_add: int) =
     if to_add = 0 then pq 
     (* FIX THIS *) 
-    else add_nodes (P.add (to_add, -.00000000004) pq) (to_add - 1)
+    else add_nodes (My_queue.add {id = to_add; tent_dist = infinity} pq) 
+      (to_add - 1)
   (* for starting node, we want the id and dist 0. *) 
-  in add_nodes (P.add (start, 0) P.empty) (n-1)
+  in add_nodes (My_queue.add {id = start; tent_dist = 0.} My_queue.empty) (n-1)
  (* add the starting node with dist 0*) 
 
-let dij start g (pq : (module PRIOQUEUE with type elt=NodeCompare.t)) = 
-  let module P = (val (pq) : PRIOQUEUE with type elt = NodeCompare.t)
-  in
-
-  let rec update_queue (pq : queue) (curr_node: int*float) (neighbor_list : (node * float) list) : queue = 
+let rec update_queue pq (curr_node: int*float) neighbor_list array_dist prev = 
     let (node_id, distance_from_start) = curr_node in 
     match neighbor_list with 
-    | [] -> pq 
-    | (n,e)::tl -> 
-     (* assume look up k is a function into index k of the array *) 
-      (match Array.get dist n.id  with
-     (* CHANGE TO NEW DISTANCE NOTATION *) 
-      | Nan -> 
-       (* look up id n in prioq- is there a way to only do this way? *) 
-	let (k, tent_dist) = pq.lookup n.id in (* give it the queue *)
-	let new_dist = e +. distance_to in 
-	if new_dist < tent_dist then 
-	 (* update priority q *)
-	  (let new_pq = pq.update_key k new_dist in 
-	  (* we have a new shorter path to k through n *) 
-	   Array.set prev k n.id;
-	  (* ARE WE PUTTING IN THE RIGHT THING FOR CURRENT NODE *) 
-	   update_queue new_pq curr_node tl)
-       (* don't update, do next neighbor *) 
-	else update_queue pq curr_node tl
-      | _ -> update_queue pq curr_node tl) 
-  in
+    | None | Some [] -> pq
+    | Some ((n,e)::tl) -> 
+      (* assume look up k is a function into index k of the array *) 
+      (match Array.get array_dist n with
+      (* CHANGE TO NEW DISTANCE NOTATION *) 
+      | infinity -> 
+	(* look up id n in prioq- is there a way to only do this way? *) 
+	let {id=k; tent_dist=d} = My_queue.lookup n pq in (* give it the queue *)
+	let new_dist = e +. distance_from_start in 
+	if new_dist < d then (* update priority q *)
+	  (*** NEED UPDATE KEY METHOD!!!!! (let new_pq = My_queue.update_key k new_dist in *)	   
+	  (Array.set prev k n;
+	   let new_pq = pq in
+	   
+	   update_queue new_pq curr_node (Some tl) array_dist prev)
+	(* don't update, do next neighbor *) 
+	else update_queue pq curr_node (Some tl) array_dist prev
+      | _ -> update_queue pq curr_node (Some tl) array_dist prev)
+	  
 
+ let one_round pq my_graph dist_array prev = 
+   let (curr_node, new_q) = delete_min pq in 
+   let neighbor_list = My_graph.neighbors my_graph curr_node.id in (* was expecting a graph but got a prioq *)
+   (* for more general elements, use node int compare to get string to an int *)
+   (* update the distance array *) 
+   Array.set dist_array curr_node.id curr_node.tent_dist;
+   update_queue pq (curr_node.id, curr_node.tent_dist) neighbor_list dist_array prev
 
+let dij start g pq =
+  
   (*let prioq = P.empty in*)
   (* make a prioq with all nodes in graph set to infinity *) 
   if g.has_node start g then 
