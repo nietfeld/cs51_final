@@ -115,11 +115,7 @@ struct
     | [] -> raise QueueEmpty (* might want to do something about this later *)
     | hd::tl -> hd, tl
 
-  let rec lookup (l_id: int) (q: queue) : elt =
-(*    match q with
-    | [] -> raise NotPossible
-    | ((id, dst) as e) :: tail -> if id = a then e else lookup a tail
-*)	
+  let rec lookup (l_id: int) (q: queue) : elt =	
     List.fold_right (fun a y -> if a.id = l_id then a else y) 
       q (raise Impossible)
       
