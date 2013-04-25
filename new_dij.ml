@@ -6,13 +6,14 @@ exception Not_found
 exception QueueEmpty
 
 (* Need to finish implementing prioq *) 
-module IntListQueue = (ListQueue(NodeCompare) :
-                        PRIOQUEUE with type elt = NodeCompare.t);;
-module IntHeapQueue = (BinaryHeap(NodeCompare) :
-                        PRIOQUEUE with type elt = NodeCompare.t);;
-let list_module = (module IntListQueue : PRIOQUEUE with type elt = NodeCompare.t);;
-let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = NodeCompare.t);; 
+module IntListQueue =  ListQueue(* (ListQueue(IdCompare) :
+                        PRIOQUEUE with type elt = IdCompare.t);; *)
+module IntHeapQueue =  BinaryHeap(*(BinaryHeap(IdCompare) :
+                        PRIOQUEUE with type elt = IdCompare.t);; *)
+(*let list_module = (module IntListQueue : PRIOQUEUE with type elt = IdCompare.t);;
+let heap_module = (module IntHeapQueue : PRIOQUEUE with type elt = IdCompare.t);; *)
 
+module My_graph = IdGraph;;
 
 module My_queue = IntHeapQueue ;;
 
@@ -31,13 +32,12 @@ let delete_min pq =
   (* but we don't want to fail just end try display_state from djikstras.ml *)
   with QueueEmpty -> failwith "done" ;;
 
-
 (* loop through neighbors list (assume for now int * float) *) 
 (* FIX CURR_NODE TO BETTER TYPE *) 
 
- let one_round pq my_graph(* node GRAPH.graph *)  = 
+ let one_round pq my_graph = 
    let (curr_node, distance_to) = delete_min pq in 
-   let neighbor_list = Graph.neighbors n my_graph in 
+   let neighbor_list = My_graph.neighbors my_graph curr_node in (* was expecting a graph but got a prioq *)
    (* for more general elements, use node int compare to get string to an int *)
    (* update the distance array *) 
    Array.set dist curr_node distance_to;

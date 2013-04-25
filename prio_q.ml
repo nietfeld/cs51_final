@@ -2,18 +2,24 @@
 exception TODO
 
 
-<<<<<<< HEAD
-(* add look up funciton to the prioqs *)
-
-type order = Equal | Less | Greater
-=======
+type order = Equal | Less | Greater 
+(*
 module type ELT =
 sig
   type elt
   val compare : elt -> elt -> Order.order
   val to_string : elt -> string
-end
->>>>>>> 7b02289f90ea1e17690269b4db585e7a21a0a19a
+end*)
+
+type elt = {id : int; tent_dist : float};;
+(*
+let compare x y = 
+  let (i1, f1) = x in
+  let (i2, f2) = y in
+  if f1 < f2 then Less else if f1 > f2 then Greater else Eq;;*)
+
+let compare x y = 
+  if x.id < y.id then Less else if x.id > y.id then Greater else raise (Failure "Compare sucks");;
 
 (* this is the Module type that all of the below will return *)
 (* do you think we need to add anything else to this? *)
@@ -21,10 +27,10 @@ module type PRIOQUEUE =
 sig
   exception QueueEmpty
 
-  module E : ELT
+  (*module E : ELT
     
   (* What's being stored in the priority queue *)
-  type elt = E.elt
+  type elt = E.elt*)
     
   (* The queue itself (stores things of type elt) *)
   type queue
@@ -57,6 +63,7 @@ end
 (* An example implementation of the COMPARABLE_AND_GENABLE signature *)
 
 (* the float here is what represents the edge weight *)
+(*
 module IdCompare : ELT with type elt = (int*float) =
 struct
   open Order
@@ -78,7 +85,7 @@ struct
     if higher - lower < 2 then None else Some (higher - 1) *)
 end
 
-
+*)
 
 (*******************************************************************************)
 (********************    Priority Q using Lists   ******************************)
@@ -89,11 +96,10 @@ module ListQueue : PRIOQUEUE =
 struct
   exception QueueEmpty
   exception Impossible
-  
+    (*
   module E = IdCompare
-    
-  open Order
-  type elt = E.elt
+   
+  type elt = E.elt *)
   type queue = elt list
 
   let empty = []
@@ -104,23 +110,23 @@ struct
     match q with
     | [] -> [e]
     | hd::tl ->
-      match E.compare e hd with
+      match compare e hd with
       | Less -> e::q
-      | Greater | Eq -> hd::(add e tl)
+      | Greater | Equal -> hd::(add e tl)
 
   let rec take (q : queue) =
     match q with
     | [] -> raise QueueEmpty (* might want to do something about this later *)
     | hd::tl -> hd, tl
 
-  let rec lookup (id: int) (q: queue) : elt =
+  let rec lookup (l_id: int) (q: queue) : elt =
 (*    match q with
     | [] -> raise NotPossible
     | ((id, dst) as e) :: tail -> if id = a then e else lookup a tail
 *)	
-    List.fold_right (fun (a, b) y -> if id = a then (a,b) else y) 
+    List.fold_right (fun a y -> if a.id = l_id then a else y) 
       q (raise Impossible)
-
+      
   let run_tests () = ()
 end
 
@@ -134,10 +140,10 @@ struct
   
   exception QueueEmpty
   exception Impossible
-  open Order
-  module E = IdCompare
+ 
+  (*module E = IdCompare
     
-  type elt = E.elt
+  type elt = E.elt *)
 
   (* Be sure to read the pset spec for hints and clarifications.
    *
@@ -183,28 +189,28 @@ struct
       match t with
       (* If the tree is just a Leaf, then we end up with a OneBranch *)
       | Leaf e1 ->
-        (match E.compare e e1 with
-         | Eq | Greater -> OneBranch (e1, e)
+        (match compare e e1 with
+         | Equal | Greater -> OneBranch (e1, e)
          | Less -> OneBranch (e, e1))
 
       (* If the tree was a OneBranch, it will now be a TwoBranch *)
       | OneBranch(e1, e2) ->
-        (match E.compare e e1 with
-         | Eq | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
+        (match compare e e1 with
+         | Equal | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
          | Less -> TwoBranch (Even, e, Leaf e2, Leaf e1))
 
       (* If the tree was even, then it will become an odd tree (and the element
        * is inserted to the left *)
       | TwoBranch(Even, e1, t1, t2) ->
-        (match E.compare e e1 with
-         | Eq | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
+        (match compare e e1 with
+         | Equal | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
          | Less -> TwoBranch(Odd, e, add_to_tree e1 t1, t2))
 
       (* If the tree was odd, then it will become an even tree (and the element
        * is inserted to the right *)
       | TwoBranch(Odd, e1, t1, t2) ->
-        match E.compare e e1 with
-        | Eq | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
+        match compare e e1 with
+        | Equal | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
         | Less -> TwoBranch(Even, e, t1, add_to_tree e1 t2)
     in
     (* If the queue is empty, then e is the only Leaf in the tree.
@@ -227,14 +233,14 @@ struct
   type dir = Left | Right | Neither
 
   let compare3 (e1 : elt) (e2 : elt) (e3 : elt) =
-    match E.compare e2 e3 with
-    | Less | Eq ->
-      (match E.compare e1 e2 with
-      | Less | Eq -> Neither
+    match compare e2 e3 with
+    | Less | Equal ->
+      (match compare e1 e2 with
+      | Less | Equal -> Neither
       | Greater -> Left)
     | Greater ->
-      match E.compare e1 e3 with
-      | Less | Eq -> Neither
+      match compare e1 e3 with
+      | Less | Equal -> Neither
       | Greater -> Right
 
   let swap (e : elt) (t : tree) =
@@ -247,8 +253,8 @@ struct
     match t with
     | Leaf e -> t
     | OneBranch (e1,e2) ->
-      (match E.compare e1 e2 with
-      | Less | Eq -> t
+      (match compare e1 e2 with
+      | Less | Equal -> t
       | Greater -> OneBranch(e2,e1))
     | TwoBranch (b,e,t1,t2) ->
       let top1, top2 = get_top t1, get_top t2 in
@@ -322,18 +328,18 @@ struct
   let lookup (id: int) (q: queue) : elt =
     let rec optedlookup (a : int) (t : tree) : elt option = 
       match t with
-      | Leaf (x,y) -> if a = x then Some (x,y) else None
-      | OneBranch ((x1,y1), (x2,y2)) ->
-	(if x1 = a then Some (x1,y1) 
-	 else if x2 = a then Some (x2,y2)
+      | Leaf x -> if a = x.id then Some x else None
+      | OneBranch (x, y) ->
+	(if x.id = a then Some x 
+	 else if y.id = a then Some y
 	 else None)
-      | TwoBranch (b, (x,y), lt, rt) ->
-	if a = x then Some (x,y)
-	else if a > x then optedlookup id rt
-	else optedlookup id lt
+      | TwoBranch (b, x, lt, rt) ->
+	if a = x.id then Some x
+	else if a > x.id then optedlookup a rt
+	else optedlookup a lt
     in
     match q with
-    | Empty -> raise EmptyQueue
+    | Empty -> raise QueueEmpty
     | Tree t ->
       match optedlookup id t with
       | None -> raise Impossible

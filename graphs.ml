@@ -5,7 +5,8 @@ sig
   type node
   val compare : node -> node -> Order.order 
   val string_of_node : node -> string
-  val gen : unit -> node
+  val gen : unit -> node 
+ (* val from_edges : (node * float * node) list -> graph *)
 end
 
 (* A signature for directed graphs with unweighted edges *)
@@ -272,15 +273,13 @@ assert(tester (G.outgoing_edges g3 "h") = ())
 *)
 end
 
-module IdGraph = 
-struct
-  include(Graph(struct
-                  type node = {name : string; id : int}
-                  let compare = fun a b -> Order.int_compare a.id b.id
-                  let string_of_node = fun a -> a.name
-                  let gen () = {name = "A"; id = 1}
-                end))
-  let from_edges (es: (node *  float * node) list) : graph =
-    List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) empty es
-end
+module IdGraph = (Graph(struct
+  type node = {name : string; id : int}
+  let compare = fun a b -> Order.int_compare a.id b.id
+  let string_of_node = fun a -> a.name
+  let gen () = {name = "A"; id = 1}
+(*  let from_edges (es: (node *  float * node) list) : graph =
+    List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) empty es *)
+end))
+
 
