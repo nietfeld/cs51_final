@@ -663,7 +663,8 @@ struct
     ({id=node.key;tent_dist=node.data},q)
       
   let lookup (id: int) (q: queue) : elt =
-    raise Impossible
+    let node = Array.get idarray id in
+    {id=node.key;tent_dist=node.data}
       
   let run_tests () = ()
 end
