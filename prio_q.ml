@@ -19,7 +19,12 @@ let compare x y =
   if f1 < f2 then Less else if f1 > f2 then Greater else Eq;;*)
 
 let compare x y = 
-  if x.id < y.id then Less else if x.id > y.id then Greater else raise (Failure "Compare sucks");;
+  if x.id < y.id then Less else if x.id > y.id then Greater else 
+      (	print_string (string_of_int x.id)(*"x:"^(string_of_int x.id)^" y:"^(string_of_int y.id) *); 
+       print_string (string_of_int y.id);
+       Equal
+       (*raise (Failure "Compare sucks")*))
+;;
 
 (* this is the Module type that all of the below will return *)
 (* do you think we need to add anything else to this? *)
