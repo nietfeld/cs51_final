@@ -36,13 +36,13 @@ sig
   val string_of_key : key -> string
   val string_of_value : value -> string
 
-  val gen_key : unit -> key
+(*  val gen_key : unit -> key
   val gen_key_random : unit -> key
   val gen_key_gt : key -> unit -> key
   val gen_key_lt : key -> unit -> key
   val gen_key_between : key -> key -> unit -> key option
   val gen_value : unit -> value
-  val gen_pair : unit -> key * value 
+  val gen_pair : unit -> key * value *)
 end
 
 
@@ -56,7 +56,7 @@ struct
   let compare x y = if x < y then Less else if x > y then Greater else Eq
   let string_of_key = string_of_int
   let string_of_value v = v
-  let gen_key () = 0
+ (* let gen_key () = 0
   let gen_key_gt x () = x + 1
   let gen_key_lt x () = x - 1
   let gen_key_between x y () = 
@@ -65,6 +65,7 @@ struct
   let gen_key_random =
     let _ = Random.self_init () in
     (fun () -> Random.int 10000)
+ *)
 
   (* returns the nth string in lst, or "cow" n > length of list *)
   let rec lst_n (lst: string list) (n: int) : string =
@@ -79,13 +80,13 @@ struct
   let num_values = List.length possible_values
   (* gen_value will return the string at this current index *)
   let current_index = ref 0
-  let gen_value () =
+  (*let gen_value () =
     let index = !current_index in
     if index >= num_values then
       (current_index := 0; lst_n possible_values index)
     else
       (current_index := index + 1; lst_n possible_values index)
-  let gen_pair () = (gen_key_random(), gen_value())
+  let gen_pair () = (gen_key_random(), gen_value()) *)
 end
 
 
@@ -157,7 +158,7 @@ struct
   let insert_list_reversed (d: dict) (lst: (key * value) list) : dict =
     List.fold_right (fun (k,v) r -> insert r k v) lst d
 
-  (* generates a (key,value) list with n distinct keys in increasing order *)
+ (* (* generates a (key,value) list with n distinct keys in increasing order *)
   let generate_pair_list (size: int) : (key * value) list =
     let rec helper (size: int) (current: key) : (key * value) list =
       if size <= 0 then []
@@ -167,7 +168,7 @@ struct
     in
     helper size (D.gen_key ())
 
-  (* generates a (key,value) list with keys in random order *)
+   (* generates a (key,value) list with keys in random order *)
   let rec generate_random_list (size: int) : (key * value) list =
     if size <= 0 then []
     else 
@@ -212,7 +213,8 @@ struct
     test_choose() ;
     test_member() ;
     test_fold() ;
-    ()
+    () *)
+  let run_tests () = ()
 
 end    
 
@@ -573,7 +575,7 @@ struct
     List.fold_right (fun (k,v) r -> insert r k v) lst d
 
   (* generates a (key,value) list with n distinct keys in increasing order *)
-  let generate_pair_list (size: int) : (key * value) list =
+  (*let generate_pair_list (size: int) : (key * value) list =
     let rec helper (size: int) (current: key) : (key * value) list =
       if size <= 0 then []
       else 
@@ -747,7 +749,8 @@ struct
     test_remove_reverse_order() ;
     test_remove_random_order() ; 
     ()
-
+  *)
+  let run_tests () = ()
 end
 
 

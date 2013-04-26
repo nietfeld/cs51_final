@@ -60,7 +60,7 @@ sig
    * EXPLANATION *)
 
   (* Generate a value of type t. The same t is always returned *)
-  val gen : unit -> t
+ (* val gen : unit -> t
 
   (* Generate a random value of type t. *)
   val gen_random : unit -> t
@@ -73,7 +73,7 @@ sig
 
   (* Generate a t between the two arguments. Return None if no such
    * t exists. *)
-  val gen_between : t -> t -> unit -> t option
+  val gen_between : t -> t -> unit -> t option *)
 end
 
 
@@ -86,7 +86,7 @@ struct
   type t = int
   let compare x y = if x < y then Less else if x > y then Greater else Eq
   let string_of_t = string_of_int
-  let gen () = 0
+  (*let gen () = 0
   let gen_random =
     let _ = Random.self_init () in
     (fun () -> Random.int 10000)
@@ -94,7 +94,7 @@ struct
   let gen_lt x () = x - 1
   let gen_between x y () = 
     let (lower, higher) = (min x y, max x y) in
-    if higher - lower < 2 then None else Some (higher - 1)
+    if higher - lower < 2 then None else Some (higher - 1) *)
 end
 
 
@@ -169,7 +169,7 @@ struct
   let insert_list (d: set) (lst: elt list) : set = 
     List.fold_left (fun r k -> insert k r) d lst
 
-  let rec generate_random_list (size: int) : elt list =
+  (*let rec generate_random_list (size: int) : elt list =
     if size <= 0 then []
     else (C.gen_random()) :: (generate_random_list (size - 1))
 
@@ -217,7 +217,8 @@ struct
     test_fold () ;
     test_is_empty () ;
     test_singleton () ;
-    ()
+    () *)
+  let run_tests () = ();
 
 end
 
