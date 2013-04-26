@@ -4,7 +4,8 @@ open Order
 module type GRAPH =
 sig 
   type node = int
-  type graph
+
+  type graph 
     
   val empty : graph
 
@@ -26,7 +27,11 @@ sig
     
   val has_node : graph -> node -> bool
 
+  val num_nodes : graph -> int
+
   val string_of_graph : graph -> string
+
+  val from_edges : (node * float * node) list -> graph
 
 end
    
@@ -138,6 +143,9 @@ struct
     if g.num_nodes = 0 then None else
       let r = Random.int (g.num_nodes) in
         IntNode.lookup g.index_to_node_map r *)
+
+  let num_nodes g =
+    g.num_nodes
 
   let string_of_graph g = 
     "Graph: " ^ (EdgeDict.string_of_dict g.edges)
