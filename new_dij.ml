@@ -8,7 +8,7 @@ exception QueueEmpty
 (* Need to finish implementing prioq *) 
 module IntListQueue =  ListQueue
 module IntHeapQueue =  BinaryHeap
-module My_graph = IdGraph
+module My_graph = Graph
 
 (* right now -- would have to change this when we test *)
 module My_queue = IntHeapQueue
@@ -52,9 +52,7 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
       else update_queue pq curr_node (Some tl) dist prev
     | _ -> update_queue pq curr_node (Some tl) dist prev)
 
-
-
-	  
+ 
 let one_round pq my_graph dist_array prev = 
   let (curr_node, new_q) = delete_min pq in 
   let neighbor_list = My_graph.neighbors my_graph curr_node.id in 
@@ -63,25 +61,27 @@ let one_round pq my_graph dist_array prev =
   Array.set dist_array curr_node.id curr_node.tent_dist; (* update dist array*)
   update_queue pq (curr_node.id, curr_node.tent_dist) neighbor_list dist_array prev
 
-let dij start g pq =
+open Graph
+
+let dij start (g : graph) pq =
   (*let prioq = P.empty in*)
   (* make a prioq with all nodes in graph set to infinity *) 
-  if g.has_node start g then 
+(*  if g.has_node start g then *)
     (* MAKE FUNCTION *) 
-    let graph_size = g.number_nodes in
+    let graph_size = g.num_nodes in
     (* make distance and prev arrays *)
     (* write way to have them all be in scope *) 
-    let dist = Array.make graph_size Nan in 
-    let prev = Array.make graph_size -1 in 
+    let dist = Array.make graph_size infinity in 
+    let prev = Array.make graph_size (-1) in 
     let prioq = initialize_queue graph_size start in 
     (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
-    let rec iterate (pq: queue) (n: int)  = 
+    let rec iterate pq n = 
       match n with 
       | 0 -> Printf.printf "Finished bitches" 
       | _ -> let new_q = one_round pq g in 
              iterate new_q (n-1) (* make this tail recursive maybe? *)
     in iterate pq graph_size
-  else failwith "dij: node unknown";;
+(*  else failwith "dij: node unknown";; *)
 
 
 (* displaying the results here *)
