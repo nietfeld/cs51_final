@@ -44,7 +44,7 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
       if new_dist < d then 
 	(Array.set prev n node_id; 
 	 let new_pq =
-	   My_queue.update n new_dist pq in (* k *)
+	   My_queue.update n new_dist pq in 
 	 update_queue new_pq curr_node (Some tl) dist prev)
       (* don't update, do next neighbor *) 
       else update_queue pq curr_node (Some tl) dist prev)))
@@ -59,6 +59,8 @@ let one_round (pq : queue) (my_graph : graph) (dist : float array)
   update_queue new_q (curr_node.id, curr_node.tent_dist) neighbor_list dist prev
 
 
+
+(* helper functions for printing out the result *)
 let rec reconstruct_help (end_node: int) (start_node : int) (prev: int array) : string =
   if start_node = end_node then ""
   else 
@@ -102,22 +104,34 @@ let dij (start : node) (g : graph) (pq : queue) =
       print_results dist prev graph_size start
   else failwith "dij: node unknown";; 
 
-(*
-let g = My_graph.from_edges [(1,1.,2);(1,7.,3);(1,4.,5);(2,5.,3);(2,2.,5);
-		    (5,3.,4);(4,6.,3)];; *)
 
-(*
+let pq = My_queue.empty
+
 let g = My_graph.from_edges [(0,1.,1); (0,2.,2)];;
 
-let pq = My_queue.empty
-
 let r = dij 0 g pq;;
 
-this one is working fine
+(* Correct output: 
+0->0(0.) 
+0->1(1.) 
+0->2(2.) 
 *)
 
-let g = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
-			     (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
-let pq = My_queue.empty
 
-let r = dij 0 g pq;;
+let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
+			     (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
+
+let r1 = dij 0 g1 pq;;
+
+(* Correct output: 
+0->0(0.) 
+0->1(1.) 
+0->2(2.) 
+0->2->3(6.) 
+0->2->4(5.) 
+*)
+
+
+let g2 = My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); (4, 6.1, 3); (3, 4.1, 1); (0, 5.1, 3); (0, 8.1, 5); (4, 7.1, 5)];;
+
+let r2 = dij 0 g2 pq;;
