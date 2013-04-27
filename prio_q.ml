@@ -6,14 +6,10 @@ so can't really do update *)
 open Order
 exception TODO
 
-type elt = {id : int; tent_dist : float };;
+type elt = {id : int; mutable tent_dist : float };;
 
 let compare x y = 
-  if x.id < y.id then Less else if x.id > y.id then Greater else 
-      (	print_string (string_of_int x.id)(*"x:"^(string_of_int x.id)^" y:"^(string_of_int y.id) *); 
-       print_string (string_of_int y.id);
-       Eq
-       (*raise (Failure "Compare sucks")*))
+  if x.tent_dist < y.tent_dist then Less else if x.tent_dist > y.tent_dist then Greater else Eq
 ;;
 
 module type PRIOQUEUE =
@@ -44,6 +40,8 @@ sig
   (* this takes the id of the element to be updated and the new distance
    and returns the updated queue *)
   val update : int -> float -> queue -> queue
+
+  val delete : int -> queue -> queue
 
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
@@ -76,18 +74,37 @@ struct
 
   let rec take (q : queue) =
     match q with
-    | [] -> raise QueueEmpty (* might want to do something about this later *)
+    (* NEED A THIRD CASE??? *) 
+    (* | hd::[] -> (hd, None) *) 
+    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
     | hd::tl -> hd, tl
 
-  let rec lookup (l_id: int) (q: queue) : elt =	
-    List.fold_right (fun a y -> if a.id = l_id then a else y) 
-      q (print_string "in list_queue"; raise Impossible)
+  let print_queue (q: queue) : unit = 
+    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
+    
 
-  let rec update (id: int) (new_dist: float) (q: queue) : queue =
-    let elt = lookup id q in
-    elt.tent_dist = new_dist; q
+  let lookup (l_id: int) (q: queue) : elt =	
+    print_queue q;
+    List.fold_right (fun a y -> if a.id = l_id then a else y) 
+   q  {id = (-1); tent_dist = 5000000.9} (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
+    
+
+  let a = [{id = 1; tent_dist = 1.}; {id = 2; tent_dist = 2.}; {id = 3; tent_dist = 3.}];;
+  
+
+  let update (a: int) (new_dist: float) (q: queue) : queue =
+    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
+    add {id = a; tent_dist = new_dist} new_queue
+
+  let delete (a: int) (q: queue) : queue = 
+    List.fold_left (fun x y -> if y.id = a then x else y::x) [] q
+
       
-  let run_tests () = ()
+  let run_tests () = 
+    () 
+      
+ 
+ 
 end
 
 
@@ -303,14 +320,26 @@ struct
     | Empty -> raise QueueEmpty
     | Tree t ->
       match optedlookup id t with
-      | None -> print_string (string_of_int id); raise Impossible
+      | None -> print_string "This is the id being looked up"; print_string (string_of_int id); raise Impossible
       | Some e -> e
-	  
+(*
+
+  let rec delete (id: int) (pq: queue) : queue =
+    let rec find_id (a: int) (t: tree) : tree = 
+      match t with 
+      (* keep track of parent *) 
+      | Leaf x -> if a = x.id then  (* DEPENDS ON PARENT OF X*) else raise (Failure "can't find x")
+      | OneBranch (x, y) -> if x.id = a then 
+*)
+
+
+  (* We know this is broken *) 
   let rec update (id: int) (new_dist: float) (q: queue) : queue =
     let elt = lookup id q in
-    elt.tent_dist = new_dist; q
+    elt.tent_dist <- new_dist; q
       
-	    
+  (* THIS IS NOT RIGHT *)
+  let delete (n : int) (q: queue) : queue = Empty
 (*
   let test_get_top () =
     let x = E.generate () in
