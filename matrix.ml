@@ -150,16 +150,13 @@ struct
    | [] -> None
    | _ -> Some list
      
-     
  (* Return None if node isn't in the graph *)
  (* val outgoing_edges : graph -> node -> (node * float * node) list option*)
-     
   
   let num_nodes g = g.ind
     
   let string_of_graph g = ""
-    
-    
+	
   let sized nfnlist =
     let all = List.fold_left (fun l (src, wt, dst) -> src :: dst :: l) [] nfnlist in
     let rec unique nodes =
@@ -170,8 +167,7 @@ struct
 	if List.mem head newtail then newtail else head :: newtail
     in
     List.length (unique all)
-      
-      
+            
   let from_edges es =
     let s = sized es in
     let g =
