@@ -35,16 +35,19 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
   | None | Some [] -> pq
   | Some ((n,e)::tl) -> 
     (match Array.get dist n with
-    | infinity ->  
-      let {id=k; tent_dist=d} = My_queue.lookup n pq in
-      let new_dist = e +. distance_from_start in 
+    | infinity ->   
+        (match (My_queue.lookup n pq) with
+	| None ->  pq
+	| Some {id=k; tent_dist=d} -> 
+      (let new_dist = e +. distance_from_start in 
+      print_string ("N: "^(string_of_int n)^"K: "^(string_of_int k)^"D:  "^(string_of_float d));
       if new_dist < d then 
-	(Array.set prev n node_id;
+	(Array.set prev n node_id; 
 	 let new_pq =
-	   My_queue.update k new_dist pq in 
+	   My_queue.update n new_dist pq in (* k *)
 	 update_queue new_pq curr_node (Some tl) dist prev)
       (* don't update, do next neighbor *) 
-      else update_queue pq curr_node (Some tl) dist prev)
+      else update_queue pq curr_node (Some tl) dist prev)))
 
 let one_round (pq : queue) (my_graph : graph) (dist : float array) 
     (prev : int array) : queue = 
@@ -56,30 +59,21 @@ let one_round (pq : queue) (my_graph : graph) (dist : float array)
   update_queue new_q (curr_node.id, curr_node.tent_dist) neighbor_list dist prev
 
 
-(*
-let print_results (dist : float array) (prev: int array) (graph_size: int) (start_node: int) : unit =
-  print_string "I'm printing this out now!!\n";
-  let rec helper_dist (dist: float array) (n: int) =
-    if n = graph_size then Printf.printf "Done!"
-    else (print_string ((string_of_int start_node)^"->"^(string_of_int n)^"("^(string_of_float (Array.get dist n))^ ") \n");
-	  helper_dist dist (n+1))
-  in
-  helper_dist dist 0  *)
-
-
 let rec reconstruct_help (end_node: int) (start_node : int) (prev: int array) : string =
-  if start_node = end_node then "I'm done"
-  else "Ya"
-(*
-   (Array.get prev end_node)*)
-
-
+  if start_node = end_node then ""
+  else 
+    let last = (Array.get prev end_node) in
+    if last = start_node then ""
+    else (("->"^(string_of_int last))^(reconstruct_help last start_node prev))
 
 let print_results (dist : float array) (prev: int array) (graph_size: int) (start_node: int) : unit =
-  print_string "I'm printing this out now!!\n";
+  print_string "Here is the whole prev array\n";
+  print_string (List.fold_left (fun x y -> ((string_of_int y)^x)) "" (Array.to_list prev));
+  print_string "\n Done \n";
   let rec helper_dist (dist: float array) (n: int) =
     if n = graph_size then Printf.printf "Done!"
-    else (print_string ((string_of_int start_node)^"->"^(* here is where we would print out the in the middle *)(reconstruct_help n start_node prev)^"("^(string_of_float (Array.get dist n))^ ") \n");
+    else (print_string ((string_of_int start_node)^(reconstruct_help n start_node prev)^"->"^
+			   (string_of_int n)^"("^(string_of_float (Array.get dist n))^ ") \n");
 	  helper_dist dist (n+1))
   in
   helper_dist dist 0 
