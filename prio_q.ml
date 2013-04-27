@@ -423,43 +423,46 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
-(*
-module FibHeap : PRIOQUEUE
+
+open Fibsource
+
+module IntOrd =
+struct
+  type t = int
+  let compare a b = if a < b then (-1) else if a > b then 1 else 0
+  let min = 0
+end
+
+type elt = {id: int; tent_dist: float}
+
+(* INTIALIZED ARRAY WITH NODES OF DISTANCE INFINITY *)
+
+module FibHeap = 
 struct
 
-  module F = Make(
-    struct
-      let min = (0, 0.)
-    end)
+  exception Impossible
+  module F = Make(IntOrd)
+  open F
 
-  type elt = F.
+  type queue = float fibheap
+   
+  let empty = fibheap_create ()
     
-  type queue = elt F.fibheap
-
-  let empty = {min = None; n = 0; num_marked = 0}
-
+  let idarray = Array.make max_int (fibnode_new 0 infinity)
+    
   let is_empty (q: queue) : bool = q = empty
-
-  let add (e: elt) (q: queue) : queue =
-    F.fibheap_insert q e
-
-  val take : queue -> elt * queue
     
-  val lookup : int -> queue -> elt
-
-  val run_tests : unit -> unit
+  let add (e: elt) (q: queue) =
+    let node = fibnode_new e.id e.tent_dist in
+    fibheap_insert q node; Array.set idarray e.id node; q
+      
+  let take (q: queue) : elt * queue =
+    let node = F.fibheap_extract_min q in
+    ({id=node.key;tent_dist=node.data},q)
+      
+  let lookup (id: int) (q: queue) : elt =
+    let node = Array.get idarray id in
+    {id=node.key;tent_dist=node.data}
+      
+  let run_tests () = ()
 end
-*)
-
-
-
-(*
-
-(* make the actual modules -- something along these lines *)
-module IntTree = BinSTree(IntCompare)
-
-(* Please read the entirety of "testing.ml" for an explanation of how
- * testing works.
- *)
-let _ = IntTree.run_tests ()
-*)
