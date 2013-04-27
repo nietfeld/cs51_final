@@ -433,8 +433,6 @@ struct
   let min = 0
 end
 
-type elt = {id: int; tent_dist: float}
-
 (* INTIALIZED ARRAY WITH NODES OF DISTANCE INFINITY *)
 
 module FibHeap = 
@@ -448,13 +446,13 @@ struct
    
   let empty = fibheap_create ()
     
-  let idarray = Array.make max_int (fibnode_new 0 infinity)
+  let idarray s = Array.make s (fibnode_new 0 infinity)
     
   let is_empty (q: queue) : bool = q = empty
     
   let add (e: elt) (q: queue) =
     let node = fibnode_new e.id e.tent_dist in
-    fibheap_insert q node; Array.set idarray e.id node; q
+    fibheap_insert q node; q
       
   let take (q: queue) : elt * queue =
     let node = F.fibheap_extract_min q in
