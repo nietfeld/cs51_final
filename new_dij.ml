@@ -72,7 +72,6 @@ let one_round (pq : queue) (my_graph : graph) (dist_array : float array)
   update_queue pq (curr_node.id, curr_node.tent_dist) neighbor_list dist_array prev
 
 
-
 let dij (start : node) (g : graph) (pq : queue) =
   (* make a prioq with all nodes in graph set to infinity *) 
   if has_node g start then 
@@ -94,7 +93,7 @@ let dij (start : node) (g : graph) (pq : queue) =
 
 (* displaying the results here *)
 (* Will update for better display *) 
- (*let display_state f (g,st)  dest = 
+(*let display_state f (g,st)  dest = 
    if belongs_to dest g then 
       let d = index dest g in
         let rec aux is = 
@@ -110,9 +109,13 @@ let dij (start : node) (g : graph) (pq : queue) =
           else (
             aux d;
             Printf.printf " = %4.1f\n" (float_of_cost st.distances.(d)));;
+*)
+
+
+(* Invariants that our graphs should meet:
+   - no
+
  *)
-
-
 
 
 let g = My_graph.from_edges [(1,1.,2);(1,7.,3);(1,4.,5);(2,5.,3);(2,2.,5);
