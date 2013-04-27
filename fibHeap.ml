@@ -626,44 +626,45 @@ module Make (Ord : KeyOrderType) = struct
 *)
 end;;
 
-(*
-module A : KeyOrderType =
+
+
+module IntOrd =
 struct
   type t = int
   let compare a b = if a < b then (-1) else if a > b then 1 else 0
   let min = 0
 end
-*)
+
+type elt = {id: int; tent_dist: float}
+
+(* INTIALIZED ARRAY WITH NODES OF DISTANCE INFINITY *)
 
 module FibHeap = 
 struct
-  
-  module F = Make(
-    struct
-      type t = int
-      let compare a b = if a < b then (-1) else if a > b then 1 else 0
-      let min = 0
-    end)
-    
+
+  exception Impossible
+  module F = Make(IntOrd)
   open F
-    
-  type elt = (int * float)
-    
+
   type queue = float fibheap
-    
+   
   let empty = fibheap_create ()
-
+    
+  let idarray = Array.make max_int (fibnode_new 0 infinity)
+    
   let is_empty (q: queue) : bool = q = empty
-
-  let add ((id, dist): elt) (q: queue) =
-    fibheap_insert q (create_fibnode dist id)
-
+    
+  let add (e: elt) (q: queue) =
+    let node = fibnode_new e.id e.tent_dist in
+    fibheap_insert q node; Array.set idarray e.id node; q
+      
   let take (q: queue) : elt * queue =
     let node = F.fibheap_extract_min q in
-    ((!node.key), (!node.data))
-
+    ({id=node.key;tent_dist=node.data},q)
+      
   let lookup (id: int) (q: queue) : elt =
-    raise Impossible
-
+    let node = Array.get idarray id in
+    {id=node.key;tent_dist=node.data}
+      
   let run_tests () = ()
 end
