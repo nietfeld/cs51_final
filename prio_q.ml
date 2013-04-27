@@ -72,19 +72,16 @@ struct
       | Less -> e::q
       | Greater | Eq -> hd::(add e tl)
 
-  let rec take (q : queue) =
-    match q with
-    (* NEED A THIRD CASE??? *) 
-    (* | hd::[] -> (hd, None) *) 
-    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
-    | hd::tl -> hd, tl
-
   let print_queue (q: queue) : unit = 
     List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
+  let rec take (q : queue) =
+    print_string "Current:"; print_queue q; print_string "\n ******** \n";
+    (match q with
+    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
+    | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt =	
-    print_queue q;
     List.fold_right (fun a y -> if a.id = l_id then a else y) 
    q  {id = (-1); tent_dist = 5000000.9} (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
     
@@ -99,14 +96,10 @@ struct
   let delete (a: int) (q: queue) : queue = 
     List.fold_left (fun x y -> if y.id = a then x else y::x) [] q
 
-      
   let run_tests () = 
     () 
-      
- 
  
 end
-
 
 
 (*******************************************************************************)
@@ -426,11 +419,14 @@ end
 (*
 open Fibsource
 
-module IntOrd =
+module EltOrd =
 struct
-  type t = int
-  let compare a b = if a < b then (-1) else if a > b then 1 else 0
-  let min = 0
+  type t = elt
+  let compare a b =
+    if a.tent_dist < b.tent_dist then (-1)
+    else if a.tent_dist > b.tent_dist then 1
+    else 0
+  let min = {id=0;tent_dist=0.}
 end
 
 (* INTIALIZED ARRAY WITH 1000 NODES OF DISTANCE INFINITY *)
@@ -439,28 +435,28 @@ module FibHeap : PRIOQUEUE =
 struct
   exception QueueEmpty
   exception Impossible
-  module F = Make(IntOrd)
+  module F = Make(EltOrd)
   open F
 
   type queue = float fibheap
    
   let empty = fibheap_create ()
     
-  let idarray = Array.make 1000 (fibnode_new 0 infinity)
+  let idarray = Array.make 10 (fibnode_new {id=0;tent_dist=0.} infinity)
     
   let is_empty (q: queue) : bool = q = empty
     
   let add (e: elt) (q: queue) =
-    let node = fibnode_new e.id e.tent_dist in
+    let node = fibnode_new e e.tent_dist in print_string "!!!";
     fibheap_insert q node; Array.set idarray e.id node;q
       
   let take (q: queue) : elt * queue =
-    let node = F.fibheap_extract_min q in
-    ({id=node.key;tent_dist=node.data},q)
+    let node = fibheap_extract_min q in
+    ({id=node.key.id;tent_dist=node.data},q)
       
   let lookup (id: int) (q: queue) : elt =
     let node = Array.get idarray id in
-    {id=node.key;tent_dist=node.data}
+    {id=node.key.id;tent_dist=node.data}
   
   let delete (id: int) (q: queue) : queue =
     let node = Array.get idarray id in
@@ -470,6 +466,30 @@ struct
     let node = Array.get idarray id in
     fibheap_delete q node ; add {id=id;tent_dist=d} q
       
+(*
   let run_tests () = 
 end
+*)
+=======
+  let run_tests () =
+    let a = empty in
+    let _ = add {id=1;tent_dist=1.} a in
+    let _ = add {id=2;tent_dist=2.} a in
+    let _ = add {id=3;tent_dist=3.} a in
+    let _ = add {id=4;tent_dist=4.} a in
+    let _ = add {id=5;tent_dist=5.} a in
+    let _ = add {id=6;tent_dist=6.} a in
+    let _ = add {id=7;tent_dist=7.} a in
+    assert(fibheap_print string_of_float Format.std_formatter a = ());
+    assert(take a = ({id=1;tent_dist=1.}, a));(*
+    assert(take a = ({id=2;tent_dist=2.}, a));
+    assert(take a = ({id=3;tent_dist=3.}, a));
+    assert(take a = ({id=4;tent_dist=4.}, a));
+    assert(take a = ({id=5;tent_dist=5.}, a));
+    assert(take a = ({id=6;tent_dist=6.}, a));
+    assert(take a = ({id=7;tent_dist=7.}, a))*)
+			
+end;;
+
+FibHeap.run_tests ();;
 *)
