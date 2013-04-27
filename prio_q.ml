@@ -433,11 +433,11 @@ struct
   let min = 0
 end
 
-(* INTIALIZED ARRAY WITH NODES OF DISTANCE INFINITY *)
+(* INTIALIZED ARRAY WITH 1000 NODES OF DISTANCE INFINITY *)
 
-module FibHeap = 
+module FibHeap : PRIOQUEUE = 
 struct
-
+  exception QueueEmpty
   exception Impossible
   module F = Make(IntOrd)
   open F
@@ -446,13 +446,13 @@ struct
    
   let empty = fibheap_create ()
     
-  let idarray s = Array.make s (fibnode_new 0 infinity)
+  let idarray = Array.make 1000 (fibnode_new 0 infinity)
     
   let is_empty (q: queue) : bool = q = empty
     
   let add (e: elt) (q: queue) =
     let node = fibnode_new e.id e.tent_dist in
-    fibheap_insert q node; q
+    fibheap_insert q node; Array.set idarray e.id node;q
       
   let take (q: queue) : elt * queue =
     let node = F.fibheap_extract_min q in
@@ -461,7 +461,15 @@ struct
   let lookup (id: int) (q: queue) : elt =
     let node = Array.get idarray id in
     {id=node.key;tent_dist=node.data}
+  
+  let delete (id: int) (q: queue) : queue =
+    let node = Array.get idarray id in
+    fibheap_delete q node; q
       
-  let run_tests () = ()
+  let update (id: int) (d: float) (q: queue) : queue =
+    let node = Array.get idarray id in
+    fibheap_delete q node ; add {id=id;tent_dist=d} q
+      
+  let run_tests () = 
 end
 *)

@@ -11,6 +11,13 @@ type 'a graph = { mutable ind : int;  (* ind is how many nodes have been added*)
                   nodes : 'a array;  (* the actual array of nodes *)
                   m : adj_mat};; (* the costs between any two nodes *)
 
+let print_matrix (g : int graph) : unit = 
+  let rec helper_print g (n: int) = 
+    if n = g.size then () 
+    else (print_string (string_of_float g.m.(n).(n)); helper_print g (n+1)) 
+  in helper_print g 0 
+
+
 (* create an s by s matrix, initialized to infinity. *) 
 (* array of nodes initialized to n *)
 let create_graph n (s: int) = 
@@ -50,36 +57,12 @@ let neighbors (n: int) (g: int graph) : (int * float) list =
       going *)
    else (g.nodes.(g.ind) <- n; g.ind <- g.ind + 1) ;;
  
+ (* MAKE THIS NOT TAKE A G *) 
  let add_edge e1 e2 c g = 
    try
      let x = index e1 g and y = index e2 g in 
      g.m.(x).(y) <- c 
    with Not_found -> failwith "node does not exist" ;;
-
-
-let test_aho () = 
-  let g = create_graph "nothing" 5 in 
-  List.iter (fun x -> add_node x g) ["A"; "B"; "C"; "D"; "E"];
-  List.iter (fun (a,b,c) -> add_edge a b c g) 
-    ["A","B",10.;
-     "A","D",30.;
-     "A","E",100.0;
-     "B","C",50.;
-     "C","E",10.;
-     "D","C",20.;
-     "D","E",60.];
-  for i=0 to g.ind -1 do g.m.(i).(i) <- 0.0 done;
-  g;;
-
-let a = test_aho();;
-
-
-
-(*
-
-val a : string graph =
-  {ind=5; size=5; nodes=[|"A"; "B"; "C"; "D"; "E"|];
-   m=[|[|Cost 0; Cost 10; Nan; Cost 30; Cost ...|]; ...|]} *)
 
 open Graphs
 
