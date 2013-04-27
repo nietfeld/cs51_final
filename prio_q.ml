@@ -1,41 +1,20 @@
 (* Here is where the module signature for the priority q module will go and all the functors that implement it *)
+
+(* problem with this value since its not mutable 
+so can't really do update *)
+
+open Order
 exception TODO
 
-
-type order = Equal | Less | Greater 
-(*
-module type ELT =
-sig
-  type elt
-  val compare : elt -> elt -> Order.order
-  val to_string : elt -> string
-end*)
-
-type elt = {id : int; tent_dist : float};;
-(*
-let compare x y = 
-  let (i1, f1) = x in
-  let (i2, f2) = y in
-  if f1 < f2 then Less else if f1 > f2 then Greater else Eq;;*)
+type elt = {id : int; mutable tent_dist : float };;
 
 let compare x y = 
-  if x.id < y.id then Less else if x.id > y.id then Greater else 
-      (	print_string (string_of_int x.id)(*"x:"^(string_of_int x.id)^" y:"^(string_of_int y.id) *); 
-       print_string (string_of_int y.id);
-       Equal
-       (*raise (Failure "Compare sucks")*))
+  if x.tent_dist < y.tent_dist then Less else if x.tent_dist > y.tent_dist then Greater else Eq
 ;;
 
-(* this is the Module type that all of the below will return *)
-(* do you think we need to add anything else to this? *)
 module type PRIOQUEUE =
 sig
   exception QueueEmpty
-
-  (*module E : ELT
-    
-  (* What's being stored in the priority queue *)
-  type elt = E.elt*)
     
   (* The queue itself (stores things of type elt) *)
   type queue
@@ -58,35 +37,16 @@ sig
   (* Given an id, gives back the corresponding node with that id *)
   val lookup : int -> queue -> elt
 
+  (* this takes the id of the element to be updated and the new distance
+   and returns the updated queue *)
+  val update : int -> float -> queue -> queue
+
+  val delete : int -> queue -> queue
+
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
   val run_tests : unit -> unit
 end
-
-(* the float here is what represents the edge weight *)
-(*
-module IdCompare : ELT with type elt = (int*float) =
-struct
-  open Order
-  type elt = (int*float)
-  let compare x y = 
-    let (i1, f1) = x in
-    let (i2, f2) = y in
-    if f1 < f2 then Less else if f1 > f2 then Greater else Eq
-
-  let to_string p =
-    let (x,y) = p in 
-     (string_of_int x)^"*"^(string_of_float y)
-
- (* let generate () = (0, 0.0)
-  let generate_gt x () = x + 1
-  let generate_lt x () = x - 1
-  let generate_between x y () =
-    let (lower, higher) = (min x y, max x y) in
-    if higher - lower < 2 then None else Some (higher - 1) *)
-end
-
-*)
 
 (*******************************************************************************)
 (********************    Priority Q using Lists   ******************************)
@@ -97,10 +57,7 @@ module ListQueue : PRIOQUEUE =
 struct
   exception QueueEmpty
   exception Impossible
-    (*
-  module E = IdCompare
-   
-  type elt = E.elt *)
+    
   type queue = elt list
 
   let empty = []
@@ -113,18 +70,41 @@ struct
     | hd::tl ->
       match compare e hd with
       | Less -> e::q
-      | Greater | Equal -> hd::(add e tl)
+      | Greater | Eq -> hd::(add e tl)
 
   let rec take (q : queue) =
     match q with
-    | [] -> raise QueueEmpty (* might want to do something about this later *)
+    (* NEED A THIRD CASE??? *) 
+    (* | hd::[] -> (hd, None) *) 
+    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
     | hd::tl -> hd, tl
 
-  let rec lookup (l_id: int) (q: queue) : elt =	
+  let print_queue (q: queue) : unit = 
+    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
+    
+
+  let lookup (l_id: int) (q: queue) : elt =	
+    print_queue q;
     List.fold_right (fun a y -> if a.id = l_id then a else y) 
-      q (raise Impossible)
+   q  {id = (-1); tent_dist = 5000000.9} (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
+    
+
+  let a = [{id = 1; tent_dist = 1.}; {id = 2; tent_dist = 2.}; {id = 3; tent_dist = 3.}];;
+  
+
+  let update (a: int) (new_dist: float) (q: queue) : queue =
+    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
+    add {id = a; tent_dist = new_dist} new_queue
+
+  let delete (a: int) (q: queue) : queue = 
+    List.fold_left (fun x y -> if y.id = a then x else y::x) [] q
+
       
-  let run_tests () = ()
+  let run_tests () = 
+    () 
+      
+ 
+ 
 end
 
 
@@ -188,27 +168,27 @@ struct
       (* If the tree is just a Leaf, then we end up with a OneBranch *)
       | Leaf e1 ->
         (match compare e e1 with
-         | Equal | Greater -> OneBranch (e1, e)
+         | Eq | Greater -> OneBranch (e1, e)
          | Less -> OneBranch (e, e1))
 
       (* If the tree was a OneBranch, it will now be a TwoBranch *)
       | OneBranch(e1, e2) ->
         (match compare e e1 with
-         | Equal | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
+         | Eq | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
          | Less -> TwoBranch (Even, e, Leaf e2, Leaf e1))
 
       (* If the tree was even, then it will become an odd tree (and the element
        * is inserted to the left *)
       | TwoBranch(Even, e1, t1, t2) ->
         (match compare e e1 with
-         | Equal | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
+         | Eq | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
          | Less -> TwoBranch(Odd, e, add_to_tree e1 t1, t2))
 
       (* If the tree was odd, then it will become an even tree (and the element
        * is inserted to the right *)
       | TwoBranch(Odd, e1, t1, t2) ->
         match compare e e1 with
-        | Equal | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
+        | Eq | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
         | Less -> TwoBranch(Even, e, t1, add_to_tree e1 t2)
     in
     (* If the queue is empty, then e is the only Leaf in the tree.
@@ -232,13 +212,13 @@ struct
 
   let compare3 (e1 : elt) (e2 : elt) (e3 : elt) =
     match compare e2 e3 with
-    | Less | Equal ->
+    | Less | Eq ->
       (match compare e1 e2 with
-      | Less | Equal -> Neither
+      | Less | Eq -> Neither
       | Greater -> Left)
     | Greater ->
       match compare e1 e3 with
-      | Less | Equal -> Neither
+      | Less | Eq -> Neither
       | Greater -> Right
 
   let swap (e : elt) (t : tree) =
@@ -252,7 +232,7 @@ struct
     | Leaf e -> t
     | OneBranch (e1,e2) ->
       (match compare e1 e2 with
-      | Less | Equal -> t
+      | Less | Eq -> t
       | Greater -> OneBranch(e2,e1))
     | TwoBranch (b,e,t1,t2) ->
       let top1, top2 = get_top t1, get_top t2 in
@@ -340,10 +320,26 @@ struct
     | Empty -> raise QueueEmpty
     | Tree t ->
       match optedlookup id t with
-      | None -> raise Impossible
+      | None -> print_string "This is the id being looked up"; print_string (string_of_int id); raise Impossible
       | Some e -> e
-	  
-	    
+(*
+
+  let rec delete (id: int) (pq: queue) : queue =
+    let rec find_id (a: int) (t: tree) : tree = 
+      match t with 
+      (* keep track of parent *) 
+      | Leaf x -> if a = x.id then  (* DEPENDS ON PARENT OF X*) else raise (Failure "can't find x")
+      | OneBranch (x, y) -> if x.id = a then 
+*)
+
+
+  (* We know this is broken *) 
+  let rec update (id: int) (new_dist: float) (q: queue) : queue =
+    let elt = lookup id q in
+    elt.tent_dist <- new_dist; q
+      
+  (* THIS IS NOT RIGHT *)
+  let delete (n : int) (q: queue) : queue = Empty
 (*
   let test_get_top () =
     let x = E.generate () in
