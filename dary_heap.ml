@@ -41,7 +41,8 @@ struct
        (* THIS IS WRONG BUT WANT IT TO COMPILE *) 
       | Heap (el, hl) -> Heap (e1, h1)
 	(*(match h1 with 
-	| Leaf -> Heap (e, h)
+	(* always filling in 
+	| Leaf -> Heap (e, child_list)
 	| Heap (e2, e1) -> 
         )*)
     in add_to_tree e h
