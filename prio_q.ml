@@ -72,19 +72,16 @@ struct
       | Less -> e::q
       | Greater | Eq -> hd::(add e tl)
 
-  let rec take (q : queue) =
-    match q with
-    (* NEED A THIRD CASE??? *) 
-    (* | hd::[] -> (hd, None) *) 
-    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
-    | hd::tl -> hd, tl
-
   let print_queue (q: queue) : unit = 
     List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
+  let rec take (q : queue) =
+    print_string "Current:"; print_queue q; print_string "\n ******** \n";
+    (match q with
+    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
+    | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt =	
-    print_queue q;
     List.fold_right (fun a y -> if a.id = l_id then a else y) 
    q  {id = (-1); tent_dist = 5000000.9} (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
     
@@ -99,14 +96,10 @@ struct
   let delete (a: int) (q: queue) : queue = 
     List.fold_left (fun x y -> if y.id = a then x else y::x) [] q
 
-      
   let run_tests () = 
     () 
-      
- 
  
 end
-
 
 
 (*******************************************************************************)
