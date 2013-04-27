@@ -416,43 +416,52 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
-(*
-module FibHeap : PRIOQUEUE
+
+open Fibsource
+
+module IntOrd =
 struct
-
-  module F = Make(
-    struct
-      let min = (0, 0.)
-    end)
-
-  type elt = F.
-    
-  type queue = elt F.fibheap
-
-  let empty = {min = None; n = 0; num_marked = 0}
-
-  let is_empty (q: queue) : bool = q = empty
-
-  let add (e: elt) (q: queue) : queue =
-    F.fibheap_insert q e
-
-  val take : queue -> elt * queue
-    
-  val lookup : int -> queue -> elt
-
-  val run_tests : unit -> unit
+  type t = int
+  let compare a b = if a < b then (-1) else if a > b then 1 else 0
+  let min = 0
 end
-*)
 
+(* INTIALIZED ARRAY WITH 1000 NODES OF DISTANCE INFINITY *)
 
+module FibHeap : PRIOQUEUE = 
+struct
+  exception QueueEmpty
+  exception Impossible
+  module F = Make(IntOrd)
+  open F
 
-(*
-
-(* make the actual modules -- something along these lines *)
-module IntTree = BinSTree(IntCompare)
-
-(* Please read the entirety of "testing.ml" for an explanation of how
- * testing works.
- *)
-let _ = IntTree.run_tests ()
-*)
+  type queue = float fibheap
+   
+  let empty = fibheap_create ()
+    
+  let idarray = Array.make 1000 (fibnode_new 0 infinity)
+    
+  let is_empty (q: queue) : bool = q = empty
+    
+  let add (e: elt) (q: queue) =
+    let node = fibnode_new e.id e.tent_dist in
+    fibheap_insert q node; Array.set idarray e.id node;q
+      
+  let take (q: queue) : elt * queue =
+    let node = F.fibheap_extract_min q in
+    ({id=node.key;tent_dist=node.data},q)
+      
+  let lookup (id: int) (q: queue) : elt =
+    let node = Array.get idarray id in
+    {id=node.key;tent_dist=node.data}
+  
+  let delete (id: int) (q: queue) : queue =
+    let node = Array.get idarray id in
+    fibheap_delete q node; q
+      
+  let update (id: int) (d: float) (q: queue) : queue =
+    let node = Array.get idarray id in
+    fibheap_delete q node ; add {id=id;tent_dist=d} q
+      
+  let run_tests () = 
+end

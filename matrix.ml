@@ -1,10 +1,10 @@
 (* from http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora125.html *)
 open Array
-
+  
 exception Not_found
 
- (* type  cost  = Nan | Cost of float;; (* Nan is infinitity *)*) 
-
+(* type  cost  = Nan | Cost of float;; (* Nan is infinitity *)*) 
+  
 type  adj_mat =  float array array;;
 type 'a graph = { mutable ind : int;  (* ind is how many nodes have been added*)
                   size : int; (* max number of nodes *)
@@ -73,13 +73,17 @@ let test_aho () =
 
 let a = test_aho();;
 
+
+
 (*
 
 val a : string graph =
   {ind=5; size=5; nodes=[|"A"; "B"; "C"; "D"; "E"|];
    m=[|[|Cost 0; Cost 10; Nan; Cost 30; Cost ...|]; ...|]} *)
 
-module Matrix (s: int) : GRAPH =
+open Graphs
+
+module Matrix : GRAPH =
 struct
   type node = int
     
@@ -88,78 +92,90 @@ struct
 		 size : int; (* max nodes *)
 		 nodes : node array ;
 		 m : adj_mat} (* cost between nodes *)
+
     
   let empty =
-    {ind = 0; size = s; nodes = Array.make s 0;
-     m = Array.create_matrix s s infinity}
+    {ind = 0; size = 1; nodes = Array.make 1 0;
+     m = Array.create_matrix 1 1 infinity}
       
   let nodes g = 
-    let rec arraytolist nodes i currentlist =
+    let rec arraytolist nodea i currentlist =
       if i = g.ind then currentlist
-      else Array.get nodes i :: (arraytolist (i + 1) currentlist)
+      else Array.get nodea i :: (arraytolist nodea (i + 1) currentlist)
     in
     arraytolist g.nodes 0 []
       
-  let is_empty g = g = empty
+  let is_empty g = g.ind = 0
     
-  (*The function belongs_to checks if the node n is contained in the graph g. *)
+  (* Checks if the node n is contained in the graph g. *)
+  let has_node g n =
+    let rec aux i =
+      (i < g.size) & ((g.nodes.(i) = n) or (aux (i+1)))
+    in aux 0;;
 
   let add_node g n =
     if g.ind = g.size then failwith "the graph is full"
-    else if has_node n g then failwith "the node already exists"
+    else if has_node g n then failwith "the node already exists"
     (* we might not want this to fail but just not include it and keep
        going *)
-    else (g.nodes.(g.ind) <- n; g.ind <- g.ind + 1) ;;
-  
+    else (g.nodes.(g.ind) <- n; g.ind <- g.ind + 1); g
+
  (*The function index returns the index of the node n in the graph g. If the node does not exist, a Not_found exception is thrown.*)
- let index n g = 
-   let rec aux i = 
-     if i >= g.size then raise (Failure "Not_found")
-     else if g.nodes.(i) = n then i 
-     else aux (i+1)
-   in aux 0 ;;
+  let index n g = 
+    let rec aux i = 
+      if i >= g.size then raise (Failure "Not_found")
+      else if g.nodes.(i) = n then i 
+      else aux (i+1)
+    in aux 0 ;;
 
   (* Adds the nodes if they aren't already present. *)
   (* and the weight of that edge *)
   let add_edge g e1 e2 c = 
     try
-      let x = index g e1 and y = index e2 g in 
-      g.m.(x).(y) <- c 
+      let x = index e1 g and y = index e2 g in 
+      g.m.(x).(y) <- c ; g
     with Not_found -> failwith "node does not exist" ;;
   
-
-
-  (* Return None if node isn't in the graph *)
-  val neighbors g n =
-    (* row of matrix containing n's neighbors is g.m.n *) 
+ (* Return None if node isn't in the graph *)
+  let neighbors g n =
+   (* row of matrix containing n's neighbors is g.m.n *) 
     let rec aux n i neighbor_list = 
       if i = g.size then neighbor_list
-      (* put all of the neighbors in a list *) 
-      else 
-	(match g.m.(n).(i) with 
+     (* put all of the neighbors in a list *) 
+     else 
+	match g.m.(n).(i) with 
 	| infinity -> aux n (i+1) neighbor_list
-	| _ -> aux n (i + 1) ((i, g.m.(n).(i))::neighbor_list))
-    in
-    let list = aux n 0 [] in
-    match list with
-    | [] -> None
-    | _ -> Some list
-      
-
-  (* Return None if node isn't in the graph *)
-  (* val outgoing_edges : graph -> node -> (node * float * node) list option*)
-      
-  let has_node g n =
-    let rec aux i =
-      (i < g.size) & ((g.nodes.(i) = n) or (aux (i+1)))
-    in aux 0;;
+	| _ -> aux n (i + 1) ((i, g.m.(n).(i))::neighbor_list)
+   in
+   let list = aux n 0 [] in
+   match list with
+   | [] -> None
+   | _ -> Some list
+     
+ (* Return None if node isn't in the graph *)
+ (* val outgoing_edges : graph -> node -> (node * float * node) list option*)
   
-  val num_nodes g =
-    g.ind
+  let num_nodes g = g.ind
+    
+  let string_of_graph g = ""
+	
+  let sized nfnlist =
+    let all = List.fold_left (fun l (src, wt, dst) -> src :: dst :: l) [] nfnlist in
+    let rec unique nodes =
+      match nodes with
+      | [] -> []
+      | head :: tail ->
+	let newtail = unique tail in
+	if List.mem head newtail then newtail else head :: newtail
+    in
+    List.length (unique all)
+            
+  let from_edges es =
+    let s = sized es in
+    let g =
+      {ind = 0; size = s; nodes = Array.make s 0;
+       m = Array.create_matrix s s infinity}
+    in
+    List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) g es
       
-  val string_of_graph : graph -> string
-    
-  val from_edges : (node * float * node) list -> graph
-    
 end
-
