@@ -122,7 +122,7 @@ struct
 
   let rec lookup (l_id: int) (q: queue) : elt =	
     List.fold_right (fun a y -> if a.id = l_id then a else y) 
-      q (raise Impossible)
+      q (print_string "in list_queue"; raise Impossible)
       
   let run_tests () = ()
 end
@@ -340,7 +340,7 @@ struct
     | Empty -> raise QueueEmpty
     | Tree t ->
       match optedlookup id t with
-      | None -> raise Impossible
+      | None -> print_string (string_of_int id); raise Impossible
       | Some e -> e
 	  
 	    
