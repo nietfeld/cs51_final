@@ -11,6 +11,15 @@ type 'a graph = { mutable ind : int;  (* ind is how many nodes have been added*)
                   nodes : 'a array;  (* the actual array of nodes *)
                   m : adj_mat};; (* the costs between any two nodes *)
 
+(*
+let print_matrix (g : int graph) : unit = 
+  let rec helper_print g (n: int) = 
+    if n = g.size then () 
+    else (print_string (string_of_float g.m.(n).(n)); helper_print g (n+1)) 
+  in helper_print g 0 
+*)
+
+
 (* create an s by s matrix, initialized to infinity. *) 
 (* array of nodes initialized to n *)
 let create_graph n (s: int) = 
@@ -50,36 +59,12 @@ let neighbors (n: int) (g: int graph) : (int * float) list =
       going *)
    else (g.nodes.(g.ind) <- n; g.ind <- g.ind + 1) ;;
  
+ (* MAKE THIS NOT TAKE A G *) 
  let add_edge e1 e2 c g = 
    try
      let x = index e1 g and y = index e2 g in 
      g.m.(x).(y) <- c 
    with Not_found -> failwith "node does not exist" ;;
-
-
-let test_aho () = 
-  let g = create_graph "nothing" 5 in 
-  List.iter (fun x -> add_node x g) ["A"; "B"; "C"; "D"; "E"];
-  List.iter (fun (a,b,c) -> add_edge a b c g) 
-    ["A","B",10.;
-     "A","D",30.;
-     "A","E",100.0;
-     "B","C",50.;
-     "C","E",10.;
-     "D","C",20.;
-     "D","E",60.];
-  for i=0 to g.ind -1 do g.m.(i).(i) <- 0.0 done;
-  g;;
-
-let a = test_aho();;
-
-
-
-(*
-
-val a : string graph =
-  {ind=5; size=5; nodes=[|"A"; "B"; "C"; "D"; "E"|];
-   m=[|[|Cost 0; Cost 10; Nan; Cost 30; Cost ...|]; ...|]} *)
 
 open Graphs
 
@@ -93,7 +78,7 @@ struct
 		 nodes : node array ;
 		 m : adj_mat} (* cost between nodes *)
 
-    
+  (* seems problematic *) 
   let empty =
     {ind = 0; size = 1; nodes = Array.make 1 0;
      m = Array.create_matrix 1 1 infinity}
@@ -108,6 +93,7 @@ struct
   let is_empty g = g.ind = 0
     
   (* Checks if the node n is contained in the graph g. *)
+  (* IMPROVE THIS *) 
   let has_node g n =
     let rec aux i =
       (i < g.size) & ((g.nodes.(i) = n) or (aux (i+1)))
@@ -177,5 +163,17 @@ struct
        m = Array.create_matrix s s infinity}
     in
     List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) g es
+
+
+
       
 end
+
+(* PUT IT IN A DIFFERENT FILE 
+module My_graph = Matrix
+let g = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
+			     (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
+print_string (string_of_int g.size);;
+(*assert(0 = 1);;*)
+(*assert(g.size = 5);;*) 
+*) 
