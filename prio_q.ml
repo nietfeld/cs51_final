@@ -416,7 +416,7 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
-(*
+
 open Fibsource
 
 module EltOrd =
@@ -454,9 +454,9 @@ struct
     let node = fibheap_extract_min q in
     ({id=node.key.id;tent_dist=node.data},q)
       
-  let lookup (id: int) (q: queue) : elt =
+  let lookup (id: int) (q: queue) : elt option =
     let node = Array.get idarray id in
-    {id=node.key.id;tent_dist=node.data}
+    Some {id=node.key.id;tent_dist=node.data}
   
   let delete (id: int) (q: queue) : queue =
     let node = Array.get idarray id in
@@ -466,11 +466,6 @@ struct
     let node = Array.get idarray id in
     fibheap_delete q node ; add {id=id;tent_dist=d} q
       
-  let run_tests () = ()
-end
-*)
-(*
-
   let run_tests () =
     let a = empty in
     let _ = add {id=1;tent_dist=1.} a in
@@ -483,15 +478,14 @@ end
     assert(fibheap_print string_of_float Format.std_formatter a = ());
     assert(take a = ({id=1;tent_dist=1.}, a));
     assert(fibheap_print string_of_float Format.std_formatter a = ());
-(*
+
     assert(take a = ({id=2;tent_dist=2.}, a));
-    assert(take a = ({id=3;tent_dist=3.}, a));
+(*    assert(take a = ({id=3;tent_dist=3.}, a));
     assert(take a = ({id=4;tent_dist=4.}, a));
     assert(take a = ({id=5;tent_dist=5.}, a));
     assert(take a = ({id=6;tent_dist=6.}, a));
     assert(take a = ({id=7;tent_dist=7.}, a))*)
-			
+
 end;;
 
 FibHeap.run_tests ();;
-*)
