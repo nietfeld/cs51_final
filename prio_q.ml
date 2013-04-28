@@ -476,7 +476,9 @@ struct
     let _ = add {id=6;tent_dist=6.} a in
     let _ = add {id=7;tent_dist=7.} a in
     assert(fibheap_print string_of_float Format.std_formatter a = ());
-    assert(take a = ({id=1;tent_dist=1.}, a));(*
+    assert(take a = ({id=1;tent_dist=1.}, a));
+    assert(fibheap_print string_of_float Format.std_formatter a = ());
+(*
     assert(take a = ({id=2;tent_dist=2.}, a));
     assert(take a = ({id=3;tent_dist=3.}, a));
     assert(take a = ({id=4;tent_dist=4.}, a));
