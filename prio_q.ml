@@ -110,10 +110,6 @@ struct
   
   exception QueueEmpty
   exception Impossible
- 
-  (*module E = IdCompare
-    
-  type elt = E.elt *)
 
   (* Be sure to read the pset spec for hints and clarifications.
    *
@@ -295,10 +291,37 @@ struct
       | Empty -> raise (Failure "The weak invariant has been broken")
       | Tree t1' -> e, Tree (fix (TwoBranch (Even, last, t1', t2)))
 
-  let lookup (id: int) (q: queue) : elt option =
-   (* let rec optedlookup (a : int) (t : tree) : elt option = *)
-    None
-      (*match t with
+  let reconcile (res1: elt option) (res2: elt option) =
+     match (res1, res2) with
+     | (None, None) -> None
+     | (Some x, None) -> Some x
+     | (None, Some x) -> Some x
+     | (Some x, Some y) -> raise (Failure "Impossible")
+
+  let lookup (id: int) (q: queue) : elt option = (* None *)
+    let rec match_tree (t: tree) : elt option  = 
+      match t with
+      | Leaf v -> 
+	if v.id = id then Some v else None
+      | OneBranch (l, r) ->
+        if l.id = id then Some l
+	else if r.id = id then Some r
+        else None
+      | TwoBranch (b, v, l, r) ->
+	if v.id = id then Some v
+        else if id < v.id then None
+	else reconcile (match_tree l) (match_tree r)
+    in
+    match q with
+    | Empty -> None
+    | Tree t -> match_tree t
+         
+    
+
+
+
+   (*let rec optedlookup (a : int) (t : tree) : elt option = 
+      match t with
       | Leaf x -> if a = x.id then Some x else None
       | OneBranch (x, y) ->
 	(if x.id = a then Some x 
@@ -314,10 +337,11 @@ struct
     | Tree t ->
       match optedlookup id t with
       | None -> print_string "This is the id being looked up"; print_string (string_of_int id); raise Impossible
-      | Some e -> e*)
-(*
+      | Some e -> e *)
 
-  let rec delete (id: int) (pq: queue) : queue =
+
+
+  (* let rec delete (id: int) (pq: queue) : queue =
     let rec find_id (a: int) (t: tree) : tree = 
       match t with 
       (* keep track of parent *) 
@@ -416,7 +440,7 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
-
+(*
 open Fibsource
 
 module EltOrd =
@@ -442,7 +466,7 @@ struct
    
   let empty = fibheap_create ()
     
-  let idarray = Array.make 3 (fibnode_new {id=0;tent_dist=0.} infinity)
+  let idarray = Array.make 10 (fibnode_new {id=0;tent_dist=0.} infinity)
     
   let is_empty (q: queue) : bool = q = empty
     
@@ -454,9 +478,9 @@ struct
     let node = fibheap_extract_min q in
     ({id=node.key.id;tent_dist=node.data},q)
       
-  let lookup (id: int) (q: queue) : elt option =
+  let lookup (id: int) (q: queue) : elt =
     let node = Array.get idarray id in
-    Some {id=node.key.id;tent_dist=node.data}
+    {id=node.key.id;tent_dist=node.data}
   
   let delete (id: int) (q: queue) : queue =
     let node = Array.get idarray id in
@@ -466,7 +490,12 @@ struct
     let node = Array.get idarray id in
     fibheap_delete q node ; add {id=id;tent_dist=d} q
       
-  let run_tests () = () (*
+  let run_tests () = ()
+end
+*)
+(*
+
+  let run_tests () =
     let a = empty in
     let _ = add {id=1;tent_dist=1.} a in
     let _ = add {id=2;tent_dist=2.} a in
@@ -476,16 +505,15 @@ struct
     let _ = add {id=6;tent_dist=6.} a in
     let _ = add {id=7;tent_dist=7.} a in
     assert(fibheap_print string_of_float Format.std_formatter a = ());
-    assert(take a = ({id=1;tent_dist=1.}, a) && print_string "???" = ());
-    assert(fibheap_print string_of_float Format.std_formatter a = ());
-
+    assert(take a = ({id=1;tent_dist=1.}, a));(*
     assert(take a = ({id=2;tent_dist=2.}, a));
     assert(take a = ({id=3;tent_dist=3.}, a));
     assert(take a = ({id=4;tent_dist=4.}, a));
     assert(take a = ({id=5;tent_dist=5.}, a));
     assert(take a = ({id=6;tent_dist=6.}, a));
     assert(take a = ({id=7;tent_dist=7.}, a))*)
-
+			
 end;;
 
 FibHeap.run_tests ();;
+*)
