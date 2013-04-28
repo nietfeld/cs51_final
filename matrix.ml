@@ -162,7 +162,9 @@ struct
       {num_nodes = 0; size = s; nodes = Array.make s 0;
        m = Array.create_matrix s s infinity}
     in
-    List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) g es
+    List.fold_left (fun g (src, wt, dst) ->
+      if wt < 0. then failwith "No negative edge weights."
+      else add_edge g src dst wt) g es
 
 
   let g = from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 

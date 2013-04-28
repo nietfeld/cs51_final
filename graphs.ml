@@ -151,5 +151,7 @@ struct
     "Graph: " ^ (EdgeDict.string_of_dict g.edges)
 
   let from_edges (es: (node *  float * node) list) : graph =
-    List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) empty es
+    List.fold_left (fun g (src, wt, dst) ->
+      if wt < 0. then failwith "No negative edge weights."
+      else add_edge g src dst wt) empty es
 end
