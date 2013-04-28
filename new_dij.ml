@@ -16,7 +16,7 @@ exception QueueEmpty
 (* Need to finish implementing prioq *) 
 module IntListQueue =  ListQueue
 module IntHeapQueue =  BinaryHeap
-module My_graph = Matrix
+module My_graph = Graph
 
 open My_graph
 
@@ -86,7 +86,9 @@ let deopt_p (x: int option) : string =
 let print_results (dist : float array) (prev: int option array) (graph_size: int) (start_node: int) : unit =
   print_string "Here is the whole prev array\n";
   (* this deopt y might still raise failure here because we still want to print out *)
-  print_string (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev));
+  print_string (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)); 
+  print_string "\n Here is the whole dist array \n";
+  print_string (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist));
   print_string "\n Done \n";
   let rec helper_dist (dist: float array) (n: int) =
     if n = graph_size then Printf.printf "Done!"
@@ -114,27 +116,57 @@ let dij (start : node) (g : graph) (pq : queue) =
 	     iterate new_q (number_rounds-1) 
     in iterate prioq (graph_size-1);
     print_results dist prev graph_size start;
-   (* run_tests*) (dist,prev)
+    (dist,prev) (* return this for testing *)
   else failwith "dij: node unknown";; 
 
+
+(* the array being printed here are simpl in reverse order *)
 let run_tests () =
   let pq = My_queue.empty in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g pq in
   let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
-  let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in
-  assert (1 = 1)
+  let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
+
+  let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
+				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
+  let (dist_1, prev_1) = dij 2 g1 pq in
+  let prev_array_1 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_1)) in
+  let dist_array_1 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_1)) in 
+  
+  let g2 = My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); 
+				(4, 6.1, 3); (3, 4.1, 1); (0, 5.1, 3); (1, 8.1, 5); (4, 7.1, 5)] in
+let (dist_2, prev_2) = dij 0 g2 pq in
+let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
+let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
+
+
+let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
+			      (3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
+  let (dist_3, prev_3) = dij 3 g3 pq in
+  let prev_array_3 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_3)) in
+  let dist_array_3 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3)) in 
+  assert (prev_array = "00_");
+  assert (dist_array = "2.1.0.");
+  assert (prev_array_1 = "22___");
+  assert (dist_array_1 = "3.4.0.infinf");
+  assert (prev_array_2 = "1_010_");
+  assert (dist_array_2 = "9.2inf5.13.21.10." );
+  assert (prev_array_3 = "_33__3_");
+  assert (dist_array_3 = "inf7.211.20.inf0.2inf")
+;;
+
+  
+
+
+
+
 
 (* some sample graphs to test on *)
 
-let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
-			     (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
-let r1 = dij 2 g1 pq;;
+  run_tests ();
 
-let g2 = My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); 
-(4, 6.1, 3); (3, 4.1, 1); (0, 5.1, 3); (1, 8.1, 5); (4, 7.1, 5)];;
+(*
 let r2 = dij 0 g2 pq;;
 
-let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
-(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)];;
-let r3 = dij 10 g3 pq;;
+*)
