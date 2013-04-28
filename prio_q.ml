@@ -35,7 +35,7 @@ sig
   val take : queue -> elt * queue
     
   (* Given an id, gives back the corresponding node with that id *)
-  val lookup : int -> queue -> elt
+  val lookup : int -> queue -> elt option
 
   (* this takes the id of the element to be updated and the new distance
    and returns the updated queue *)
@@ -81,9 +81,8 @@ struct
     | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
     | hd::tl -> hd, tl)
 
-  let lookup (l_id: int) (q: queue) : elt =	
-    List.fold_right (fun a y -> if a.id = l_id then a else y) 
-   q  {id = (-1); tent_dist = 5000000.9} (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
+  let lookup (l_id: int) (q: queue) : elt option =	
+    List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
     
 
   let a = [{id = 1; tent_dist = 1.}; {id = 2; tent_dist = 2.}; {id = 3; tent_dist = 3.}];;
@@ -296,9 +295,10 @@ struct
       | Empty -> raise (Failure "The weak invariant has been broken")
       | Tree t1' -> e, Tree (fix (TwoBranch (Even, last, t1', t2)))
 
-  let lookup (id: int) (q: queue) : elt =
-    let rec optedlookup (a : int) (t : tree) : elt option = 
-      match t with
+  let lookup (id: int) (q: queue) : elt option =
+   (* let rec optedlookup (a : int) (t : tree) : elt option = *)
+    None
+      (*match t with
       | Leaf x -> if a = x.id then Some x else None
       | OneBranch (x, y) ->
 	(if x.id = a then Some x 
@@ -314,7 +314,7 @@ struct
     | Tree t ->
       match optedlookup id t with
       | None -> print_string "This is the id being looked up"; print_string (string_of_int id); raise Impossible
-      | Some e -> e
+      | Some e -> e*)
 (*
 
   let rec delete (id: int) (pq: queue) : queue =
@@ -328,8 +328,8 @@ struct
 
   (* We know this is broken *) 
   let rec update (id: int) (new_dist: float) (q: queue) : queue =
-    let elt = lookup id q in
-    elt.tent_dist <- new_dist; q
+   (* let elt = lookup id q in
+    elt.tent_dist <- new_dist; q*) q
       
   (* THIS IS NOT RIGHT *)
   let delete (n : int) (q: queue) : queue = Empty
@@ -466,11 +466,11 @@ struct
     let node = Array.get idarray id in
     fibheap_delete q node ; add {id=id;tent_dist=d} q
       
-(*
-  let run_tests () = 
+  let run_tests () = ()
 end
 *)
-=======
+(*
+
   let run_tests () =
     let a = empty in
     let _ = add {id=1;tent_dist=1.} a in
