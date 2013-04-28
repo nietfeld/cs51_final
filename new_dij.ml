@@ -5,6 +5,7 @@ CYCLEEEES? *)
 open Prio_q
 open Array
 open Graphs
+open Matrix
 
 open Graph
 open ListQueue
@@ -16,6 +17,8 @@ exception QueueEmpty
 module IntListQueue =  ListQueue
 module IntHeapQueue =  BinaryHeap
 module My_graph = Graph
+
+open My_graph
 
 (* right now -- would have to change this when we test *)
 module My_queue = IntListQueue
