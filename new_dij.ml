@@ -15,7 +15,7 @@ exception QueueEmpty
 (* Need to finish implementing prioq *) 
 module IntListQueue =  ListQueue
 module IntHeapQueue =  BinaryHeap
-module My_graph = Graph
+module My_graph = Matrix
 
 (* right now -- would have to change this when we test *)
 module My_queue = IntListQueue
