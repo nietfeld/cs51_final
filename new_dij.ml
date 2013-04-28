@@ -4,10 +4,10 @@ CYCLEEEES? *)
 
 open Prio_q
 open Array
-(*open Graphs*)
+open Graphs
 open Matrix
 
-(*open Graph*)
+open Graph
 open ListQueue
 
 exception Not_found

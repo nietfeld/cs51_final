@@ -165,15 +165,9 @@ struct
     List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) g es
 
 
-
+  let g = from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
+		      (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
+  assert(print_string (string_of_int g.size) = ());;
+  
       
 end
-
-(* PUT IT IN A DIFFERENT FILE 
-module My_graph = Matrix
-let g = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
-			     (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
-print_string (string_of_int g.size);;
-(*assert(0 = 1);;*)
-(*assert(g.size = 5);;*) 
-*) 
