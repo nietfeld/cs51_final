@@ -41,7 +41,7 @@ sig
    and returns the updated queue *)
   val update : int -> float -> queue -> queue
 
-  val delete : int -> queue -> queue
+  (*val delete : int -> queue -> queue*)
 
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
@@ -319,23 +319,70 @@ struct
     | Empty -> None
     | Tree t -> match_tree t
 
-  (* let rec delete (id: int) (pq: queue) : queue =
-    let rec find_id (a: int) (t: tree) : tree = 
-      match t with 
-      (* keep track of parent *) 
-      | Leaf x -> if a = x.id then  (* DEPENDS ON PARENT OF X*) else raise (Failure "can't find x")
-      | OneBranch (x, y) -> if x.id = a then 
-*)
 
-  (* We know this is broken *) 
-  let rec update (id: int) (new_dist: float) (q: queue) : queue =
-   (* let elt = lookup id q in
-    elt.tent_dist <- new_dist; q*) q
-      
-  (* THIS IS NOT RIGHT *)
-  let delete (n : int) (q: queue) : queue = Empty
-(*
-  let test_get_top () =
+ let fix_q (t:tree) : tree = t
+   (* match q with
+    | Leaf -> q 
+    (* was just inserted to the right *) 
+    | Heap (Even,e1,q1,q2) -> 
+      (* IS Q1 or Q2 *) 
+      (match q2 with 
+      (* nothing to fix *) 
+      | Leaf -> q
+      (* combine next two cases *)
+      | Heap (Odd,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	  then Heap(Even, e2, (Heap (Odd,e1,q3,q4)), q2) 
+	else q
+      | Heap (Even,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	  then Heap (Even, e2, (Heap (Even,e1,q3,q4)), q2) 
+	else q
+      )
+    (* was just inserted to the left *) 
+    | Heap(Odd,e1,q1,q2) -> 
+      (match q1 with 
+      | Leaf -> q
+      | Heap (Odd,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	  then Heap(Odd,e2,q1,(Heap(Odd,e1,q3,q4)))
+	else q 
+      | Heap(Even,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	then Heap(Odd,e2,q1,(Heap(Even,e1,q3,q4)))
+	else q
+      )
+   *)
+  (* now we'll need to fix it *) 
+ let update (id: int) (new_dist: float)(q: queue) : queue = 
+   let new_rec = {id = id; tent_dist = new_dist} in
+   let rec helper (id: int) (new_dist: float) (t: tree) : tree =
+     match t with
+     | Leaf x -> 
+       if x.id = id then (Leaf new_rec)
+          else raise (Failure "not really an exception")
+     | OneBranch (l, r) -> 
+       if l.id = id then OneBranch (new_rec, r)
+       else if r.id = id then
+	 (if r.tent_dist > new_dist then OneBranch (new_rec, r)
+          else OneBranch (r, new_rec))
+       else raise (Failure "I DUNNO")
+     | TwoBranch (Even, v, l, r) ->
+       if v.id = id then TwoBranch (Even, new_rec, l, r)
+       (* might be prob here *)
+       else fix_q (TwoBranch (Even, v, (helper id new_dist l),  (helper id new_dist r))) 
+     | TwoBranch (Odd, v, l, r) ->
+       if v.id = id then TwoBranch (Odd, new_rec, l, r)
+       (* might be prob here *)
+       else fix_q(TwoBranch (Odd, v, (helper id new_dist l),  (helper id new_dist r)))
+   in
+   match q with  
+   | Empty -> raise (Failure "trying to update an empty")
+   | Tree t -> Tree (helper id new_dist t)
+
+
+  (*
+    let test_get_top () =
     let x = E.generate () in
     let t = Leaf x in
     assert (get_top t = x);
@@ -352,7 +399,7 @@ struct
     let t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)) in
     assert (get_top t = x)
 
-  let test_fix () =
+    let test_fix () =
     let x = E.generate () in
     let t = Leaf x in
     assert (fix t = t);
@@ -391,16 +438,16 @@ struct
     let t = TwoBranch (Even, q, OneBranch (y, z), OneBranch (x, w)) in
     assert (fix t = TwoBranch (Even, x, OneBranch (y, z), OneBranch (w, q)))
 
-  let test_take () =
+    let test_take () =
     let x = E.generate () in
     let y = E.generate_gt x () in
     let z = E.generate_gt y () in
     let w = E.generate_gt z () in
     let t = Tree (TwoBranch (Odd, x, OneBranch (y, w), Leaf z)) in
     assert (take t = (x, Tree (TwoBranch (Even, y, Leaf w, Leaf z))))
-*)
+  *)
 
-  let run_tests () = ()
+	   let run_tests () = ()
  (*   test_get_top ();
     test_fix ();
     test_take () *)

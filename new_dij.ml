@@ -26,7 +26,7 @@ module My_queue = IntListQueue
 (* FIX CURR_NODE TO BETTER TYPE *) 
 let initialize_queue (n: int) start =
   let rec add_elts pq (to_add: int) = (* to add used to be 1 here *)
-    if to_add = (0) then My_queue.add ({id = start; tent_dist = 0.}) (My_queue.delete start pq)
+    if to_add = (0) then My_queue.update start 0. pq
     else add_elts (My_queue.add {id = to_add; tent_dist = infinity} pq) 
       (to_add - 1)
   (* for starting node, we want the id and dist 0. *) 
