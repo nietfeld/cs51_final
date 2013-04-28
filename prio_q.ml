@@ -442,42 +442,43 @@ struct
    
   let empty = fibheap_create ()
     
-  let idarray = Array.make 3 (fibnode_new {id=0;tent_dist=0.} infinity)
-    
+  let hash = Hashtbl.create 10 
+  
   let is_empty (q: queue) : bool = q = empty
     
   let add (e: elt) (q: queue) =
     let node = fibnode_new e e.tent_dist in print_string "!!!";
-    fibheap_insert q node; Array.set idarray e.id node;q
+    fibheap_insert q node; Hashtbl.add hash e.id node; q
       
   let take (q: queue) : elt * queue =
-    let node = fibheap_extract_min q in
+    let node = fibheap_extract_min q in print_string "???" ;
     ({id=node.key.id;tent_dist=node.data},q)
       
   let lookup (id: int) (q: queue) : elt option =
-    let node = Array.get idarray id in
+    let node = Hashtbl.find hash id in
     Some {id=node.key.id;tent_dist=node.data}
-  
+      
   let delete (id: int) (q: queue) : queue =
-    let node = Array.get idarray id in
-    fibheap_delete q node; q
+    let node = Hashtbl.find hash id in
+    Hashtbl.remove hash id; fibheap_delete q node; q
       
   let update (id: int) (d: float) (q: queue) : queue =
-    let node = Array.get idarray id in
-    fibheap_delete q node ; add {id=id;tent_dist=d} q
+    let node = Hashtbl.find hash id in
+    Hashtbl.remove hash id; fibheap_delete q node; 
+    add {id=id;tent_dist=d} q
       
-  let run_tests () = () (*
+  let run_tests () =
     let a = empty in
-    let _ = add {id=1;tent_dist=1.} a in
-    let _ = add {id=2;tent_dist=2.} a in
+    let _ = add {id=0;tent_dist=1.} a in
+    let _ = add {id=1;tent_dist=2.} a in(*
     let _ = add {id=3;tent_dist=3.} a in
     let _ = add {id=4;tent_dist=4.} a in
     let _ = add {id=5;tent_dist=5.} a in
     let _ = add {id=6;tent_dist=6.} a in
-    let _ = add {id=7;tent_dist=7.} a in
+    let _ = add {id=7;tent_dist=7.} a in*)
     assert(fibheap_print string_of_float Format.std_formatter a = ());
-    assert(take a = ({id=1;tent_dist=1.}, a) && print_string "???" = ());
-    assert(fibheap_print string_of_float Format.std_formatter a = ());
+    assert(take a = ({id=0;tent_dist=1.}, a));
+    assert(fibheap_print string_of_float Format.std_formatter a = ());(*
 
     assert(take a = ({id=2;tent_dist=2.}, a));
     assert(take a = ({id=3;tent_dist=3.}, a));
