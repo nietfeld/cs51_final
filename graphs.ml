@@ -154,4 +154,5 @@ struct
     List.fold_left (fun g (src, wt, dst) ->
       if wt < 0. then failwith "No negative edge weights."
       else add_edge g src dst wt) empty es
+
 end
