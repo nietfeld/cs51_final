@@ -136,13 +136,12 @@ let run_tests () =
   
   let g2 = My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); 
 				(4, 6.1, 3); (3, 4.1, 1); (0, 5.1, 3); (1, 8.1, 5); (4, 7.1, 5)] in
-let (dist_2, prev_2) = dij 0 g2 pq in
-let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
-let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
+  let (dist_2, prev_2) = dij 0 g2 pq in
+  let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
+  let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
 
-
-let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
-			      (3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
+  let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
+				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
   let (dist_3, prev_3) = dij 3 g3 pq in
   let prev_array_3 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_3)) in
   let dist_array_3 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3)) in 
@@ -156,17 +155,4 @@ let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6
   assert (dist_array_3 = "inf7.211.20.inf0.2inf")
 ;;
 
-  
-
-
-
-
-
-(* some sample graphs to test on *)
-
-  run_tests ();
-
-(*
-let r2 = dij 0 g2 pq;;
-
-*)
+run_tests ();
