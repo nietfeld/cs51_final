@@ -110,10 +110,6 @@ struct
   
   exception QueueEmpty
   exception Impossible
- 
-  (*module E = IdCompare
-    
-  type elt = E.elt *)
 
   (* Be sure to read the pset spec for hints and clarifications.
    *
@@ -298,37 +294,38 @@ struct
       | Empty -> raise (Failure "The weak invariant has been broken")
       | Tree t1' -> e, Tree (fix (TwoBranch (Even, last, t1', t2)))
 
-  let lookup (a: int) (q: queue) : elt option =
-    Some {id=a; tent_dist=Hashtbl.find hash a} 
+  let reconcile (res1: elt option) (res2: elt option) =
+     match (res1, res2) with
+     | (None, None) -> None
+     | (Some x, None) -> Some x
+     | (None, Some x) -> Some x
+     | (Some x, Some y) -> raise (Failure "Impossible")
 
-   (* let rec optedlookup (a : int) (t : tree) : elt option = 
+  let lookup (id: int) (q: queue) : elt option = (* None *)
+    let rec match_tree (t: tree) : elt option  = 
       match t with
-      | Leaf x -> if a = x.id then Some x else None
-      | OneBranch (x, y) ->
-	(if x.id = a then Some x 
-	 else if y.id = a then Some y
-	 else None)
-      | TwoBranch (b, x, lt, rt) ->
-	if a = x.id then Some x
-	else if a > x.id then optedlookup a rt
-	else optedlookup a lt
+      | Leaf v -> 
+	if v.id = id then Some v else None
+      | OneBranch (l, r) ->
+        if l.id = id then Some l
+	else if r.id = id then Some r
+        else None
+      | TwoBranch (b, v, l, r) ->
+	if v.id = id then Some v
+        else if id < v.id then None
+	else reconcile (match_tree l) (match_tree r)
     in
     match q with
-    | Empty -> raise QueueEmpty
-    | Tree t ->
-      match optedlookup id t with
-      | None -> print_string "This is the id being looked up"; print_string (string_of_int id); raise Impossible
-      | Some e -> e*)
-(*
+    | Empty -> None
+    | Tree t -> match_tree t
 
-  let rec delete (id: int) (pq: queue) : queue =
+  (* let rec delete (id: int) (pq: queue) : queue =
     let rec find_id (a: int) (t: tree) : tree = 
       match t with 
       (* keep track of parent *) 
       | Leaf x -> if a = x.id then  (* DEPENDS ON PARENT OF X*) else raise (Failure "can't find x")
       | OneBranch (x, y) -> if x.id = a then 
 *)
-
 
   (* We know this is broken *) 
   let rec update (id: int) (new_dist: float) (q: queue) : queue =
@@ -415,12 +412,12 @@ end
 (*******************************************************************************)
 
 
-
+(*
 
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
-
+(*
 open Fibsource
 
 module EltOrd =
@@ -446,8 +443,13 @@ struct
    
   let empty = fibheap_create ()
     
+<<<<<<< HEAD
+  let idarray = Array.make 10 (fibnode_new {id=0;tent_dist=0.} infinity)
+    
+=======
   let hash = Hashtbl.create 10 
   
+>>>>>>> 74a9649f875c9f69a6dc837ddaddbc09a19a4d1f
   let is_empty (q: queue) : bool = q = empty
     
   let add (e: elt) (q: queue) =
@@ -458,10 +460,17 @@ struct
     let node = fibheap_extract_min q in print_string "???" ;
     ({id=node.key.id;tent_dist=node.data},q)
       
+<<<<<<< HEAD
+  let lookup (id: int) (q: queue) : elt =
+    let node = Array.get idarray id in
+    {id=node.key.id;tent_dist=node.data}
+  
+=======
   let lookup (id: int) (q: queue) : elt option =
     let node = Hashtbl.find hash id in
     Some {id=node.key.id;tent_dist=node.data}
       
+>>>>>>> 74a9649f875c9f69a6dc837ddaddbc09a19a4d1f
   let delete (id: int) (q: queue) : queue =
     let node = Hashtbl.find hash id in
     Hashtbl.remove hash id; fibheap_delete q node; q
@@ -471,18 +480,25 @@ struct
     Hashtbl.remove hash id; fibheap_delete q node; 
     add {id=id;tent_dist=d} q
       
+  let run_tests () = ()
+end
+
   let run_tests () =
     let a = empty in
     let _ = add {id=0;tent_dist=1.} a in
-    let _ = add {id=1;tent_dist=2.} a in(*
+    let _ = add {id=1;tent_dist=2.} a in
     let _ = add {id=3;tent_dist=3.} a in
     let _ = add {id=4;tent_dist=4.} a in
     let _ = add {id=5;tent_dist=5.} a in
     let _ = add {id=6;tent_dist=6.} a in
-    let _ = add {id=7;tent_dist=7.} a in*)
+
+    let _ = add {id=7;tent_dist=7.} a in
+    assert(fibheap_print string_of_float Format.std_formatter a = ());
+    assert(take a = ({id=1;tent_dist=1.}, a));
+    let _ = add {id=7;tent_dist=7.} a in
     assert(fibheap_print string_of_float Format.std_formatter a = ());
     assert(take a = ({id=0;tent_dist=1.}, a));
-    assert(fibheap_print string_of_float Format.std_formatter a = ());(*
+    assert(fibheap_print string_of_float Format.std_formatter a = ());
 
     assert(take a = ({id=2;tent_dist=2.}, a));
     assert(take a = ({id=3;tent_dist=3.}, a));
@@ -490,7 +506,8 @@ struct
     assert(take a = ({id=5;tent_dist=5.}, a));
     assert(take a = ({id=6;tent_dist=6.}, a));
     assert(take a = ({id=7;tent_dist=7.}, a))*)
-
+			
 end;;
 
 FibHeap.run_tests ();;
+*)
