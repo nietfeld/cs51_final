@@ -459,12 +459,9 @@ end
 (*******************************************************************************)
 
 
-(*
-
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
-(*
 open Fibsource
 
 module EltOrd =
@@ -489,14 +486,9 @@ struct
   type queue = float fibheap
    
   let empty = fibheap_create ()
-    
-<<<<<<< HEAD
-  let idarray = Array.make 10 (fibnode_new {id=0;tent_dist=0.} infinity)
-    
-=======
+
   let hash = Hashtbl.create 10 
   
->>>>>>> 74a9649f875c9f69a6dc837ddaddbc09a19a4d1f
   let is_empty (q: queue) : bool = q = empty
     
   let add (e: elt) (q: queue) =
@@ -507,17 +499,10 @@ struct
     let node = fibheap_extract_min q in print_string "???" ;
     ({id=node.key.id;tent_dist=node.data},q)
       
-<<<<<<< HEAD
-  let lookup (id: int) (q: queue) : elt =
-    let node = Array.get idarray id in
-    {id=node.key.id;tent_dist=node.data}
-  
-=======
   let lookup (id: int) (q: queue) : elt option =
     let node = Hashtbl.find hash id in
     Some {id=node.key.id;tent_dist=node.data}
       
->>>>>>> 74a9649f875c9f69a6dc837ddaddbc09a19a4d1f
   let delete (id: int) (q: queue) : queue =
     let node = Hashtbl.find hash id in
     Hashtbl.remove hash id; fibheap_delete q node; q
@@ -527,9 +512,6 @@ struct
     Hashtbl.remove hash id; fibheap_delete q node; 
     add {id=id;tent_dist=d} q
       
-  let run_tests () = ()
-end
-
   let run_tests () =
     let a = empty in
     let _ = add {id=0;tent_dist=1.} a in
@@ -541,7 +523,7 @@ end
 
     let _ = add {id=7;tent_dist=7.} a in
     assert(fibheap_print string_of_float Format.std_formatter a = ());
-    assert(take a = ({id=1;tent_dist=1.}, a));
+    assert(take a = ({id=0;tent_dist=1.}, a));
     let _ = add {id=7;tent_dist=7.} a in
     assert(fibheap_print string_of_float Format.std_formatter a = ());
     assert(take a = ({id=0;tent_dist=1.}, a));
@@ -552,9 +534,8 @@ end
     assert(take a = ({id=4;tent_dist=4.}, a));
     assert(take a = ({id=5;tent_dist=5.}, a));
     assert(take a = ({id=6;tent_dist=6.}, a));
-    assert(take a = ({id=7;tent_dist=7.}, a))*)
+    assert(take a = ({id=7;tent_dist=7.}, a))
 			
 end;;
 
 FibHeap.run_tests ();;
-*)
