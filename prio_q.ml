@@ -148,8 +148,11 @@ struct
 
   let is_empty (q : queue) = q = Empty
 
+  let hash = Hashtbl.create 10
+
   (* Adds element e to the queue q *)
   let add (e : elt) (q : queue) : queue =
+    Hashtbl.add hash e.id e.tent_dist;
     (* Given a tree, where e will be inserted is deterministic based on the
      * invariants. If we encounter a node in the tree where its value is greater
      * than the element being inserted, then we place the new elt in that spot
@@ -295,10 +298,11 @@ struct
       | Empty -> raise (Failure "The weak invariant has been broken")
       | Tree t1' -> e, Tree (fix (TwoBranch (Even, last, t1', t2)))
 
-  let lookup (id: int) (q: queue) : elt option =
-   (* let rec optedlookup (a : int) (t : tree) : elt option = *)
-    None
-      (*match t with
+  let lookup (a: int) (q: queue) : elt option =
+    Some {id=a; tent_dist=Hashtbl.find hash a} 
+
+   (* let rec optedlookup (a : int) (t : tree) : elt option = 
+      match t with
       | Leaf x -> if a = x.id then Some x else None
       | OneBranch (x, y) ->
 	(if x.id = a then Some x 
