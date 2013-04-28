@@ -73,24 +73,24 @@ struct
   type node = int
     
   type adj_mat = float array array
-  type graph = { mutable ind : int; (* nodes added *)
+  type graph = { mutable num_nodes : int; (* nodes added *)
 		 size : int; (* max nodes *)
 		 nodes : node array ;
 		 m : adj_mat} (* cost between nodes *)
 
   (* seems problematic *) 
   let empty =
-    {ind = 0; size = 1; nodes = Array.make 1 0;
+    {num_nodes = 0; size = 1; nodes = Array.make 1 0;
      m = Array.create_matrix 1 1 infinity}
       
   let nodes g = 
     let rec arraytolist nodea i currentlist =
-      if i = g.ind then currentlist
+      if i = g.num_nodes then currentlist
       else Array.get nodea i :: (arraytolist nodea (i + 1) currentlist)
     in
     arraytolist g.nodes 0 []
       
-  let is_empty g = g.ind = 0
+  let is_empty g = g.num_nodes = 0
     
   (* Checks if the node n is contained in the graph g. *)
   (* IMPROVE THIS *) 
@@ -100,11 +100,11 @@ struct
     in aux 0;;
 
   let add_node g n =
-    if g.ind = g.size then failwith "the graph is full"
+    if g.num_nodes = g.size then failwith "the graph is full"
     else if has_node g n then failwith "the node already exists"
     (* we might not want this to fail but just not include it and keep
        going *)
-    else (g.nodes.(g.ind) <- n; g.ind <- g.ind + 1); g
+    else (g.nodes.(g.num_nodes) <- n; g.num_nodes <- g.num_nodes + 1); g
 
  (*The function index returns the index of the node n in the graph g. If the node does not exist, a Not_found exception is thrown.*)
   let index n g = 
@@ -141,7 +141,7 @@ struct
  (* Return None if node isn't in the graph *)
  (* val outgoing_edges : graph -> node -> (node * float * node) list option*)
   
-  let num_nodes g = g.ind
+  let num_nodes g = g.num_nodes
     
   let string_of_graph g = ""
 	
@@ -159,21 +159,17 @@ struct
   let from_edges es =
     let s = sized es in
     let g =
-      {ind = 0; size = s; nodes = Array.make s 0;
+      {num_nodes = 0; size = s; nodes = Array.make s 0;
        m = Array.create_matrix s s infinity}
     in
-    List.fold_left (fun g (src, wt, dst) -> add_edge g src dst wt) g es
+    List.fold_left (fun g (src, wt, dst) ->
+      if wt < 0. then failwith "No negative edge weights."
+      else add_edge g src dst wt) g es
 
 
-
+  let g = from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
+		      (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
+  assert(print_string (string_of_int g.size) = ());;
+  
       
 end
-
-(* PUT IT IN A DIFFERENT FILE 
-module My_graph = Matrix
-let g = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
-			     (2, 3., 4); (3, 6., 4); (2, 4., 3)];;
-print_string (string_of_int g.size);;
-(*assert(0 = 1);;*)
-(*assert(g.size = 5);;*) 
-*) 
