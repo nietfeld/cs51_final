@@ -78,7 +78,7 @@ struct
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
-    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = 134342342.0}, [])
+    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = infinity}, [])
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
