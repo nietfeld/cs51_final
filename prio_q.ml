@@ -1,15 +1,12 @@
-(* Here is where the module signature for the priority q module will go and all the functors that implement it *)
-
-(* problem with this value since its not mutable 
-so can't really do update *)
-
 open Order
 exception TODO
 
 type elt = {id : int; mutable tent_dist : float };;
 
 let compare x y = 
-  if x.tent_dist < y.tent_dist then Less else if x.tent_dist > y.tent_dist then Greater else Eq
+  if x.tent_dist < y.tent_dist then Less 
+  else if x.tent_dist > y.tent_dist then Greater 
+  else Eq
 ;;
 
 module type PRIOQUEUE =
@@ -41,8 +38,6 @@ sig
    and returns the updated queue *)
   val update : int -> float -> queue -> queue
 
-  (*val delete : int -> queue -> queue*)
-
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
   val run_tests : unit -> unit
@@ -51,7 +46,6 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Lists   ******************************)
 (*******************************************************************************)
-
 
 module ListQueue : PRIOQUEUE = 
 struct
@@ -73,23 +67,21 @@ struct
       | Greater | Eq -> hd::(add e tl)
 
   let print_queue (q: queue) : unit = 
-    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
+    List.iter (fun x -> (print_string ("\n id: "^(string_of_int x.id)^
+	      " tent_dist: "^(string_of_float x.tent_dist)))) q
     
   let rec take (q : queue) =
-    print_string "Current:"; print_queue q; print_string "\n ******** \n";
+    print_string "Current:"; print_queue q; print_string "\n *** \n";
     (match q with
-    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = infinity}, [])
+    | [] -> ({id = 0; tent_dist = infinity}, [])
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
-    List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
-    
-
-  let a = [{id = 1; tent_dist = 1.}; {id = 2; tent_dist = 2.}; {id = 3; tent_dist = 3.}];;
-  
+    List.fold_right (fun a y -> if a.id = l_id then Some a else y) q None
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
-    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
+    let new_queue = List.fold_left 
+      (fun x y -> if y.id = a then x else y::x) [] q in 
     add {id = a; tent_dist = new_dist} new_queue
 
   let delete (a: int) (q: queue) : queue = 
