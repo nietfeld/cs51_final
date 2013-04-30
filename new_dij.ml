@@ -17,11 +17,6 @@ exception QueueEmpty
 module IntListQueue =  ListQueue
 module IntHeapQueue =  BinaryHeap
 module My_graph = Graph
-<<<<<<< HEAD
-=======
-
-open My_graph
->>>>>>> ccbd2a0ac718f11cfb06beacd3a2aa91d380f66e
 
 (* right now -- would have to change this when we test *)
 module My_queue = IntListQueue

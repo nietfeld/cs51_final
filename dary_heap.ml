@@ -20,9 +20,12 @@ struct
   (* d must be at least 2 *) 
   assert(d >= 2);  
 
+  (* need to keep track of capacity *) 
+  type capacity = Full | Open
+
   (* need to keep track of number in list and also number of children....*) 
   type heap =   Leaf 
-              | Heap of elt * (heap list)
+              | Heap of elt * capacity * (heap list)
 
   let is_empty (q: queue) = q = Leaf 
 
@@ -37,8 +40,10 @@ struct
     (* do we need a recursive helper at all? *) 
     let rec add_to_tree (e: elt) (h: heap) : heap = 
       match h with 
+      (* talk about capacity *) 
       | Leaf  -> Heap (e, child_list) 
        (* THIS IS WRONG BUT WANT IT TO COMPILE *) 
+	(* insert into the first open spot *)
       | Heap (el, hl) -> Heap (e1, h1)
 	(*(match h1 with 
 	(*always filling in *)
