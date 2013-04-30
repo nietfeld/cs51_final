@@ -9,7 +9,9 @@ exception TODO
 type elt = {id : int; mutable tent_dist : float };;
 
 let compare x y = 
-  if x.tent_dist < y.tent_dist then Less else if x.tent_dist > y.tent_dist then Greater else Eq
+  if x.tent_dist < y.tent_dist then Less 
+  else if x.tent_dist > y.tent_dist then Greater 
+  else Eq
 ;;
 
 module type PRIOQUEUE =
@@ -40,8 +42,6 @@ sig
   (* this takes the id of the element to be updated and the new distance
    and returns the updated queue *)
   val update : int -> float -> queue -> queue
-
-  val delete : int -> queue -> queue
 
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
@@ -78,15 +78,12 @@ struct
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
-    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = infinity}, [])
+    | [] -> ({id = 0; tent_dist = infinity}, []) (* why is this ID 0? *)
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
     List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
     
-
-  let a = [{id = 1; tent_dist = 1.}; {id = 2; tent_dist = 2.}; {id = 3; tent_dist = 3.}];;
-  
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
     let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
@@ -111,28 +108,8 @@ struct
   exception QueueEmpty
   exception Impossible
 
-  (* Be sure to read the pset spec for hints and clarifications.
-   *
-   * Remember the invariants of the tree that make up your queue:
-   * 1) A tree is ODD if its left subtree has 1 more node than its right
-   * subtree. It is EVEN if its left and right subtrees have the same number of
-   * nodes. The tree can never be in any other state. This is the WEAK
-   * invariant, and should never be false.
-   *
-   * 2) All nodes in the subtrees of a node should be *greater* than (or equal
-   * to) the value of that node. This, combined with the previous invariant,
-   * makes a STRONG invariant. Any tree that a user passes in to your module
-   * and receives back from it should satisfy this invariant.  However, in the
-   * process of, say, adding a node to the tree, the tree may intermittently
-   * not satisfy the order invariant. If so, you *must* fix the tree before
-   * returning it to the user.  Fill in the rest of the module below!
-   *)
-  (* A node in the tree is either even or odd *)
   type balance = Even | Odd
 
-  (* A tree is either just a single element, has one branch (the first elt in
-   * the tuple is the element at this node, and the second elt is the element
-   * down the branch), or has two branches (with the node being even or odd) *)
   type tree =   TwoBranch of balance * elt * tree * tree
               | OneBranch of elt * elt
               | Leaf of elt
@@ -149,11 +126,6 @@ struct
   (* Adds element e to the queue q *)
   let add (e : elt) (q : queue) : queue =
     Hashtbl.add hash e.id e.tent_dist;
-    (* Given a tree, where e will be inserted is deterministic based on the
-     * invariants. If we encounter a node in the tree where its value is greater
-     * than the element being inserted, then we place the new elt in that spot
-     * and propagate what used to be at that spot down toward where the new
-     * element would have been inserted *)
     let rec add_to_tree (e : elt) (t : tree) : tree =
       match t with
       (* If the tree is just a Leaf, then we end up with a OneBranch *)
@@ -232,10 +204,9 @@ struct
         | Left -> TwoBranch(b, top1, fix (swap e t1), t2)
         | Right -> TwoBranch(b, top2, t1, fix (swap e t2))
 
-
   let extract_tree (q : queue) : tree =
     match q with
-    | Empty -> raise QueueEmpty
+    | Empty -> (*raise QueueEmpty*) Leaf {id = 3; tent_dist = 2332323.}
     | Tree t -> t
 
   (* Takes a tree, and returns the item that was most recently inserted into
@@ -251,7 +222,31 @@ struct
    * down into a new node at the bottom of the tree. *This* is the node
    * that we want you to return.
    *)
+
+let print_elt (e: elt) : unit = 
+    print_string " id: ";
+    print_string (string_of_int e.id);
+    print_string " tent_dist "; 
+    print_string (string_of_float e.tent_dist);
+    print_string " "
+
+  let print_q (q:queue) = 
+    let rec print_h t =
+    match t with  
+    | Leaf x -> print_string "Leaf "; print_elt x; 
+    | OneBranch (e1, e2) -> 
+      (print_string "One Branch(";  print_elt e1; print_elt e2; print_string ")")
+    | TwoBranch (Even, e1, t1, t2) -> 
+      (print_string "TwoBranch (Even, "; print_elt e1; print_h t1; print_h t2; print_string ")")
+    | TwoBranch (Odd, e1, t1, t2) -> 
+      (print_string "TwoBranch (Odd, "; print_elt e1; print_h t1; print_h t2; print_string ")")
+    in 
+    match q with 
+    | Empty -> print_string "Empty String"
+    | Tree t -> print_h t
+
   let rec get_last (t : tree) : elt * queue =
+    print_string "Im in get_last";
     match t with
     | Leaf e -> e, Empty
     | OneBranch (e1, e2) -> e2, Tree (Leaf e1)
@@ -268,26 +263,16 @@ struct
    * implementation, as well as the implementations of get_last and fix, which
    * take uses *)
   let rec take (q : queue) : elt * queue =
+    print_string "I'm in take yo \n";
+    print_q q;
     match extract_tree q with
-    (* If the tree is just a Leaf, then return the value of that leaf, and the
-     * new queue is now empty *)
     | Leaf e -> e, Empty
-
-    (* If the tree is a OneBranch, then the new queue is just a Leaf *)
     | OneBranch (e1, e2) -> e1, Tree (Leaf e2)
-
-    (* Removing an item from an even tree results in an odd tree. This
-     * implementation replaces the root node with the most recently inserted
-     * item, and then fixes the tree that results if it is violating the
-     * strong invariant *)
     | TwoBranch (Even, e, t1, t2) ->
       let (last, q2') = get_last t2 in
       (match q2' with
-       (* If one branch of the tree was just a leaf, we now have just
-        * a OneBranch *)
        | Empty -> (e, Tree (fix (OneBranch (last, get_top t1))))
        | Tree t2' -> (e, Tree (fix (TwoBranch (Odd, last, t1, t2')))))
-    (* Implement the odd case! *)
     | TwoBranch (Odd, e, t1, t2) ->
       let last, q1' = get_last t1 in
       match q1' with
@@ -301,7 +286,7 @@ struct
      | (None, Some x) -> Some x
      | (Some x, Some y) -> raise (Failure "Impossible")
 
-  let lookup (id: int) (q: queue) : elt option = (* None *)
+  let lookup (id: int) (q: queue) : elt option = 
     let rec match_tree (t: tree) : elt option  = 
       match t with
       | Leaf v -> 
@@ -319,21 +304,35 @@ struct
     | Empty -> None
     | Tree t -> match_tree t
 
-  (* let rec delete (id: int) (pq: queue) : queue =
-    let rec find_id (a: int) (t: tree) : tree = 
-      match t with 
-      (* keep track of parent *) 
-      | Leaf x -> if a = x.id then  (* DEPENDS ON PARENT OF X*) else raise (Failure "can't find x")
-      | OneBranch (x, y) -> if x.id = a then 
-*)
+ (* now we'll need to fix it *) 
+  let update (id: int) (new_dist: float)(q: queue) : queue = 
+    let new_rec = {id = id; tent_dist = new_dist} in
+    let rec helper (id: int) (new_dist: float) (t: tree) : tree =
+      match t with
+      | Leaf x -> 
+	if x.id = id then Leaf new_rec
+        else Leaf x
+      | OneBranch (l, r) -> 
+	if l.id = id then OneBranch (new_rec, r)
+	else if r.id = id then
+	  (if r.tent_dist > new_dist then OneBranch (new_rec, r)
+           else OneBranch (r, new_rec))
+	else OneBranch (l, r)
+      | TwoBranch (Even, v, l, r) ->
+	if v.id = id then TwoBranch (Even, new_rec, l, r)
+       (* might be prob here *)
+	else (TwoBranch (Even, v, (helper id new_dist l),  (helper id new_dist r))) 
+      | TwoBranch (Odd, v, l, r) ->
+	if v.id = id then TwoBranch (Odd, new_rec, l, r)
+       (* might be prob here *)
+	else (TwoBranch (Odd, v, (helper id new_dist l),  (helper id new_dist r)))
+    in
+    match q with  
+    | Empty -> raise (Failure "trying to update an empty q")
+    | Tree t -> Tree (fix (helper id new_dist t))
+    
 
-  (* We know this is broken *) 
-  let rec update (id: int) (new_dist: float) (q: queue) : queue =
-   (* let elt = lookup id q in
-    elt.tent_dist <- new_dist; q*) q
-      
-  (* THIS IS NOT RIGHT *)
-  let delete (n : int) (q: queue) : queue = Empty
+
 (*
   let test_get_top () =
     let x = E.generate () in
