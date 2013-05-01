@@ -102,7 +102,7 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
   helper_dist dist 0 
 
 
-let dij (start : node) (g : graph) (pq : queue) =
+let dij (start : node) (g : graph) =
   if has_node g start then 
     let graph_size = My_graph.num_nodes g in
     let dist = Array.make graph_size infinity in 
@@ -123,27 +123,26 @@ let dij (start : node) (g : graph) (pq : queue) =
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
-  let pq = My_queue.empty in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
-  let (dist,prev) = dij 0 g pq in
+  let (dist,prev) = dij 0 g  in
   let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
   let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
 
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
-  let (dist_1, prev_1) = dij 2 g1 pq in
+  let (dist_1, prev_1) = dij 2 g1 in
   let prev_array_1 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_1)) in
   let dist_array_1 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_1)) in 
   
   let g2 = My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); 
 				(4, 6.1, 3); (3, 4.1, 1); (0, 5.1, 3); (1, 8.1, 5); (4, 7.1, 5)] in
-  let (dist_2, prev_2) = dij 0 g2 pq in
+  let (dist_2, prev_2) = dij 0 g2 in
   let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
   let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
 
   let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
 				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
-  let (dist_3, prev_3) = dij 3 g3 pq in
+  let (dist_3, prev_3) = dij 3 g3 in
   let prev_array_3 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_3)) in
   let dist_array_3 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3)) in  
   assert (prev_array = "00_"); 
@@ -154,6 +153,7 @@ let run_tests () =
   assert (dist_array_2 = "9.2inf5.13.21.10." );
   assert (prev_array_3 = "433__3_");
   assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
+
 ;;
 
 run_tests ();
