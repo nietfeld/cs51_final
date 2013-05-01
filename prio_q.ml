@@ -400,6 +400,83 @@ let print_elt (e: elt) : unit =
 
 end
 
+
+(*******************************************************************************)
+(******************   Priority Q using Binary Search Tree **********************)
+(*******************************************************************************)
+
+
+
+(* binary search tree invariant -- if its smaller, then it goes on the 
+left, it its bigger, it goes on the right *)
+module BinSQueue : PRIOQUEUE = 
+struct
+  exception QueueEmpty
+  exception Impossible
+
+  type queue =  Leaf | Branch of queue * elt * queue
+
+  let empty = Leaf
+
+  let print_q _ = ()
+  
+  let is_empty (t: queue) = t = empty  
+
+  (* the second arguments needs to be a queue and not a tree *)
+  let rec add (x : elt) (t : queue) : queue = 
+    match t with
+    | Leaf -> Branch(Leaf, x, Leaf)
+    | Branch (l, v, r) ->
+      if x.id < v.id then Branch (add x l, v, r) 
+      else Branch (l, v, add x r) 
+        
+   (* helper for take *)
+  let rec pull_min (t : queue) : elt * queue =
+    match t with
+    | Leaf -> raise QueueEmpty
+    | Branch (Leaf, v, r) -> (v, r)
+    | Branch (l, v, r) -> let min, t' = pull_min l in (min, Branch (t', v, r))
+    
+  (* this used to be an elt list -- why would it think that? *)
+  let rec take (t : queue) : elt * queue =
+    match t with
+    | Leaf -> raise QueueEmpty
+    | Branch (Leaf, v, r) -> (v, r)
+    | Branch (l, v, r) -> let min, t' = pull_min l in (min, Branch (t', v, r))
+
+(* we want lookup to return an elt option *)
+(* this lookup assumes that our tree is organized based on ids
+ !!!!!!!!!!!!!!!!!!!!!! *)
+  let rec lookup (x : int) (t : queue) : elt option = 
+    match t with
+    | Leaf -> None (* q's empty *)
+    | Branch (l, v, r) -> 
+       if v.id = x then Some v
+       else if x < v.id then lookup x l
+       else lookup x r
+
+
+  let rec delete (x : int) (t : queue) : queue =
+    match t with
+    | Leaf -> failwith "Couldn't find it"
+    | Branch (l, v, r) ->
+      if v.id = x then (*????*) Leaf
+      else if v.id < x then Branch (l, v, delete x r)
+      else Branch (delete x l, v, r)
+
+
+  (* change this function completely *)
+  let update (id: int) (new_dist: float) (pq: queue) : queue =
+    let take_out = delete id pq in
+    add {id = id; tent_dist = new_dist} take_out
+          
+
+  let run_tests () = 
+    () 
+end
+
+
+
 (*******************************************************************************)
 (********************    Priority Q using D-ary Heap   *************************)
 (*******************************************************************************)
