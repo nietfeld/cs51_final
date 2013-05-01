@@ -479,13 +479,8 @@ struct
    
   let empty = fibheap_create ()
     
-<<<<<<< HEAD
-  let idarray = Array.make 10 (fibnode_new {id=0;tent_dist=0.} infinity)
-    
-=======
   let hash = Hashtbl.create 10 
   
->>>>>>> 74a9649f875c9f69a6dc837ddaddbc09a19a4d1f
   let is_empty (q: queue) : bool = q = empty
     
   let add (e: elt) (q: queue) =
@@ -496,17 +491,9 @@ struct
     let node = fibheap_extract_min q in print_string "???" ;
     ({id=node.key.id;tent_dist=node.data},q)
       
-<<<<<<< HEAD
-  let lookup (id: int) (q: queue) : elt =
-    let node = Array.get idarray id in
-    {id=node.key.id;tent_dist=node.data}
-  
-=======
-  let lookup (id: int) (q: queue) : elt option =
-    let node = Hashtbl.find hash id in
+  let node = Hashtbl.find hash id in
     Some {id=node.key.id;tent_dist=node.data}
       
->>>>>>> 74a9649f875c9f69a6dc837ddaddbc09a19a4d1f
   let delete (id: int) (q: queue) : queue =
     let node = Hashtbl.find hash id in
     Hashtbl.remove hash id; fibheap_delete q node; q
@@ -545,5 +532,6 @@ end
 			
 end;;
 
-FibHeap.run_tests ();;
+Fibheap.run_tests ();;
+
 *)
