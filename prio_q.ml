@@ -532,5 +532,4 @@ struct
 			
 end;;
 
-FibHeap.run_tests ();;
-*)
+Fibheap.run_tests ();;
