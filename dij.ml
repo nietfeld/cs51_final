@@ -1,33 +1,34 @@
-open Prio_q 
-open Array
-open Graphs
 (*open Matrix *)
 
+open Prio_q
+open Array
+open Graphs
+
 open Graph
+open ListQueue
+
 (*open ListQueue *)
 open BinaryHeap 
 
 exception Not_found
 exception QueueEmpty
 
-(* Need to finish implementing prioq *) 
 (*module IntListQueue =  ListQueue *)
 module IntHeapQueue =  BinaryHeap 
+
+
+(* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Graph
-
-open My_graph
-
-(* right now -- would have to change this when we test *)
 module My_queue = IntHeapQueue
 
-(* FIX CURR_NODE TO BETTER TYPE *) 
 let initialize_queue (n: int) start =
-  let rec add_elts pq (to_add: int) = (* to add used to be 1 here *)
-    if to_add = (0) then My_queue.update start 0. pq
+  let rec add_elts pq (to_add: int) = 
+    if to_add = (-1) then My_queue.update start 0. pq
     else add_elts (My_queue.add {id = to_add; tent_dist = infinity} pq) 
       (to_add - 1)
-  (* for starting node, we want the id and dist 0. *) 
-  in (add_elts My_queue.empty (n-1));;
+  in (add_elts My_queue.empty (n-1)) (* WHY IS THIS n-1? *)
+
+
 
 let rec update_queue pq (curr_node: int*float) neighbor_list dist prev = 
   let (node_id, distance_from_start) = curr_node in 
@@ -37,14 +38,16 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
     (match Array.get dist n with
     | infinity ->   
         (match (My_queue.lookup n pq) with
-	| None ->  pq
+	| None ->  print_string "not returuning anything \n"; pq
 	| Some {id=k; tent_dist=d} -> 
       (let new_dist = e +. distance_from_start in 
       print_string ("N: "^(string_of_int n)^"K: "^(string_of_int k)^"D:  "^(string_of_float d));
+      print_string ("THIS IS THE NEW DIST:"^(string_of_float new_dist)^"\n");
       if new_dist < d then 
 	(Array.set prev n (Some node_id); 
 	 let new_pq =
 	   My_queue.update n new_dist pq in 
+	 My_queue.print_q new_pq;
 	 update_queue new_pq curr_node (Some tl) dist prev)
       (* don't update, do next neighbor *) 
       else update_queue pq curr_node (Some tl) dist prev)))
@@ -80,12 +83,16 @@ let deopt_p (x: int option) : string =
   | None -> "_"
   | Some int -> string_of_int int
 
+let print_dist_array arr =
+  print_string ("Prev array:"^ (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list arr))^"\n")
+
+let print_prev_array arr =
+  print_string ("Dist array:"^(List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list arr))^"\n")
+
+
 let print_results (dist : float array) (prev: int option array) (graph_size: int) (start_node: int) : unit =
-  print_string "Here is the whole prev array\n";
-  (* this deopt y might still raise failure here because we still want to print out *)
-  print_string (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)); 
-  print_string "\n Here is the whole dist array \n";
-  print_string (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist));
+  print_prev_array prev;
+  print_dist_array dist;
   print_string "\n Done \n";
   let rec helper_dist (dist: float array) (n: int) =
     if n = graph_size then Printf.printf "Done!"
@@ -99,19 +106,19 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
 let dij (start : node) (g : graph) (pq : queue) =
   if has_node g start then 
     let graph_size = My_graph.num_nodes g in
-			    (* make distance and prev arrays *)
-			    (* write way to have them all be in scope *) 
+    (* make distance and prev arrays *)
+    (* write way to have them all be in scope *) 
     let dist = Array.make graph_size infinity in 
     let prev = Array.make graph_size (None) in (* 0 *)
     let prioq = initialize_queue graph_size start in 
     Printf.printf "I'm here and done initializing q \n";
-			    (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
+    (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
     let rec iterate (pq : queue) (number_rounds: int) : unit = 
       match number_rounds with 
-      | (-1) -> Printf.printf "Finished bitches \n" 
+      | 0 -> Printf.printf "Finished bitches \n" (* THIS IS WHAT MIGHT BE CAUSING IT TO RUN THAT EXTRA TIME *)
       | _ -> let new_q = one_round pq g dist prev in 
 	     iterate new_q (number_rounds-1) 
-    in iterate prioq (graph_size-1); (* used to be -1 *)
+    in iterate prioq graph_size; (* used to be -1 *)
     print_results dist prev graph_size start;
     (dist,prev) (* return this for testing *)
   else failwith "dij: node unknown";; 
@@ -141,7 +148,7 @@ let run_tests () =
 				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
   let (dist_3, prev_3) = dij 3 g3 pq in
   let prev_array_3 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_3)) in
-  let dist_array_3 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3)) in 
+  let dist_array_3 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3)) in  
  (* assert (prev_array = "00_"); 
   assert (dist_array = "2.1.0.");
   assert (prev_array_1 = "22___"); 

@@ -1,8 +1,3 @@
-(* Here is where the module signature for the priority q module will go and all the functors that implement it *)
-
-(* problem with this value since its not mutable 
-so can't really do update *)
-
 open Order
 exception TODO
 
@@ -43,6 +38,8 @@ sig
    and returns the updated queue *)
   val update : int -> float -> queue -> queue
 
+  val print_q : queue -> unit
+
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
   val run_tests : unit -> unit
@@ -59,6 +56,8 @@ struct
   exception Impossible
     
   type queue = elt list
+
+  let print_q _ = ()
 
   let empty = []
   
@@ -206,7 +205,7 @@ struct
 
   let extract_tree (q : queue) : tree =
     match q with
-    | Empty -> (*raise QueueEmpty*) Leaf {id = 3; tent_dist = 2332323.}
+    | Empty -> (*raise QueueEmpty*) Leaf {id = 0; tent_dist = 3.14436624}
     | Tree t -> t
 
   (* Takes a tree, and returns the item that was most recently inserted into
@@ -245,6 +244,17 @@ let print_elt (e: elt) : unit =
     | Empty -> print_string "Empty String"
     | Tree t -> print_h t
 
+
+  let rec print_t (t: tree) =
+    match t with  
+    | Leaf x -> print_string "Leaf "; print_elt x; 
+    | OneBranch (e1, e2) -> 
+      (print_string "One Branch(";  print_elt e1; print_elt e2; print_string ")")
+    | TwoBranch (Even, e1, t1, t2) -> 
+      (print_string "TwoBranch (Even, "; print_elt e1; print_t t1; print_t t2; print_string ")")
+    | TwoBranch (Odd, e1, t1, t2) -> 
+      (print_string "TwoBranch (Odd, "; print_elt e1; print_t t1; print_t t2; print_string ")")
+	
   let rec get_last (t : tree) : elt * queue =
     print_string "Im in get_last";
     match t with
@@ -262,7 +272,7 @@ let print_elt (e: elt) : unit =
   (* Implements the algorithm described in the writeup. You must finish this
    * implementation, as well as the implementations of get_last and fix, which
    * take uses *)
-  let rec take (q : queue) : elt * queue =
+  let take (q : queue) : elt * queue =
     print_string "I'm in take yo \n";
     print_q q;
     match extract_tree q with
@@ -271,8 +281,8 @@ let print_elt (e: elt) : unit =
     | TwoBranch (Even, e, t1, t2) ->
       let (last, q2') = get_last t2 in
       (match q2' with
-       | Empty -> (e, Tree (fix (OneBranch (last, get_top t1))))
-       | Tree t2' -> (e, Tree (fix (TwoBranch (Odd, last, t1, t2')))))
+      | Empty -> (e, Tree (fix (OneBranch (last, get_top t1))))
+      | Tree t2' -> (e, Tree (fix (TwoBranch (Odd, last, t1, t2')))))
     | TwoBranch (Odd, e, t1, t2) ->
       let last, q1' = get_last t1 in
       match q1' with
@@ -297,7 +307,6 @@ let print_elt (e: elt) : unit =
         else None
       | TwoBranch (b, v, l, r) ->
 	if v.id = id then Some v
-        else if id < v.id then None
 	else reconcile (match_tree l) (match_tree r)
     in
     match q with
@@ -315,26 +324,54 @@ let print_elt (e: elt) : unit =
       | OneBranch (l, r) -> 
 	if l.id = id then OneBranch (new_rec, r)
 	else if r.id = id then
-	  (if r.tent_dist > new_dist then OneBranch (new_rec, r)
-           else OneBranch (r, new_rec))
+	  (if l.tent_dist > new_dist then OneBranch (new_rec, l)
+           else OneBranch (l, new_rec))
 	else OneBranch (l, r)
       | TwoBranch (Even, v, l, r) ->
 	if v.id = id then TwoBranch (Even, new_rec, l, r)
        (* might be prob here *)
-	else (TwoBranch (Even, v, (helper id new_dist l),  (helper id new_dist r))) 
+	else (fix (TwoBranch (Even, v, (helper id new_dist l),  (helper id new_dist r))) )
       | TwoBranch (Odd, v, l, r) ->
 	if v.id = id then TwoBranch (Odd, new_rec, l, r)
        (* might be prob here *)
-	else (TwoBranch (Odd, v, (helper id new_dist l),  (helper id new_dist r)))
+	else (fix (TwoBranch  (Odd, v, (helper id new_dist l),  (helper id new_dist r))) )
     in
     match q with  
     | Empty -> raise (Failure "trying to update an empty q")
-    | Tree t -> Tree (fix (helper id new_dist t))
-    
+    | Tree t -> Tree (helper id new_dist t)
 
 
-(*
-  let test_get_top () =
+  let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.})));;
+  
+  assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});;
+  print_string "PASSED FIRST";;
+  assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});;
+  print_string "PASSED SECOND";;
+  assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});;
+  assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});;
+  assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});;
+
+ 
+  let test_2 = Tree (TwoBranch (Even, {id= 2; tent_dist= 0.}, 
+		     OneBranch ({id= 3; tent_dist=infinity}, {id= 1; tent_dist =infinity}), 
+		     OneBranch ( {id= 4; tent_dist =infinity}, {id= 0; tent_dist =infinity} )));;
+
+  assert((lookup 3 test_2) = Some{id= 3; tent_dist=infinity});;
+
+
+  let test_3 = Tree(TwoBranch (Odd, {id= 4; tent_dist =3.}, OneBranch( {id= 3; tent_dist= infinity}, {id= 1; tent_dist = infinity}), Leaf {id= 0; tent_dist =infinity}));;
+  
+  let my_print =
+   match (lookup 3 test_3) with
+   | None -> print_string "not working"
+   | Some a -> print_string ((string_of_int a.id)^(string_of_float a.tent_dist));;
+
+  my_print;;
+  assert((lookup 3 test_3) = Some{id= 3; tent_dist=infinity});;
+
+
+  (*
+    let test_get_top () =
     let x = E.generate () in
     let t = Leaf x in
     assert (get_top t = x);
@@ -351,7 +388,7 @@ let print_elt (e: elt) : unit =
     let t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)) in
     assert (get_top t = x)
 
-  let test_fix () =
+    let test_fix () =
     let x = E.generate () in
     let t = Leaf x in
     assert (fix t = t);
@@ -390,14 +427,14 @@ let print_elt (e: elt) : unit =
     let t = TwoBranch (Even, q, OneBranch (y, z), OneBranch (x, w)) in
     assert (fix t = TwoBranch (Even, x, OneBranch (y, z), OneBranch (w, q)))
 
-  let test_take () =
+    let test_take () =
     let x = E.generate () in
     let y = E.generate_gt x () in
     let z = E.generate_gt y () in
     let w = E.generate_gt z () in
     let t = Tree (TwoBranch (Odd, x, OneBranch (y, w), Leaf z)) in
     assert (take t = (x, Tree (TwoBranch (Even, y, Leaf w, Leaf z))))
-*)
+  *)
 
   let run_tests () = ()
  (*   test_get_top ();
@@ -492,7 +529,7 @@ end
     let _ = add {id=6;tent_dist=6.} a in
 
     let _ = add {id=7;tent_dist=7.} a in
-    assert(fibheap_print string_of_float Format.std_formatter a = ());
+    assert(fibheap_print_string_of_float Format.std_formatter a = ());
     assert(take a = ({id=1;tent_dist=1.}, a));
     let _ = add {id=7;tent_dist=7.} a in
     assert(fibheap_print string_of_float Format.std_formatter a = ());
