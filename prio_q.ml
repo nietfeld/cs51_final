@@ -1,15 +1,12 @@
-(* Here is where the module signature for the priority q module will go and all the functors that implement it *)
-
-(* problem with this value since its not mutable 
-so can't really do update *)
-
 open Order
 exception TODO
 
 type elt = {id : int; mutable tent_dist : float };;
 
 let compare x y = 
-  if x.tent_dist < y.tent_dist then Less else if x.tent_dist > y.tent_dist then Greater else Eq
+  if x.tent_dist < y.tent_dist then Less 
+  else if x.tent_dist > y.tent_dist then Greater 
+  else Eq
 ;;
 
 module type PRIOQUEUE =
@@ -41,8 +38,6 @@ sig
    and returns the updated queue *)
   val update : int -> float -> queue -> queue
 
-  val delete : int -> queue -> queue
-
   (* Run invariant checks on the implementation of this binary tree.
    * May raise Assert_failure exception *)
   val run_tests : unit -> unit
@@ -51,7 +46,6 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Lists   ******************************)
 (*******************************************************************************)
-
 
 module ListQueue : PRIOQUEUE = 
 struct
@@ -73,23 +67,21 @@ struct
       | Greater | Eq -> hd::(add e tl)
 
   let print_queue (q: queue) : unit = 
-    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
+    List.iter (fun x -> (print_string ("\n id: "^(string_of_int x.id)^
+	      " tent_dist: "^(string_of_float x.tent_dist)))) q
     
   let rec take (q : queue) =
-    print_string "Current:"; print_queue q; print_string "\n ******** \n";
+    print_string "Current:"; print_queue q; print_string "\n *** \n";
     (match q with
-    | [] -> (*raise QueueEmpty (* might want to do something about this later *) *) print_string "Better end now"; ({id = 0; tent_dist = infinity}, [])
+    | [] -> ({id = 0; tent_dist = infinity}, [])
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
-    List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
-    
-
-  let a = [{id = 1; tent_dist = 1.}; {id = 2; tent_dist = 2.}; {id = 3; tent_dist = 3.}];;
-  
+    List.fold_right (fun a y -> if a.id = l_id then Some a else y) q None
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
-    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
+    let new_queue = List.fold_left 
+      (fun x y -> if y.id = a then x else y::x) [] q in 
     add {id = a; tent_dist = new_dist} new_queue
 
   let delete (a: int) (q: queue) : queue = 
@@ -319,23 +311,70 @@ struct
     | Empty -> None
     | Tree t -> match_tree t
 
-  (* let rec delete (id: int) (pq: queue) : queue =
-    let rec find_id (a: int) (t: tree) : tree = 
-      match t with 
-      (* keep track of parent *) 
-      | Leaf x -> if a = x.id then  (* DEPENDS ON PARENT OF X*) else raise (Failure "can't find x")
-      | OneBranch (x, y) -> if x.id = a then 
-*)
 
-  (* We know this is broken *) 
-  let rec update (id: int) (new_dist: float) (q: queue) : queue =
-   (* let elt = lookup id q in
-    elt.tent_dist <- new_dist; q*) q
-      
-  (* THIS IS NOT RIGHT *)
-  let delete (n : int) (q: queue) : queue = Empty
-(*
-  let test_get_top () =
+ let fix_q (t:tree) : tree = t
+   (* match q with
+    | Leaf -> q 
+    (* was just inserted to the right *) 
+    | Heap (Even,e1,q1,q2) -> 
+      (* IS Q1 or Q2 *) 
+      (match q2 with 
+      (* nothing to fix *) 
+      | Leaf -> q
+      (* combine next two cases *)
+      | Heap (Odd,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	  then Heap(Even, e2, (Heap (Odd,e1,q3,q4)), q2) 
+	else q
+      | Heap (Even,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	  then Heap (Even, e2, (Heap (Even,e1,q3,q4)), q2) 
+	else q
+      )
+    (* was just inserted to the left *) 
+    | Heap(Odd,e1,q1,q2) -> 
+      (match q1 with 
+      | Leaf -> q
+      | Heap (Odd,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	  then Heap(Odd,e2,q1,(Heap(Odd,e1,q3,q4)))
+	else q 
+      | Heap(Even,e2,q3,q4) -> 
+	if e1.tent_dist > e2.tent_dist 
+	then Heap(Odd,e2,q1,(Heap(Even,e1,q3,q4)))
+	else q
+      )
+   *)
+  (* now we'll need to fix it *) 
+ let update (id: int) (new_dist: float)(q: queue) : queue = 
+   let new_rec = {id = id; tent_dist = new_dist} in
+   let rec helper (id: int) (new_dist: float) (t: tree) : tree =
+     match t with
+     | Leaf x -> 
+       if x.id = id then (Leaf new_rec)
+          else raise (Failure "not really an exception")
+     | OneBranch (l, r) -> 
+       if l.id = id then OneBranch (new_rec, r)
+       else if r.id = id then
+	 (if r.tent_dist > new_dist then OneBranch (new_rec, r)
+          else OneBranch (r, new_rec))
+       else raise (Failure "I DUNNO")
+     | TwoBranch (Even, v, l, r) ->
+       if v.id = id then TwoBranch (Even, new_rec, l, r)
+       (* might be prob here *)
+       else fix_q (TwoBranch (Even, v, (helper id new_dist l),  (helper id new_dist r))) 
+     | TwoBranch (Odd, v, l, r) ->
+       if v.id = id then TwoBranch (Odd, new_rec, l, r)
+       (* might be prob here *)
+       else fix_q(TwoBranch (Odd, v, (helper id new_dist l),  (helper id new_dist r)))
+   in
+   match q with  
+   | Empty -> raise (Failure "trying to update an empty")
+   | Tree t -> Tree (helper id new_dist t)
+
+
+  (*
+    let test_get_top () =
     let x = E.generate () in
     let t = Leaf x in
     assert (get_top t = x);
@@ -352,7 +391,7 @@ struct
     let t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)) in
     assert (get_top t = x)
 
-  let test_fix () =
+    let test_fix () =
     let x = E.generate () in
     let t = Leaf x in
     assert (fix t = t);
@@ -391,16 +430,16 @@ struct
     let t = TwoBranch (Even, q, OneBranch (y, z), OneBranch (x, w)) in
     assert (fix t = TwoBranch (Even, x, OneBranch (y, z), OneBranch (w, q)))
 
-  let test_take () =
+    let test_take () =
     let x = E.generate () in
     let y = E.generate_gt x () in
     let z = E.generate_gt y () in
     let w = E.generate_gt z () in
     let t = Tree (TwoBranch (Odd, x, OneBranch (y, w), Leaf z)) in
     assert (take t = (x, Tree (TwoBranch (Even, y, Leaf w, Leaf z))))
-*)
+  *)
 
-  let run_tests () = ()
+	   let run_tests () = ()
  (*   test_get_top ();
     test_fix ();
     test_take () *)
@@ -415,6 +454,8 @@ end
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
+
+(*
 open Fibsource
 
 module EltOrd =
@@ -492,4 +533,3 @@ struct
 end;;
 
 Fibheap.run_tests ();;
-
