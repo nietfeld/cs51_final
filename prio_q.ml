@@ -12,36 +12,14 @@ let compare x y =
 module type PRIOQUEUE =
 sig
   exception QueueEmpty
-    
-  (* The queue itself (stores things of type elt) *)
   type queue
-
-  (* Returns an empty queue *)
   val empty : queue
-
-  (* Takes a queue, and returns whether or not it is empty *)
   val is_empty : queue -> bool
-
-  (* Takes an element and a queue, and returns a new queue with the
-   * element added *)
   val add : elt -> queue -> queue
-
-  (* Pulls the highest priority element out of the passed-in queue,
-   * also returning the queue with that element
-   * removed. Can raise the QueueEmpty exception. *)
   val take : queue -> elt * queue
-    
-  (* Given an id, gives back the corresponding node with that id *)
   val lookup : int -> queue -> elt option
-
-  (* this takes the id of the element to be updated and the new distance
-   and returns the updated queue *)
   val update : int -> float -> queue -> queue
-
   val print_q : queue -> unit
-
-  (* Run invariant checks on the implementation of this binary tree.
-   * May raise Assert_failure exception *)
   val run_tests : unit -> unit
 end
 
@@ -77,12 +55,11 @@ struct
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
-    | [] -> raise QueueEmpty (*({id = 12; tent_dist = 34.22}, []) *)
+    | [] -> raise QueueEmpty 
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
-    List.fold_right (fun a y -> if a.id = l_id then Some a else y) q None
-    
+    List.fold_left (fun a y -> if y.id = l_id then Some y else a) None q
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
     let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
@@ -93,7 +70,7 @@ struct
 
   let run_tests () = 
     () 
- 
+
 end
 
 
@@ -347,9 +324,7 @@ let print_elt (e: elt) : unit =
   let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.})));;
   
   assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});;
-  print_string "PASSED FIRST";;
   assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});;
-  print_string "PASSED SECOND";;
   assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});;
   assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});;
   assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});;
@@ -363,13 +338,7 @@ let print_elt (e: elt) : unit =
 
 
   let test_3 = Tree(TwoBranch (Odd, {id= 4; tent_dist =3.}, OneBranch( {id= 3; tent_dist= infinity}, {id= 1; tent_dist = infinity}), Leaf {id= 0; tent_dist =infinity}));;
-  
-  let my_print =
-   match (lookup 3 test_3) with
-   | None -> print_string "not working"
-   | Some a -> print_string ((string_of_int a.id)^(string_of_float a.tent_dist));;
-
-  my_print;;
+ 
   assert((lookup 3 test_3) = Some{id= 3; tent_dist=infinity});;
 
 

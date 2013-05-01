@@ -3,11 +3,11 @@
  (* function to do the time calculations *)
 let exe_time f g ss =
   let t0 = Sys.time() in
-  Printf.printf "Start (%5.2f)\n" t0;
+  Printf.printf "Start: \n" t0;
   List.iter (fun s -> ignore(f s g)) ss;
   let t1 = Sys.time() in
-  Printf.printf "End (%5.2f)\n" t1;
-  Printf.printf "Duration = (%5.2f)\n" (t1 -. t0) ;;
+  Printf.printf "End \n" t1;
+  Printf.printf "Duration = \n" (t1 -. t0) ;;
 
 
 (* create a random list of 2000 nodes and measure the performacne of graph a *)
