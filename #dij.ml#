@@ -105,16 +105,14 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
 let dij (start : node) (g : graph) (pq : queue) =
   if has_node g start then 
     let graph_size = My_graph.num_nodes g in
-    (* make distance and prev arrays *)
-    (* write way to have them all be in scope *) 
     let dist = Array.make graph_size infinity in 
-    let prev = Array.make graph_size (None) in (* 0 *)
+    let prev = Array.make graph_size (None) in 
     let prioq = initialize_queue graph_size start in 
     Printf.printf "I'm here and done initializing q \n";
     (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
     let rec iterate (pq : queue) (number_rounds: int) : unit = 
       match number_rounds with 
-      | 0 -> Printf.printf "Finished bitches \n" (* THIS IS WHAT MIGHT BE CAUSING IT TO RUN THAT EXTRA TIME *)
+      | 0 -> Printf.printf "Finished bitches \n"
       | _ -> let new_q = one_round pq g dist prev in 
 	     iterate new_q (number_rounds-1) 
     in iterate prioq graph_size; (* used to be -1 *)

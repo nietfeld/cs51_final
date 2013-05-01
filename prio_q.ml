@@ -77,11 +77,11 @@ struct
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
-    | [] -> ({id = 0; tent_dist = infinity}, []) (* why is this ID 0? *)
+    | [] -> raise QueueEmpty (*({id = 12; tent_dist = 34.22}, []) *)
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
-    List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
+    List.fold_right (fun a y -> if a.id = l_id then Some a else y) q None
     
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
@@ -341,6 +341,9 @@ let print_elt (e: elt) : unit =
     | Tree t -> Tree (helper id new_dist t)
 
 
+
+  
+  (* make sure to organize these tests *)
   let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.})));;
   
   assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});;
