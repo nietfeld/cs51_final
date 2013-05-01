@@ -5,27 +5,27 @@ open Array
 open Graphs
 
 open Graph
-
-open ListQueue 
-module IntListQueue =  ListQueue 
-
 (*
+open ListQueue 
+module IntListQueue =  ListQueue *)
+
+
 open BinaryHeap 
-module IntHeapQueue =  BinaryHeap *)
+module IntHeapQueue =  BinaryHeap 
 
 exception Not_found
 exception QueueEmpty
 
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Graph
-module My_queue = IntListQueue
+module My_queue = IntHeapQueue
 
 let initialize_queue (n: int) start =
   let rec add_elts pq (to_add: int) = 
     if to_add = (-1) then My_queue.update start 0. pq
     else add_elts (My_queue.add {id = to_add; tent_dist = infinity} pq) 
       (to_add - 1)
-  in (add_elts My_queue.empty (n-1)) (* n-1 make sure we insert the starting node *)
+  in (add_elts My_queue.empty (n-1)) 
 
 
 
@@ -120,6 +120,14 @@ let dij (start : node) (g : graph) =
     (dist,prev) (* return this for testing *)
   else failwith "dij: node unknown";; 
 
+let exe_time f g ss =
+  let t0 = Sys.time() in
+  Printf.printf "Start (%5.5f)\n" t0;
+  f g ss;
+  let t1 = Sys.time() in
+  Printf.printf "End (%5.5f)\n" t1;
+  Printf.printf "Duration = (%5.5f)\n" (t1 -. t0) ;;
+
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
@@ -151,9 +159,15 @@ let run_tests () =
   assert (dist_array_1 = "3.4.0.infinf");
   assert (prev_array_2 = "1_010_");
   assert (dist_array_2 = "9.2inf5.13.21.10." );
-  assert (prev_array_3 = "433__3_");
+  (* lists is failing these last two asserts *)
+ assert (prev_array_3 = "433__3_");
   assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
-
 ;;
 
 run_tests ();
+
+
+(* here is where we could do the timing functions *)
+  let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
+				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
+  exe_time dij 3 g3;;

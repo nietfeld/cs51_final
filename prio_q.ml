@@ -27,7 +27,6 @@ end
 (********************    Priority Q using Lists   ******************************)
 (*******************************************************************************)
 
-
 module ListQueue : PRIOQUEUE = 
 struct
   exception QueueEmpty
@@ -50,7 +49,8 @@ struct
       | Greater | Eq -> hd::(add e tl)
 
   let print_queue (q: queue) : unit = 
-    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
+    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
+    print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
@@ -62,7 +62,8 @@ struct
     List.fold_left (fun a y -> if y.id = l_id then Some y else a) None q
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
-    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
+    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q 
+    in 
     add {id = a; tent_dist = new_dist} new_queue
 
   let delete (a: int) (q: queue) : queue = 
@@ -70,9 +71,7 @@ struct
 
   let run_tests () = 
     () 
-
 end
-
 
 (*******************************************************************************)
 (********************    Priority Q using Binary Heap   ************************)
@@ -182,22 +181,8 @@ struct
 
   let extract_tree (q : queue) : tree =
     match q with
-    | Empty -> (*raise QueueEmpty*) Leaf {id = 0; tent_dist = 3.14436624}
+    | Empty -> raise QueueEmpty 
     | Tree t -> t
-
-  (* Takes a tree, and returns the item that was most recently inserted into
-   * that tree, as well as the queue that results from removing that element.
-   * Notice that a queue is returned (since removing an element from just a leaf
-   * would result in an empty case, which is captured by the queue type
-   *
-   * By "item most recently inserted", we don't mean the
-   * most recently inserted *value*, but rather the newest node that was
-   * added to the bottom-level of the tree. If you follow the implementation
-   * of add carefully, you'll see that the newest value may end up somewhere
-   * in the middle of the tree, but there is always *some* value brought
-   * down into a new node at the bottom of the tree. *This* is the node
-   * that we want you to return.
-   *)
 
 let print_elt (e: elt) : unit = 
     print_string " id: ";
