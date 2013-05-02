@@ -5,9 +5,9 @@ open Array
 open Graphs
 
 open Graph
-(*
+
 open ListQueue 
-module IntListQueue =  ListQueue *)
+module IntListQueue =  ListQueue 
 
 
 open BinaryHeap 
@@ -18,6 +18,7 @@ exception QueueEmpty
 
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Graph
+
 module My_queue = IntHeapQueue
 
 let initialize_queue (n: int) start =
@@ -159,8 +160,9 @@ let run_tests () =
   assert (prev_array_2 = "1_010_");
   assert (dist_array_2 = "9.2inf5.13.21.10." );
   (* lists is failing these last two asserts *)
- assert (prev_array_3 = "433__3_");
+  assert (prev_array_3 = "433__3_");
   assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
+
 ;;
 
 run_tests ();
