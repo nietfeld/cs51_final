@@ -59,20 +59,20 @@ struct
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
-<<<<<<< HEAD
+(*
     | [] -> ({id = 0; tent_dist = infinity}, []) (* why is this ID 0? *)
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
     List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
     
-=======
+*)
     | [] -> raise QueueEmpty 
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
     List.fold_left (fun a y -> if y.id = l_id then Some y else a) None q
->>>>>>> 704873db384c23bded771a70a1ce1f72f1a7b8a3
+
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
     let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q 
@@ -197,14 +197,15 @@ struct
     | Empty -> raise QueueEmpty 
     | Tree t -> t
 
-let print_elt (e: elt) : unit = 
+let print_elt (e: elt) : unit = print_string "" (*
     print_string " id: ";
     print_string (string_of_int e.id);
     print_string " tent_dist "; 
     print_string (string_of_float e.tent_dist);
     print_string " "
+ *)
 
-  let print_q (q:queue) = 
+  let print_q (q:queue) = print_string "" (*
     let rec print_h t =
     match t with  
     | Leaf x -> print_string "Leaf "; print_elt x; 
@@ -218,7 +219,7 @@ let print_elt (e: elt) : unit =
     match q with 
     | Empty -> print_string "Empty String"
     | Tree t -> print_h t
-
+			     *)
 
   let rec print_t (t: tree) =
     match t with  
@@ -249,7 +250,7 @@ let print_elt (e: elt) : unit =
    * take uses *)
   let take (q : queue) : elt * queue =
     print_string "I'm in take yo \n";
-    print_q q;
+    print_q q; 
     match extract_tree q with
     | Leaf e -> e, Empty
     | OneBranch (e1, e2) -> e1, Tree (Leaf e2)
@@ -426,11 +427,11 @@ struct
 
   type queue =  Leaf | Branch of queue * elt * queue
 
-  let empty = Leaf
+  let empty () = Leaf
 
   let print_q _ = ()
   
-  let is_empty (t: queue) = t = empty  
+  let is_empty (t: queue) = t = Leaf  
 
   (* the second arguments needs to be a queue and not a tree *)
   let rec add (x : elt) (t : queue) : queue = 
@@ -440,7 +441,7 @@ struct
       if x.id < v.id then Branch (add x l, v, r) 
       else Branch (l, v, add x r) 
         
-   (* helper for take *)
+  (* helper for take *)
   let rec pull_min (t : queue) : elt * queue =
     match t with
     | Leaf -> raise QueueEmpty
@@ -453,10 +454,10 @@ struct
     | Leaf -> raise QueueEmpty
     | Branch (Leaf, v, r) -> (v, r)
     | Branch (l, v, r) -> let min, t' = pull_min l in (min, Branch (t', v, r))
-
-(* we want lookup to return an elt option *)
-(* this lookup assumes that our tree is organized based on ids
- !!!!!!!!!!!!!!!!!!!!!! *)
+						   
+  (* we want lookup to return an elt option *)
+  (* this lookup assumes that our tree is organized based on ids
+     !!!!!!!!!!!!!!!!!!!!!! *)
   let rec lookup (x : int) (t : queue) : elt option = 
     match t with
     | Leaf -> None (* q's empty *)
@@ -464,7 +465,6 @@ struct
        if v.id = x then Some v
        else if x < v.id then lookup x l
        else lookup x r
-
 
   let rec delete (x : int) (t : queue) : queue =
     match t with
@@ -474,7 +474,7 @@ struct
       else if v.id < x then Branch (l, v, delete x r)
       else Branch (delete x l, v, r)
 
-
+	
   (* change this function completely *)
   let update (id: int) (new_dist: float) (pq: queue) : queue =
     let take_out = delete id pq in
@@ -508,7 +508,7 @@ struct
     else 0
   let min = {id=0;tent_dist=0.}
 end
-
+  
 (* INTIALIZED ARRAY WITH 1000 NODES OF DISTANCE INFINITY *)
 
 module FibHeap : PRIOQUEUE = 
@@ -529,12 +529,12 @@ struct
     
   let add (e: elt) (q: queue) =
     let (heap, hash) = q in
-    let node = fibnode_new e e.tent_dist in print_string "!";
+    let node = fibnode_new e e.tent_dist in
     fibheap_insert heap node; Hashtbl.add hash e.id node; q
       
   let take (q: queue) : elt * queue =
     let (heap, hash) = q in
-    let node = fibheap_extract_min heap in print_string "?" ;
+    let node = fibheap_extract_min heap in
     Hashtbl.remove hash node.key.id;
     ({id=node.key.id;tent_dist=node.data},q)
       
@@ -567,17 +567,14 @@ struct
     let _ = add {id=4;tent_dist=5.} a in
     let _ = add {id=5;tent_dist=6.} a in  
 
-    assert(print_q a = ());
     let (el, b) = take a in
     assert(el = ({id=0;tent_dist=1.}));
-    assert(print_q b = ()); (*
     let (el, c) = take b in
     assert(el = ({id=1;tent_dist=2.}));
     let (el, d) = take c in
     assert(el = ({id=2;tent_dist=3.}));
     let (el, e) = take d in
     assert(el = ({id=3;tent_dist=4.}));
-			   *)
 			
 end;;
 
