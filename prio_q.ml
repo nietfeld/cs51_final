@@ -59,6 +59,14 @@ struct
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
+(*
+    | [] -> ({id = 0; tent_dist = infinity}, []) (* why is this ID 0? *)
+    | hd::tl -> hd, tl)
+
+  let lookup (l_id: int) (q: queue) : elt option =	
+    List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
+    
+*)
     | [] -> raise QueueEmpty 
     | hd::tl -> hd, tl)
 
@@ -419,12 +427,10 @@ struct
 
   type queue =  Leaf | Branch of queue * elt * queue
 
-
   let empty () = Leaf
 
-  let print_q (q: queue) = ()
+  let print_q _ = ()
   
-
   let is_empty (t: queue) = t = Leaf  
 
   (* the second arguments needs to be a queue and not a tree *)
@@ -531,7 +537,8 @@ struct
     let node = fibheap_extract_min heap in
     Hashtbl.remove hash node.key.id;
     ({id=node.key.id;tent_dist=node.data},q)
-      let lookup (id: int) (q: queue) =
+      
+  let lookup (id: int) (q: queue) =
     let (heap, hash) = q in
     let node = Hashtbl.find hash id in
     Some {id=node.key.id;tent_dist=node.data}
@@ -572,5 +579,3 @@ struct
 end;;
 
 FibHeap.run_tests ();;
-
-
