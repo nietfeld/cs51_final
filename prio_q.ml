@@ -17,7 +17,7 @@ sig
   type queue
 
   (* Returns an empty queue *)
-  val empty : queue
+  val empty :  unit -> queue
 
   (* Takes a queue, and returns whether or not it is empty *)
   val is_empty : queue -> bool
@@ -59,9 +59,9 @@ struct
 
   let print_q _ = ()
 
-  let empty = []
+  let empty () = []
   
-  let is_empty (t: queue) = t = empty  
+  let is_empty (t: queue) = t = empty () 
 
   let rec add (e : elt) (q : queue) =
     match q with
@@ -77,11 +77,11 @@ struct
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
-    | [] -> raise QueueEmpty (*({id = 12; tent_dist = 34.22}, []) *)
+    | [] -> ({id = 0; tent_dist = infinity}, []) (* why is this ID 0? *)
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
-    List.fold_right (fun a y -> if a.id = l_id then Some a else y) q None
+    List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
     
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
@@ -116,7 +116,7 @@ struct
   (* A queue is either empty, or a tree *)
   type queue = Empty | Tree of tree
 
-  let empty = Empty
+  let empty () = Empty
 
   let is_empty (q : queue) = q = Empty
 
@@ -341,9 +341,6 @@ let print_elt (e: elt) : unit =
     | Tree t -> Tree (helper id new_dist t)
 
 
-
-  
-  (* make sure to organize these tests *)
   let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.})));;
   
   assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});;
@@ -451,12 +448,11 @@ end
 (*******************************************************************************)
 
 
-(*
 
 (*******************************************************************************)
 (********************    Priority Q using Fib Heap    **************************)
 (*******************************************************************************)
-(*
+
 open Fibsource
 
 module EltOrd =
@@ -478,63 +474,67 @@ struct
   module F = Make(EltOrd)
   open F
 
-  type queue = float fibheap
-   
-  let empty = fibheap_create ()
-    
-  let hash = Hashtbl.create 10 
+  type hashtable = (int, float fibnode) Hashtbl.t
+  type queue = float fibheap * hashtable
+     
+  let hash () = Hashtbl.create 10 
   
-  let is_empty (q: queue) : bool = q = empty
+  let empty () = (fibheap_create (), hash ())
+
+  let is_empty (q: queue) : bool = q = empty ()
     
   let add (e: elt) (q: queue) =
-    let node = fibnode_new e e.tent_dist in print_string "!!!";
-    fibheap_insert q node; Hashtbl.add hash e.id node; q
+    let (heap, hash) = q in
+    let node = fibnode_new e e.tent_dist in print_string "!";
+    fibheap_insert heap node; Hashtbl.add hash e.id node; q
       
   let take (q: queue) : elt * queue =
-    let node = fibheap_extract_min q in print_string "???" ;
+    let (heap, hash) = q in
+    let node = fibheap_extract_min heap in print_string "?" ;
+    Hashtbl.remove hash node.key.id;
     ({id=node.key.id;tent_dist=node.data},q)
       
-  let node = Hashtbl.find hash id in
+  let lookup (id: int) (q: queue) =
+    let (heap, hash) = q in
+    let node = Hashtbl.find hash id in
     Some {id=node.key.id;tent_dist=node.data}
       
   let delete (id: int) (q: queue) : queue =
+    let (heap, hash) = q in
     let node = Hashtbl.find hash id in
-    Hashtbl.remove hash id; fibheap_delete q node; q
+    Hashtbl.remove hash id; fibheap_delete heap node; q
       
   let update (id: int) (d: float) (q: queue) : queue =
+    let (heap, hash) = q in
     let node = Hashtbl.find hash id in
-    Hashtbl.remove hash id; fibheap_delete q node; 
+    Hashtbl.remove hash id; fibheap_delete heap node; 
     add {id=id;tent_dist=d} q
       
-  let run_tests () = ()
-end
+  let print_q (q: queue) =
+    let (heap, hash) = q in
+    fibheap_print string_of_float Format.std_formatter heap
 
-  let run_tests () =
-    let a = empty in
+  let run_tests () = 
+    let a = empty () in
     let _ = add {id=0;tent_dist=1.} a in
     let _ = add {id=1;tent_dist=2.} a in
-    let _ = add {id=3;tent_dist=3.} a in
-    let _ = add {id=4;tent_dist=4.} a in
-    let _ = add {id=5;tent_dist=5.} a in
-    let _ = add {id=6;tent_dist=6.} a in
+    let _ = add {id=2;tent_dist=3.} a in
+    let _ = add {id=3;tent_dist=4.} a in
+    let _ = add {id=4;tent_dist=5.} a in
+    let _ = add {id=5;tent_dist=6.} a in  
 
-    let _ = add {id=7;tent_dist=7.} a in
-    assert(fibheap_print_string_of_float Format.std_formatter a = ());
-    assert(take a = ({id=1;tent_dist=1.}, a));
-    let _ = add {id=7;tent_dist=7.} a in
-    assert(fibheap_print string_of_float Format.std_formatter a = ());
-    assert(take a = ({id=0;tent_dist=1.}, a));
-    assert(fibheap_print string_of_float Format.std_formatter a = ());
-
-    assert(take a = ({id=2;tent_dist=2.}, a));
-    assert(take a = ({id=3;tent_dist=3.}, a));
-    assert(take a = ({id=4;tent_dist=4.}, a));
-    assert(take a = ({id=5;tent_dist=5.}, a));
-    assert(take a = ({id=6;tent_dist=6.}, a));
-    assert(take a = ({id=7;tent_dist=7.}, a))*)
+    assert(print_q a = ());
+    let (el, b) = take a in
+    assert(el = ({id=0;tent_dist=1.}));
+    assert(print_q b = ()); (*
+    let (el, c) = take b in
+    assert(el = ({id=1;tent_dist=2.}));
+    let (el, d) = take c in
+    assert(el = ({id=2;tent_dist=3.}));
+    let (el, e) = take d in
+    assert(el = ({id=3;tent_dist=4.}));
+			   *)
 			
 end;;
 
-Fibheap.run_tests ();;
-
-*)
+FibHeap.run_tests ();;

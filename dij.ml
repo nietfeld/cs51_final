@@ -25,8 +25,7 @@ let initialize_queue (n: int) start =
     if to_add = (-1) then My_queue.update start 0. pq
     else add_elts (My_queue.add {id = to_add; tent_dist = infinity} pq) 
       (to_add - 1)
-  in (add_elts My_queue.empty (n-1)) (* n-1 make sure we insert the starting node *)
-
+  in (add_elts (My_queue.empty ()) (n-1)) (* n-1 make sure we insert the starting node *)
 
 
 let rec update_queue pq (curr_node: int*float) neighbor_list dist prev = 
@@ -125,7 +124,7 @@ let dij (start : node) (g : graph) (pq : queue) =
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
-  let pq = My_queue.empty in
+  let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g pq in
   let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
