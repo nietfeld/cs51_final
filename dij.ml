@@ -4,11 +4,12 @@ open Prio_q
 open Array
 open Graphs 
 
+
 open Dictionary
 open Matrix
-(*
+
 open ListQueue 
-module IntListQueue =  ListQueue *)
+module IntListQueue =  ListQueue 
 
 
 open BinaryHeap 
@@ -18,7 +19,10 @@ exception Not_found
 exception QueueEmpty
 
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
-module My_graph = Matrix
+
+module My_graph = Graph
+
+
 module My_queue = IntHeapQueue
 
 let initialize_queue (n: int) start =
@@ -162,6 +166,7 @@ let run_tests () =
   (* lists is failing these last two asserts *)
   assert (prev_array_3 = "433__3_");
   assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
+
 ;;
 
 run_tests ();
