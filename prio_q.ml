@@ -12,8 +12,6 @@ let compare x y =
 module type PRIOQUEUE =
 sig
   exception QueueEmpty
-    
-  (* The queue itself (stores things of type elt) *)
   type queue
 
   (* Returns an empty queue *)
@@ -21,34 +19,17 @@ sig
 
   (* Takes a queue, and returns whether or not it is empty *)
   val is_empty : queue -> bool
-
-  (* Takes an element and a queue, and returns a new queue with the
-   * element added *)
   val add : elt -> queue -> queue
-
-  (* Pulls the highest priority element out of the passed-in queue,
-   * also returning the queue with that element
-   * removed. Can raise the QueueEmpty exception. *)
   val take : queue -> elt * queue
-    
-  (* Given an id, gives back the corresponding node with that id *)
   val lookup : int -> queue -> elt option
-
-  (* this takes the id of the element to be updated and the new distance
-   and returns the updated queue *)
   val update : int -> float -> queue -> queue
-
   val print_q : queue -> unit
-
-  (* Run invariant checks on the implementation of this binary tree.
-   * May raise Assert_failure exception *)
   val run_tests : unit -> unit
 end
 
 (*******************************************************************************)
 (********************    Priority Q using Lists   ******************************)
 (*******************************************************************************)
-
 
 module ListQueue : PRIOQUEUE = 
 struct
@@ -72,20 +53,30 @@ struct
       | Greater | Eq -> hd::(add e tl)
 
   let print_queue (q: queue) : unit = 
-    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id); print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
+    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
+    print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
   let rec take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     (match q with
+<<<<<<< HEAD
     | [] -> ({id = 0; tent_dist = infinity}, []) (* why is this ID 0? *)
     | hd::tl -> hd, tl)
 
   let lookup (l_id: int) (q: queue) : elt option =	
     List.fold_right (fun a y -> if a.id = l_id then Some a else y)  q None (*(print_string "in list_queue lookup"; print_string (string_of_int l_id); raise Impossible) *) 
     
+=======
+    | [] -> raise QueueEmpty 
+    | hd::tl -> hd, tl)
+
+  let lookup (l_id: int) (q: queue) : elt option =	
+    List.fold_left (fun a y -> if y.id = l_id then Some y else a) None q
+>>>>>>> 704873db384c23bded771a70a1ce1f72f1a7b8a3
 
   let update (a: int) (new_dist: float) (q: queue) : queue =
-    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q in 
+    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q 
+    in 
     add {id = a; tent_dist = new_dist} new_queue
 
   let delete (a: int) (q: queue) : queue = 
@@ -93,9 +84,7 @@ struct
 
   let run_tests () = 
     () 
- 
 end
-
 
 (*******************************************************************************)
 (********************    Priority Q using Binary Heap   ************************)
@@ -205,22 +194,8 @@ struct
 
   let extract_tree (q : queue) : tree =
     match q with
-    | Empty -> (*raise QueueEmpty*) Leaf {id = 0; tent_dist = 3.14436624}
+    | Empty -> raise QueueEmpty 
     | Tree t -> t
-
-  (* Takes a tree, and returns the item that was most recently inserted into
-   * that tree, as well as the queue that results from removing that element.
-   * Notice that a queue is returned (since removing an element from just a leaf
-   * would result in an empty case, which is captured by the queue type
-   *
-   * By "item most recently inserted", we don't mean the
-   * most recently inserted *value*, but rather the newest node that was
-   * added to the bottom-level of the tree. If you follow the implementation
-   * of add carefully, you'll see that the newest value may end up somewhere
-   * in the middle of the tree, but there is always *some* value brought
-   * down into a new node at the bottom of the tree. *This* is the node
-   * that we want you to return.
-   *)
 
 let print_elt (e: elt) : unit = 
     print_string " id: ";
@@ -344,9 +319,7 @@ let print_elt (e: elt) : unit =
   let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.})));;
   
   assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});;
-  print_string "PASSED FIRST";;
   assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});;
-  print_string "PASSED SECOND";;
   assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});;
   assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});;
   assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});;
@@ -360,13 +333,7 @@ let print_elt (e: elt) : unit =
 
 
   let test_3 = Tree(TwoBranch (Odd, {id= 4; tent_dist =3.}, OneBranch( {id= 3; tent_dist= infinity}, {id= 1; tent_dist = infinity}), Leaf {id= 0; tent_dist =infinity}));;
-  
-  let my_print =
-   match (lookup 3 test_3) with
-   | None -> print_string "not working"
-   | Some a -> print_string ((string_of_int a.id)^(string_of_float a.tent_dist));;
-
-  my_print;;
+ 
   assert((lookup 3 test_3) = Some{id= 3; tent_dist=infinity});;
 
 
@@ -442,6 +409,83 @@ let print_elt (e: elt) : unit =
     test_take () *)
 
 end
+
+
+(*******************************************************************************)
+(******************   Priority Q using Binary Search Tree **********************)
+(*******************************************************************************)
+
+
+
+(* binary search tree invariant -- if its smaller, then it goes on the 
+left, it its bigger, it goes on the right *)
+module BinSQueue : PRIOQUEUE = 
+struct
+  exception QueueEmpty
+  exception Impossible
+
+  type queue =  Leaf | Branch of queue * elt * queue
+
+  let empty = Leaf
+
+  let print_q _ = ()
+  
+  let is_empty (t: queue) = t = empty  
+
+  (* the second arguments needs to be a queue and not a tree *)
+  let rec add (x : elt) (t : queue) : queue = 
+    match t with
+    | Leaf -> Branch(Leaf, x, Leaf)
+    | Branch (l, v, r) ->
+      if x.id < v.id then Branch (add x l, v, r) 
+      else Branch (l, v, add x r) 
+        
+   (* helper for take *)
+  let rec pull_min (t : queue) : elt * queue =
+    match t with
+    | Leaf -> raise QueueEmpty
+    | Branch (Leaf, v, r) -> (v, r)
+    | Branch (l, v, r) -> let min, t' = pull_min l in (min, Branch (t', v, r))
+    
+  (* this used to be an elt list -- why would it think that? *)
+  let rec take (t : queue) : elt * queue =
+    match t with
+    | Leaf -> raise QueueEmpty
+    | Branch (Leaf, v, r) -> (v, r)
+    | Branch (l, v, r) -> let min, t' = pull_min l in (min, Branch (t', v, r))
+
+(* we want lookup to return an elt option *)
+(* this lookup assumes that our tree is organized based on ids
+ !!!!!!!!!!!!!!!!!!!!!! *)
+  let rec lookup (x : int) (t : queue) : elt option = 
+    match t with
+    | Leaf -> None (* q's empty *)
+    | Branch (l, v, r) -> 
+       if v.id = x then Some v
+       else if x < v.id then lookup x l
+       else lookup x r
+
+
+  let rec delete (x : int) (t : queue) : queue =
+    match t with
+    | Leaf -> failwith "Couldn't find it"
+    | Branch (l, v, r) ->
+      if v.id = x then (*????*) Leaf
+      else if v.id < x then Branch (l, v, delete x r)
+      else Branch (delete x l, v, r)
+
+
+  (* change this function completely *)
+  let update (id: int) (new_dist: float) (pq: queue) : queue =
+    let take_out = delete id pq in
+    add {id = id; tent_dist = new_dist} take_out
+          
+
+  let run_tests () = 
+    () 
+end
+
+
 
 (*******************************************************************************)
 (********************    Priority Q using D-ary Heap   *************************)

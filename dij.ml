@@ -5,20 +5,20 @@ open Array
 open Graphs
 
 open Graph
-
-open ListQueue 
-module IntListQueue =  ListQueue 
-
 (*
+open ListQueue 
+module IntListQueue =  ListQueue *)
+
+
 open BinaryHeap 
-module IntHeapQueue =  BinaryHeap *)
+module IntHeapQueue =  BinaryHeap 
 
 exception Not_found
 exception QueueEmpty
 
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Graph
-module My_queue = IntListQueue
+module My_queue = IntHeapQueue
 
 let initialize_queue (n: int) start =
   let rec add_elts pq (to_add: int) = 
@@ -26,7 +26,6 @@ let initialize_queue (n: int) start =
     else add_elts (My_queue.add {id = to_add; tent_dist = infinity} pq) 
       (to_add - 1)
   in (add_elts (My_queue.empty ()) (n-1)) (* n-1 make sure we insert the starting node *)
-
 
 let rec update_queue pq (curr_node: int*float) neighbor_list dist prev = 
   let (node_id, distance_from_start) = curr_node in 
@@ -101,19 +100,17 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
   helper_dist dist 0 
 
 
-let dij (start : node) (g : graph) (pq : queue) =
+let dij (start : node) (g : graph) =
   if has_node g start then 
     let graph_size = My_graph.num_nodes g in
-    (* make distance and prev arrays *)
-    (* write way to have them all be in scope *) 
     let dist = Array.make graph_size infinity in 
-    let prev = Array.make graph_size (None) in (* 0 *)
+    let prev = Array.make graph_size (None) in 
     let prioq = initialize_queue graph_size start in 
     Printf.printf "I'm here and done initializing q \n";
     (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
     let rec iterate (pq : queue) (number_rounds: int) : unit = 
       match number_rounds with 
-      | 0 -> Printf.printf "Finished bitches \n" (* THIS IS WHAT MIGHT BE CAUSING IT TO RUN THAT EXTRA TIME *)
+      | 0 -> Printf.printf "Finished bitches \n"
       | _ -> let new_q = one_round pq g dist prev in 
 	     iterate new_q (number_rounds-1) 
     in iterate prioq graph_size; (* used to be -1 *)
@@ -121,30 +118,38 @@ let dij (start : node) (g : graph) (pq : queue) =
     (dist,prev) (* return this for testing *)
   else failwith "dij: node unknown";; 
 
+let exe_time f g ss =
+  let t0 = Sys.time() in
+  Printf.printf "Start (%5.5f)\n" t0;
+  f g ss;
+  let t1 = Sys.time() in
+  Printf.printf "End (%5.5f)\n" t1;
+  Printf.printf "Duration = (%5.5f)\n" (t1 -. t0) ;;
+
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
   let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
-  let (dist,prev) = dij 0 g pq in
+  let (dist,prev) = dij 0 g  in
   let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
   let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
 
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
-  let (dist_1, prev_1) = dij 2 g1 pq in
+  let (dist_1, prev_1) = dij 2 g1 in
   let prev_array_1 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_1)) in
   let dist_array_1 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_1)) in 
   
   let g2 = My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); 
 				(4, 6.1, 3); (3, 4.1, 1); (0, 5.1, 3); (1, 8.1, 5); (4, 7.1, 5)] in
-  let (dist_2, prev_2) = dij 0 g2 pq in
+  let (dist_2, prev_2) = dij 0 g2 in
   let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
   let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
 
   let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
 				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
-  let (dist_3, prev_3) = dij 3 g3 pq in
+  let (dist_3, prev_3) = dij 3 g3 in
   let prev_array_3 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_3)) in
   let dist_array_3 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3)) in  
   assert (prev_array = "00_"); 
@@ -153,8 +158,15 @@ let run_tests () =
   assert (dist_array_1 = "3.4.0.infinf");
   assert (prev_array_2 = "1_010_");
   assert (dist_array_2 = "9.2inf5.13.21.10." );
-  assert (prev_array_3 = "433__3_");
+  (* lists is failing these last two asserts *)
+ assert (prev_array_3 = "433__3_");
   assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
 ;;
 
 run_tests ();
+
+
+(* here is where we could do the timing functions *)
+  let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
+				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
+  exe_time dij 3 g3;;
