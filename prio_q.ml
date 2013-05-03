@@ -574,3 +574,128 @@ end;;
 FibHeap.run_tests ();;
 *)
 
+module Two_aryHeap : PRIOQUEUE = 
+struct 
+  exception QueueEmpty
+  exception Impossible
+
+  (* how do we get the 1000 in there? How do we take the d as argument?? *) 
+  let n = 1000
+  let d = 2 
+
+  type queue = {heap : elt option array; lt : int option array; mutable first_empty: int}
+    
+  let empty : queue = 
+    {heap = Array.make n None; lt = Array.make n None ; first_empty = 0}
+
+  (* fold over the array- is everything None? *) 
+  let is_empty (q: queue) : bool = q.first_empty = 0
+
+  (* looks at the children from index i, finds the one with the minimum tent_dist. 
+     Returns child's index and element *)
+  let min_child (i:int) (q:queue) : int * elt = 
+    let rec loop (current:int) (last:int) (min_e: int * elt) (q:queue) : int * elt = 
+      let (min_e_index, min_e_elt) = min_e in 
+      (* break out when we're done *) 
+      (* ALSO WILL THIS OVERFLOW??? *) 
+      if current > last then min_e else 
+	(match Array.get q.heap current with 
+	(* reached the end of the queue *) 
+	| None -> min_e
+	| Some x -> if (x.tent_dist < min_e_elt.tent_dist)
+	  then loop (current + 1) last (current, x) q
+	  else loop (current + 1) last min_e q)
+    in loop (d*i + 1) ((d+1)*i) (500, {id=500;tent_dist = infinity}) q
+     
+  
+   (*check against first_empty *) 
+  let fix_down (q:queue) : queue = 
+    (* need to check d*i to d*i + d-1 and find the minimum to know where to insert*) 
+    let rec fix (i: int) (q:queue) : queue = 
+      let current_elt = match Array.get q.heap i with 
+	| None -> raise (Failure "check fix_down") (* this is wrong *) 
+	| Some e -> e in 
+      let (min_child_index, min_child_elt) = min_child i q in 
+      let swap = Array.set q.heap min_child_index (Some current_elt); 
+        Array.set q.heap i (Some min_child_elt); 
+	Array.set q.lt i (Some min_child_index);
+	Array.set q.lt min_child_index (Some i);
+      in (* swap the parent and child *) 
+      if current_elt.tent_dist > min_child_elt.tent_dist then 
+	(swap;
+	 fix min_child_index q)
+      else q 
+    in fix 0 q
+
+
+  let deopt (e: elt option) : elt = 
+    match e with 
+    | None -> raise (Failure "deoptionalize")
+    | Some x -> x 
+
+  let rec fix_up (i: int) (q:queue) : queue = 
+    let parent_index = (i - 1)/d in 
+    (* PATTERN MATCH *) 
+    let parent_elt = deopt (Array.get q.heap parent_index) in 
+    let child_elt = deopt (Array.get q.heap i) in 
+    (* WATCH OUT FOR THIS *) 
+    let swap =  (* Swap the items in the heap *) 
+                Array.set q.heap parent_index (Some child_elt); 
+                Array.set q.heap i (Some parent_elt); 
+		(* Update the lookup table *)
+		Array.set q.lt child_elt.id (Some parent_index);
+		Array.set q.lt parent_elt.id (Some i)
+    in 
+    let compare_parent = 
+      (* swap the parent and child *) 
+      if parent_elt.tent_dist > child_elt.tent_dist then 
+	(swap;
+	 fix_up parent_index q)
+      else q in 
+    (* must end when queue is empty *) 
+    if i <= 0 then q else compare_parent
+
+  let add (e: elt) (q: queue) : queue =
+    (* put an element in the first_empty slot *) 
+    Array.set q.heap q.first_empty (Some e);
+    Array.set q.lt e.id (Some q.first_empty);
+    fix_up q.first_empty q;
+    q.first_empty <- (q.first_empty + 1);
+    q
+
+
+  let take (q: queue) : elt * queue = 
+    let min_elt = deopt (Array.get q.heap 0) in
+    (* get the last element in the heap *) 
+    let new_front = deopt (Array.get q.heap (q.first_empty - 1)) in
+    let updated_q = Array.set q.heap 0 (Some new_front); 
+		     Array.set q.heap (q.first_empty -1) None; 
+                     q.first_empty <- (q.first_empty - 1); 
+		     fix_down q
+    in 
+    (min_elt, updated_q)
+
+  let lookup (i: int) (q: queue) = 
+    match Array.get lookup_table i with 
+    | None -> raise QueueEmpty
+    | Some x -> Array.get x q
+   
+  let update (i: int) (f: float) (q: queue) = 
+    (* lookup the index in the array *) 
+    match Array.get i lookup_table with 
+    | None -> print_string "problem in two-ary heap";  raise (Failure "Impossible") 
+    | Some x -> fix_up x (Array.set q x {id = i; tent_dist = f})
+   
+  let print_item (x : elt option) : unit = 
+    match x with 
+    | None -> () 
+    | Some x -> 
+      (print_string (("id: ")^(string_of_int x.id)^(" tent_dist: ")^(string_of_float x.tent_dist)))
+
+
+      let print_q (q: queue) = 
+	Array.iter (fun x -> print_item x) q.heap
+      
+  let run_tests _ = ()
+end ;; 
+   
