@@ -57,7 +57,7 @@ struct
     print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
   let take (q : queue) : (elt * queue) =
-    print_string "Current:"; print_queue q; print_string "\n ******** \n";
+    (*print_string "Current:"; print_queue q; print_string "\n ******** \n";*)
     match q with
     | [] -> raise QueueEmpty 
     | hd::tl -> hd, tl
@@ -269,7 +269,6 @@ let print_elt (e: elt) : unit =
       (print_string "TwoBranch (Odd, "; print_elt e1; print_t t1; print_t t2; print_string ")")
 	
   let rec get_last (t : tree) : elt * queue =
-    print_string "Im in get_last";
     match t with
     | Leaf e -> e, Empty
     | OneBranch (e1, e2) -> e2, Tree (Leaf e1)
@@ -286,8 +285,6 @@ let print_elt (e: elt) : unit =
    * implementation, as well as the implementations of get_last and fix, which
    * take uses *)
   let take (q : queue) : elt * queue =
-    print_string "I'm in take yo \n";
-    print_q q;
     match extract_tree q with
     | Leaf e -> e, Empty
     | OneBranch (e1, e2) -> e1, Tree (Leaf e2)

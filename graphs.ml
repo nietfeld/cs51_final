@@ -131,7 +131,7 @@ struct
     let g = from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 			(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
     assert(g.num_nodes = 5);
-    assert(print_graph g = ());
+    (*assert(print_graph g = ());*)
 
 end
 
