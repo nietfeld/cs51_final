@@ -2,14 +2,12 @@ open Prio_q
 open Array
 open Graphs 
 open Matrix
+
 open Dictionary
 
 open ListQueue 
 module IntListQueue =  ListQueue
 
-
-open Graphs
-open Dictionary
 
 (*
 open BinaryHeap 
@@ -249,11 +247,11 @@ dij 1 g6;;*)
 
 (15,1.03,12)] in
   print_string "RUNNINGINGINGIGNG \n\n\n\n";
-  let (dist, prev) =  dij 0 course_graph in
-  (*print_string "ya done running yall";
-  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
-  let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
-  assert (1=1);;
+  let (dist, prev) = dij 0 course_graph in
+  print_graph course_graph;
+  print_string "ya done running yall";
+(*  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
+    let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
 
 let burton =
   from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
