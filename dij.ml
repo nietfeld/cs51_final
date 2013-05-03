@@ -37,7 +37,7 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
     (match Array.get dist n with
     | infinity ->   
       (match (My_queue.lookup n pq) with
-      | None ->  print_string "not returuning anything \n"; pq
+      | None ->  (*print_string "not returuning anything \n";*) pq
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
 	 (*print_string ("N: "^(string_of_int n)^"K: "^(string_of_int k)^"D:  "^
@@ -83,14 +83,14 @@ let rec reconstruct_help (end_node: int) (start_node : int)
 let deopt_p (x: int option) : string =
   match x with
   | None -> "_"
-  | Some int -> string_of_int int
+  | Some i -> string_of_int i
     
 let print_dist_array arr =
-  print_string ("Prev array:"^ (List.fold_left (fun x y -> (string_of_float y)^x) 
+  print_string ("Dist array:"^ (List.fold_left (fun x y -> (string_of_float y)^x) 
 				  "" (Array.to_list arr))^"\n")
 
 let print_prev_array arr =
-  print_string ("Dist array:"^(List.fold_left (fun x y -> (deopt_p y)^x) ""
+  print_string ("Prev array:"^(List.fold_left (fun x y -> (deopt_p y)^x) ""
 				 (Array.to_list arr))^"\n")
 
 
@@ -118,11 +118,11 @@ let dij (start : node) (g : graph) =
     let dist = Array.make graph_size infinity in 
     let prev = Array.make graph_size (None) in 
     let prioq = initialize_queue graph_size start in 
-    Printf.printf "I'm here and done initializing q \n";
+    (*Printf.printf "I'm here and done initializing q \n";*)
     (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
     let rec iterate (pq : queue) (number_rounds: int) : unit = 
       match number_rounds with 
-      | 0 -> Printf.printf "Finished bitches \n"
+      | 0 -> (*Printf.printf "Finished bitches \n"*) ()
       | _ -> let new_q = one_round pq g dist prev in 
 	     iterate new_q (number_rounds-1) 
     in iterate prioq graph_size; (* used to be -1 *)
@@ -247,10 +247,10 @@ dij 1 g6;;*)
 
 (15,1.03,12)] in
   print_string "RUNNINGINGINGIGNG \n\n\n\n";
-  let (dist,prev) =  dij 0 course_graph in
-  print_string "ya done running yall";
-  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
-  let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
-  assert (1=(-1));;
+  let (dist, prev) =  dij 0 course_graph in
+  (*print_string "ya done running yall";
+  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
+  let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
+  assert (1=1);;
 
 run_tests ();
