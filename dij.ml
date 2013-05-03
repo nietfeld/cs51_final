@@ -41,14 +41,14 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
       | None ->  print_string "not returuning anything \n"; pq
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
-	 print_string ("N: "^(string_of_int n)^"K: "^(string_of_int k)^"D:  "^
+	 (*print_string ("N: "^(string_of_int n)^"K: "^(string_of_int k)^"D:  "^
 			  (string_of_float d));
-	 print_string ("THIS IS THE NEW DIST:"^(string_of_float new_dist)^"\n");
+	 print_string ("THIS IS THE NEW DIST:"^(string_of_float new_dist)^"\n");*)
 	 if new_dist < d then 
 	   (Array.set prev n (Some node_id); 
 	    let new_pq =
 	      My_queue.update n new_dist pq in 
-	    My_queue.print_q new_pq;
+	    (*My_queue.print_q new_pq;*)
 	    update_queue new_pq curr_node (Some tl) dist prev)
 	 (* don't update, do next neighbor *) 
 	 else update_queue pq curr_node (Some tl) dist prev)))
@@ -57,10 +57,10 @@ let one_round (pq : queue) (my_graph : graph) (dist : float array)
     (prev : int option array) : queue = 
   let (curr_node, new_q) = My_queue.take pq in 
   let neighbor_list = My_graph.neighbors my_graph curr_node.id in 
-  print_string "right before array set" ;
-  print_string (string_of_int curr_node.id); print_string "\n";
+  (*print_string "right before array set" ;*)
+  (*print_string (string_of_int curr_node.id); print_string "\n";*)
   Array.set dist curr_node.id curr_node.tent_dist; (* update dist array*)
-  print_string "Finished array set \n";
+  (*print_string "Finished array set \n";*)
   update_queue new_q (curr_node.id, curr_node.tent_dist) neighbor_list dist prev
     
 
@@ -142,7 +142,7 @@ let exe_time f g ss =
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
-
+ (*
   let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g  in
@@ -207,29 +207,51 @@ let g3 =
 (* this one still works fine *)
 let g5 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11)]
 in 
-dij 0 g5;;
-
-
-
-let g6 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11);(1, 1.2,0);(2, 11.5, 12);(7, 3.4, 8);(10, 0.2, 13);(13, 0.3, 11);(2, 23.5, 8)]
-in 
-dij 1 g6;;
+dij 0 g5;;*)
 
 
 (*
- let course_graph = My_graph.from_edges [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);(0,1.57,13);
-(0,1.2,14);(0,1.42,15);(1,2.0,3);(1,1.15,4);(1,0.36,7);(2,1.15,4);(1,2.08,11);(1,1.03,12);
-(1,1.57,13);(1,1.2,14);(1,1.42,15);(3,1.43,5);(3,1.42,15);(3,1.03,12);(2,0.36,7);(2,2.08,11);
-(2,1.03,12);(2,1.57,13);(2,1.2,14);(2,1.42,15);(4,1.43,5);(5,1.65,6);(7,1.65,6);(7,0.32,8);
-(4,1.03,12);(5,1.03,12);(6,1.18,9);(4,1.42,15);(5,1.42,15);(6,1.03,12);(6,1.42,15);(8,1.65,6);
-(9,1.03,12);(9,1.42,15);(8,1.18,9);(13,0.69,10);(8,1.03,12);(8,1.42,15);(7,1.03,12);(7,1.42,15);
-(12,1.42,15);(10,1.03,12);(10,1.42,15);(11,1.03,12);(11,1.42,15);(13,1.03,12);(13,1.42,15);
-(14,0.69,10);(14,1.03,12);(14,1.42,15);(15,1.03,12);(15,1.42,15)] in
+let g6 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11);(1, 1.2,0);(2, 11.5, 12);(7, 3.4, 8);(10, 0.2, 13);(13, 0.3, 11);(2, 23.5, 8)]
+in 
+dij 1 g6;;*)
+  let course_graph = My_graph.from_edges 
+[(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);
+(0,1.57,13);(0,1.2,14);(0,1.42,15);
+
+(1,2.0,3);(1,1.15,4);(1,0.36,7);(1,2.08,11);(1,1.03,12);(1,1.57,13);(1,1.2,14);(1,1.42,15);
+
+(2,1.15,4);(2,0.36,7);(2,2.08,11);(2,1.03,12);(2,1.57,13);(2,1.2,14);(2,1.42,15);
+
+(3,1.43,5);(3,1.42,15);(3,1.03,12);
+
+(4,1.43,5);(4,1.03,12);(4,1.42,15);
+
+(5,1.65,6);(5,1.03,12);(5,1.42,15);
+
+(6,1.03,12);(6,1.42,15);(6,1.18,9);
+
+(7,1.65,6);(7,0.32,8);(7,1.03,12);(7,1.42,15);
+
+(8,1.65,6);(8,1.18,9);(8,1.03,12);(8,1.42,15);
+
+(9,1.03,12);(9,1.42,15);
+
+(10,1.03,12);(10,1.42,15);
+
+(11,1.03,12);(11,1.42,15);
+
+(12,1.42,15);
+
+(13,1.03,12);(13,1.42,15);(13,0.69,10);
+
+(14,0.69,10);(14,1.03,12);(14,1.42,15);
+
+(15,1.03,12)] in
   print_string "RUNNINGINGINGIGNG \n\n\n\n";
   let (dist,prev) =  dij 0 course_graph in
   print_string "ya done running yall";
   let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
   let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
-  assert (1=1);;
+  assert (1=(-1));;
 
-*)
+run_tests ();
