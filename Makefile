@@ -4,7 +4,7 @@ all: cs51_final
 FILES = order.ml dict.ml myset.ml fibsource.ml prio_q.ml graphs.ml dij.ml
 
 cs51_final: $(FILES)
-	ocamlc -g -o cs51_final str.cma $(FILES) graphics.cma  -cclib -lgraphics -cclib -L/usr/X11/lib -cclib -lX11
+	ocamlc -g -o cs51_final  str.cma graphics.cma  -cclib -lgraphics -cclib -L/usr/X11/lib -cclib -lX11  $(FILES)
 #unix.cma
 clean: 
 	rm -f *.cmi *.cmo cs51_final
