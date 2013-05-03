@@ -37,9 +37,9 @@ struct
   exception Impossible
     
   type queue = elt list
-
+    
   let print_q _ = ()
-
+    
   let empty () = []
   
   let is_empty (t: queue) = t = empty () 
@@ -56,26 +56,59 @@ struct
     List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
     print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
-  let rec take (q : queue) =
+  let take (q : queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
-    (match q with
+    match q with
     | [] -> raise QueueEmpty 
-    | hd::tl -> hd, tl)
-
+    | hd::tl -> hd, tl
+      
   let lookup (l_id: int) (q: queue) : elt option =	
     List.fold_left (fun a y -> if y.id = l_id then Some y else a) None q
-
-  let update (a: int) (new_dist: float) (q: queue) : queue =
-    let new_queue = List.fold_left (fun x y -> if y.id = a then x else y::x) [] q 
-    in 
-    add {id = a; tent_dist = new_dist} new_queue
-
+      
   let delete (a: int) (q: queue) : queue = 
     List.fold_left (fun x y -> if y.id = a then x else y::x) [] q
-
+      
+  let update (a: int) (new_dist: float) (q: queue) : queue =
+    let new_queue = delete a q in
+    add {id = a; tent_dist = new_dist} new_queue
+      
   let run_tests () = 
-    () 
-end
+    let a = empty () in
+    let b = add {id=0; tent_dist=4.} a in
+    let c = add {id=3; tent_dist=1.} b in
+    let d = add {id=1; tent_dist=3.} c in
+    let e = add {id=2; tent_dist=2.} d in
+    let (e1,q1) = take e in
+    let (e2,q2) = take q1 in
+    let (e3,q3) = take q2 in
+    let (e4,q4) = take q3 in
+    assert (lookup 3 e = Some {id=3; tent_dist=1.});
+    assert (e1 = {id=3; tent_dist=1.});
+    assert (lookup 2 e = Some {id=2; tent_dist=2.});
+    assert (e2 = {id=2; tent_dist=2.});
+    assert (lookup 1 e = Some {id=1; tent_dist=3.});
+    assert (e3 = {id=1; tent_dist=3.});
+    assert (lookup 0 e = Some {id=0; tent_dist=4.});
+    assert (e4 = {id=0; tent_dist=4.});
+    assert (q4 = []);
+
+    let f = update 0 0.9 e in
+    let (e5,q5) = take f in
+    assert (e5 = {id=0; tent_dist=0.9});
+    let g = update 1 0.9 q5 in
+    let (e6,q6) = take g in
+    assert (e6 = {id=1; tent_dist=0.9});
+    let h = update 2 0.9 q6 in
+    let (e7,q7) = take h in
+    assert (e7 = {id=2; tent_dist=0.9});
+    let i = update 3 0.9 q7 in
+    let (e8,q8) = take i in
+    assert (e8 = {id=3; tent_dist=0.9});
+    assert (q8 = [])
+
+end;;
+
+ListQueue.run_tests ();;
 
 (*******************************************************************************)
 (********************    Priority Q using Binary Heap   ************************)
@@ -541,7 +574,7 @@ struct
   let update (id: int) (d: float) (q: queue) : queue =
     let (heap, hash) = q in
     let node = Hashtbl.find hash id in
-    Hashtbl.remove hash id; fibheap_delete heap node; 
+    Hashtbl.remove hash id; fibheap_delete heap node;
     add {id=id;tent_dist=d} q
       
   let print_q (q: queue) =
