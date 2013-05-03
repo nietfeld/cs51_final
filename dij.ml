@@ -4,31 +4,30 @@ open Graphs
 open Matrix
 open Dictionary
 
-(*
-
 open ListQueue 
 module IntListQueue =  ListQueue
-*)
+
 
 open Graphs
-
 open Dictionary
+
+(*
 open BinaryHeap 
-module IntHeapQueue = BinaryHeap
+module IntHeapQueue = BinaryHeap *)
 
 exception Not_found
 exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
-module My_queue = IntHeapQueue
+module My_queue = IntListQueue
   
 let initialize_queue (n: int) (start: node) =
   let rec add_elts (pq: queue) (to_add: int) = 
     if to_add = (-1) then My_queue.update start 0. pq
     else add_elts (My_queue.add {id = to_add; tent_dist = infinity} pq) 
       (to_add - 1)
-  in (add_elts (My_queue.empty ()) (n-1)) (* n-1 make sure we insert the starting node *)
+  in (add_elts (My_queue.empty ()) (n-1))
 
 let rec update_queue pq (curr_node: int*float) neighbor_list dist prev = 
   let (node_id, distance_from_start) = curr_node in 
@@ -95,6 +94,7 @@ let print_prev_array arr =
 				 (Array.to_list arr))^"\n")
 
 
+(* this printing function prints backwards???? *)
 let print_results (dist : float array) (prev: int option array) (graph_size: int)
     (start_node: int) : unit =
   print_prev_array prev;
@@ -108,7 +108,7 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
 			   (string_of_float (Array.get dist n))^ ") \n");
 	  helper_dist dist (n+1))
   in
-  helper_dist dist 0 
+  helper_dist dist 0
 
 
 
@@ -193,6 +193,29 @@ run_tests ();
 				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
   exe_time dij 3 g3;;
 
+
+
+ 
+let g3 = 
+  My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);
+		       (6, 4.2, 5);(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5);
+		       (1, 5.2, 3);(0, 1.2, 3); (3, 0.2, 1)] in
+  exe_time dij 3 g3;;
+
+
+(* this one still works fine *)
+let g5 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11)]
+in 
+dij 0 g5;;
+
+
+
+let g6 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11);(1, 1.2,0);(2, 11.5, 12);(7, 3.4, 8);(10, 0.2, 13);(13, 0.3, 11);(2, 23.5, 8)]
+in 
+dij 1 g6;;
+
+
+(*
  let course_graph = My_graph.from_edges [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);(0,1.57,13);
 (0,1.2,14);(0,1.42,15);(1,2.0,3);(1,1.15,4);(1,0.36,7);(2,1.15,4);(1,2.08,11);(1,1.03,12);
 (1,1.57,13);(1,1.2,14);(1,1.42,15);(3,1.43,5);(3,1.42,15);(3,1.03,12);(2,0.36,7);(2,2.08,11);
@@ -201,22 +224,11 @@ run_tests ();
 (9,1.03,12);(9,1.42,15);(8,1.18,9);(13,0.69,10);(8,1.03,12);(8,1.42,15);(7,1.03,12);(7,1.42,15);
 (12,1.42,15);(10,1.03,12);(10,1.42,15);(11,1.03,12);(11,1.42,15);(13,1.03,12);(13,1.42,15);
 (14,0.69,10);(14,1.03,12);(14,1.42,15);(15,1.03,12);(15,1.42,15)] in
+  print_string "RUNNINGINGINGIGNG \n\n\n\n";
   let (dist,prev) =  dij 0 course_graph in
+  print_string "ya done running yall";
   let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
   let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
   assert (1=1);;
- 
-let g3 = 
-  My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);
-		       (6, 4.2, 5);(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5);
-		       (1, 5.2, 3);(0, 1.2, 3); (3, 0.2, 1)] in
-  exe_time dij 3 g3;;
 
-let g4 = 
-  My_graph.from_edges [(21,1.,22);(22,1.,0);(0,1.,5);(5,6.,23);(23,1.,7);
-		       (7,1.,10);(10,1.,11);(11,1.,8);(8,1.,12);(12,1.,15);
-		       (15,1.,14);(14,1.,30);(30,1.,16);(16,1.,13);(13,1.,9);
-		       (9,1.,25);(25,1.,24);(24,1.,4);(4,2.,2);(20,1.,1);
-		       (1,1.,3);(3,1.,29);(29,1.,17);(17,1.,18);(18,1.,28);
-		       (28,1.,27);(27,1.,19);(19,1.,26)] in
-  exe_time dij 21 g4;;
+*)
