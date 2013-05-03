@@ -2,14 +2,12 @@
 
 open Prio_q
 open Array
-open Graphs 
-
+open Graphs
 
 open Dictionary
-open Matrix
-
+(*
 open ListQueue 
-module IntListQueue =  ListQueue 
+module IntListQueue =  ListQueue *)
 
 
 open BinaryHeap 
@@ -19,9 +17,7 @@ exception Not_found
 exception QueueEmpty
 
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
-
-(* module My_graph = Dictionary *)
-module My_graph = Matrix
+module My_graph = Dictionary
 
 module My_queue = IntHeapQueue
 
@@ -105,6 +101,7 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
   helper_dist dist 0 
 
 
+
 let dij (start : node) (g : graph) =
   if has_node g start then 
     let graph_size = My_graph.num_nodes g in
@@ -137,7 +134,7 @@ let run_tests () =
   let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g  in
-  let prev_array = (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
+  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
   let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
 
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
@@ -149,7 +146,7 @@ let run_tests () =
   let g2 = My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); 
 				(4, 6.1, 3); (3, 4.1, 1); (0, 5.1, 3); (1, 8.1, 5); (4, 7.1, 5)] in
   let (dist_2, prev_2) = dij 0 g2 in
-  let prev_array_2 = (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
+  let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
   let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
 
   let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
@@ -173,6 +170,20 @@ run_tests ();
 
 
 (* here is where we could do the timing functions *)
-let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
-			      (3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
+  let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);(6, 4.2, 5);
+				(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
   exe_time dij 3 g3;;
+
+ let course_graph = My_graph.from_edges [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);(0,1.57,13);
+(0,1.2,14);(0,1.42,15);(1,2.0,3);(1,1.15,4);(1,0.36,7);(2,1.15,4);(1,2.08,11);(1,1.03,12);
+(1,1.57,13);(1,1.2,14);(1,1.42,15);(3,1.43,5);(3,1.42,15);(3,1.03,12);(2,0.36,7);(2,2.08,11);
+(2,1.03,12);(2,1.57,13);(2,1.2,14);(2,1.42,15);(4,1.43,5);(5,1.65,6);(7,1.65,6);(7,0.32,8);
+(4,1.03,12);(5,1.03,12);(6,1.18,9);(4,1.42,15);(5,1.42,15);(6,1.03,12);(6,1.42,15);(8,1.65,6);
+(9,1.03,12);(9,1.42,15);(8,1.18,9);(13,0.69,10);(8,1.03,12);(8,1.42,15);(7,1.03,12);(7,1.42,15);
+(12,1.42,15);(10,1.03,12);(10,1.42,15);(11,1.03,12);(11,1.42,15);(13,1.03,12);(13,1.42,15);
+(14,0.69,10);(14,1.03,12);(14,1.42,15);(15,1.03,12);(15,1.42,15)] in
+  let (dist,prev) =  dij 0 course_graph in
+  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in
+  let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in 
+  assert (1=1);;
+ 
