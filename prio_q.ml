@@ -56,7 +56,7 @@ struct
     List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
     print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
-  let take (q : queue) =
+  let take (q : queue) : (elt * queue) =
     print_string "Current:"; print_queue q; print_string "\n ******** \n";
     match q with
     | [] -> raise QueueEmpty 
@@ -65,12 +65,20 @@ struct
   let lookup (l_id: int) (q: queue) : elt option =	
     List.fold_left (fun a y -> if y.id = l_id then Some y else a) None q
       
+  (*let delete (a: int) (q: queue) : queue = 
+    List.fold_left (fun x y -> if y.id = a then x else y::x) [] q*)
+
   let delete (a: int) (q: queue) : queue = 
-    List.fold_left (fun x y -> if y.id = a then x else y::x) [] q
+    List.filter (fun x -> x.id<>a) q
       
   let update (a: int) (new_dist: float) (q: queue) : queue =
     let new_queue = delete a q in
     add {id = a; tent_dist = new_dist} new_queue
+
+
+
+ 
+
       
   let run_tests () = 
     let a = empty () in
@@ -78,33 +86,39 @@ struct
     let c = add {id=3; tent_dist=1.} b in
     let d = add {id=1; tent_dist=3.} c in
     let e = add {id=2; tent_dist=2.} d in
-    let (e1,q1) = take e in
-    let (e2,q2) = take q1 in
-    let (e3,q3) = take q2 in
-    let (e4,q4) = take q3 in
-    assert (lookup 3 e = Some {id=3; tent_dist=1.});
+    (* test add *)
+    assert (e = [{id=3; tent_dist=1.};{id=2; tent_dist=2.};  
+		 {id=1; tent_dist=3.};  {id=0; tent_dist=4.}]);
+    let f = add {id=6; tent_dist=2.3} e in
+    assert (f = [{id=3; tent_dist=1.};{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    (* test take *)
+    let (e1,q1) = take f in
     assert (e1 = {id=3; tent_dist=1.});
+    assert (q1 = [{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    (* test lookup *)
+    assert (lookup 3 e = Some {id=3; tent_dist=1.});
     assert (lookup 2 e = Some {id=2; tent_dist=2.});
-    assert (e2 = {id=2; tent_dist=2.});
     assert (lookup 1 e = Some {id=1; tent_dist=3.});
-    assert (e3 = {id=1; tent_dist=3.});
     assert (lookup 0 e = Some {id=0; tent_dist=4.});
-    assert (e4 = {id=0; tent_dist=4.});
-    assert (q4 = []);
-
-    let f = update 0 0.9 e in
-    let (e5,q5) = take f in
-    assert (e5 = {id=0; tent_dist=0.9});
-    let g = update 1 0.9 q5 in
-    let (e6,q6) = take g in
-    assert (e6 = {id=1; tent_dist=0.9});
-    let h = update 2 0.9 q6 in
-    let (e7,q7) = take h in
-    assert (e7 = {id=2; tent_dist=0.9});
-    let i = update 3 0.9 q7 in
-    let (e8,q8) = take i in
-    assert (e8 = {id=3; tent_dist=0.9});
-    assert (q8 = [])
+    (* test delete *)
+    let wrong = delete 3 f in
+   (* print_string "HERERERERERE \n\n\n\n\n";
+    print_queue wrong;
+    print_string " \n\n\n\n\n";*)
+    assert (delete 3 f = [{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    assert (delete 0 f = [{id=3; tent_dist =1.};{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}]);
+    (* test update *)
+    let q = update 6 1.2 f in
+    assert (q = [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    assert (update 2 2.6 q =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])
 
 end;;
 
@@ -340,97 +354,30 @@ let print_elt (e: elt) : unit =
     | Tree t -> Tree (helper id new_dist t)
 
 
-  let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.})));;
-  
-  assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});;
-  assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});;
-  assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});;
-  assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});;
-  assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});;
+  let run_tests () = 
+    let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, 
+				  OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), 
+				  OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.}))) in
+    (* test lookup *)
+    assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});
+    assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});
+    assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});
+    assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});
+    assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});
+    let test_2 = Tree (TwoBranch (Even, {id= 2; tent_dist= 0.}, 
+				  OneBranch ({id= 3; tent_dist=infinity}, {id= 1; tent_dist =infinity}), 
+				  OneBranch ( {id= 4; tent_dist =infinity}, {id= 0; tent_dist =infinity}))) in
+    assert((lookup 3 test_2) = Some{id= 3; tent_dist=infinity});
+    let test_3 = Tree(TwoBranch (Odd, {id= 4; tent_dist =3.}, OneBranch( {id= 3; tent_dist= infinity}, {id= 1; tent_dist = infinity}), Leaf {id= 0; tent_dist =infinity})) in
+    assert((lookup 3 test_3) = Some{id= 3; tent_dist=infinity});
+    (* test update *)
+    assert (update 0 0.2 test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.2}, 
+				  OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), 
+				  OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.}))));
+   assert(update 4 0.2 test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, 
+				  OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), 
+				  OneBranch( {id= 4; tent_dist=0.2},  {id= 5; tent_dist = 5.}))))
 
- 
-  let test_2 = Tree (TwoBranch (Even, {id= 2; tent_dist= 0.}, 
-		     OneBranch ({id= 3; tent_dist=infinity}, {id= 1; tent_dist =infinity}), 
-		     OneBranch ( {id= 4; tent_dist =infinity}, {id= 0; tent_dist =infinity} )));;
-
-  assert((lookup 3 test_2) = Some{id= 3; tent_dist=infinity});;
-
-
-  let test_3 = Tree(TwoBranch (Odd, {id= 4; tent_dist =3.}, OneBranch( {id= 3; tent_dist= infinity}, {id= 1; tent_dist = infinity}), Leaf {id= 0; tent_dist =infinity}));;
- 
-  assert((lookup 3 test_3) = Some{id= 3; tent_dist=infinity});;
-
-
-  (*
-    let test_get_top () =
-    let x = E.generate () in
-    let t = Leaf x in
-    assert (get_top t = x);
-    let y = E.generate_gt x () in
-    let t = OneBranch (x, y) in
-    assert (get_top t = x);
-    let z = E.generate_gt y () in
-    let t = TwoBranch (Even, x, Leaf y, Leaf z) in
-    assert (get_top t = x);
-    let w = E.generate_gt z () in
-    let t = TwoBranch (Odd, x, OneBranch (y, w), Leaf z) in
-    assert (get_top t = x);
-    let q = E.generate_gt w () in
-    let t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)) in
-    assert (get_top t = x)
-
-    let test_fix () =
-    let x = E.generate () in
-    let t = Leaf x in
-    assert (fix t = t);
-    let y = E.generate_gt x () in
-    let t = OneBranch (y, x) in
-    assert (fix t = OneBranch (x, y));
-    let t = OneBranch (x, y) in
-    assert (fix t = OneBranch (x, y));
-    let z = E.generate_gt y () in
-    let t = TwoBranch (Even, x, Leaf y, Leaf z) in
-    assert (fix t = t);
-    let t = TwoBranch (Even, z, Leaf x, Leaf y) in
-    assert (fix t = TwoBranch (Even, x, Leaf z, Leaf y));
-    let t = TwoBranch (Even, y, Leaf z, Leaf x) in
-    assert (fix t = TwoBranch (Even, x, Leaf z, Leaf y));
-    let w = E.generate_gt z () in
-    let t = TwoBranch (Odd, x, OneBranch (y, w), Leaf z) in
-    assert (fix t = t);
-    let t = TwoBranch (Odd, z, OneBranch (x, y), Leaf w) in
-    assert (fix t = TwoBranch (Odd, x, OneBranch (y, z), Leaf w));
-    let t = TwoBranch (Odd, w, OneBranch (y, z), Leaf x) in
-    assert (fix t = TwoBranch (Odd, x, OneBranch (y, z), Leaf w));
-    let t = TwoBranch (Odd, w, OneBranch (x, z), Leaf y) in
-    assert (fix t = TwoBranch (Odd, x, OneBranch (z, w), Leaf y));
-    let q = E.generate_gt w () in
-    let t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)) in
-    assert (fix t = t);
-    let t = TwoBranch (Even, y, OneBranch (x, w), OneBranch (z, q)) in
-    assert (fix t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)));
-    let t = TwoBranch (Even, w, OneBranch (x, y), OneBranch (z, q)) in
-    assert (fix t = TwoBranch (Even, x, OneBranch (y, w), OneBranch (z, q)));
-    let t = TwoBranch (Even, w, OneBranch (z, q), OneBranch (x, y)) in
-    assert (fix t = TwoBranch (Even, x, OneBranch (z, q), OneBranch (y, w)));
-    let t = TwoBranch (Even, w, OneBranch (x, q), OneBranch (y, z)) in
-    assert (fix t = TwoBranch (Even, x, OneBranch (w, q), OneBranch (y, z)));
-    let t = TwoBranch (Even, q, OneBranch (y, z), OneBranch (x, w)) in
-    assert (fix t = TwoBranch (Even, x, OneBranch (y, z), OneBranch (w, q)))
-
-    let test_take () =
-    let x = E.generate () in
-    let y = E.generate_gt x () in
-    let z = E.generate_gt y () in
-    let w = E.generate_gt z () in
-    let t = Tree (TwoBranch (Odd, x, OneBranch (y, w), Leaf z)) in
-    assert (take t = (x, Tree (TwoBranch (Even, y, Leaf w, Leaf z))))
-  *)
-
-  let run_tests () = ()
- (*   test_get_top ();
-    test_fix ();
-    test_take () *)
 
 end
 
