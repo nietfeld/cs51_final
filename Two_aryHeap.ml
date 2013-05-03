@@ -4,13 +4,24 @@ struct
   exception Impossible
 
   (* how do we get the 1000 in there? How do we take the d as argument?? *) 
-  let first_empty = ref 0
-
-  type queue = elt option array
- 
+  let n = 1000
   let d = 2 
+ 
+  (*type first_empty = int ref*)
+
+  type lookup_table = int option array
+  
+  type q_array = elt option array 
+
+  (* Need to initialize this at the beginning *) 
+  let lookup_table (n: int) : int option array = 
+    Array.make n None 
+
+  type queue = {q = q_array; lt = lookup_table; mutable first_empty = int}
+ 
     
-  let empty : queue = first_empty := 0; Array.make 1000 None
+  let empty : queue = 
+    {q = Array.make n None; lt = Array.make n None ; first_empty <- 0}
 
   (* fold over the array- is everything None? *) 
   let is_empty (q: queue): 
@@ -62,10 +73,6 @@ struct
     Array.set q !first_empty None;
     first_empty := first_empty - 1; 
     (min_elt, updated_q)
-
-  (* Need to initialize this at the beginning *) 
-  let lookup_table (n: int) : int option array = 
-    Array.make n None
 
   let lookup (i: int) (q: queue) = 
     match Array.get i lookup_table with 
