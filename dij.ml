@@ -10,6 +10,7 @@ open Matrix
 open Dictionary
 
 (*
+
 open ListQueue 
 module IntListQueue =  ListQueue
 
@@ -18,8 +19,6 @@ module IntListQueue =  ListQueue
 open BinaryHeap 
 
 module IntHeapQueue = BinaryHeap
-
-
 
 exception Not_found
 exception QueueEmpty
