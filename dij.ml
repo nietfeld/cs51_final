@@ -293,6 +293,8 @@ let burton =
 	      (0,1.,18);(0,1.,19);(0,1.,20)]
 in
 dij 1 burton
+;;
+
 
 run_tests ();
 
