@@ -1,9 +1,9 @@
-open Order
-
 exception QueueEmpty
 exception Impossible
   
 type elt = {id : int; mutable tent_dist : float };;
+
+type order = Less | Greater | Eq
 
 let compare x y = 
   if x.tent_dist < y.tent_dist then Less 
@@ -33,11 +33,12 @@ struct
 
   type queue = elt list
     
-  let empty () = []
-  
-  let is_empty (t: queue) = t = empty () 
-
-  let rec add (e : elt) (q : queue) =
+  let empty () : queue = []
+    
+  let is_empty (t: queue) : bool = 
+    t = []
+    
+  let rec add (e : elt) (q : queue) : queue =
     match q with
     | [] -> [e]
     | hd::tl ->
@@ -58,11 +59,8 @@ struct
   let lookup (l_id: int) (q: queue) : elt option =	
     List.fold_left (fun a y -> if y.id = l_id then Some y else a) None q
       
-  (*let delete (a: int) (q: queue) : queue = 
-    List.fold_left (fun x y -> if y.id = a then x else y::x) [] q*)
-
   let delete (a: int) (q: queue) : queue = 
-    List.filter (fun x -> x.id<>a) q
+    List.filter (fun x -> x.id <> a) q
       
   let update (a: int) (new_dist: float) (q: queue) : queue =
     let new_queue = delete a q in
@@ -74,31 +72,33 @@ struct
     let c = add {id=3; tent_dist=1.} b in
     let d = add {id=1; tent_dist=3.} c in
     let e = add {id=2; tent_dist=2.} d in
+    
     (* test add *)
     assert (e = [{id=3; tent_dist=1.};{id=2; tent_dist=2.};  
-		 {id=1; tent_dist=3.};  {id=0; tent_dist=4.}]);
+		 {id=1; tent_dist=3.};{id=0; tent_dist=4.}]);
     let f = add {id=6; tent_dist=2.3} e in
     assert (f = [{id=3; tent_dist=1.};{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+		 {id=6; tent_dist=2.3};{id=1; tent_dist=3.};
+		 {id=0; tent_dist=4.}]);
+    
     (* test take *)
     let (e1,q1) = take f in
     assert (e1 = {id=3; tent_dist=1.});
-    assert (q1 = [{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    assert (q1 = [{id=2; tent_dist=2.};{id=6; tent_dist=2.3};
+		  {id=1; tent_dist=3.};{id=0; tent_dist=4.}]);
+    
     (* test lookup *)
     assert (lookup 3 e = Some {id=3; tent_dist=1.});
     assert (lookup 2 e = Some {id=2; tent_dist=2.});
     assert (lookup 1 e = Some {id=1; tent_dist=3.});
     assert (lookup 0 e = Some {id=0; tent_dist=4.});
+    
     (* test delete *)
-    assert (delete 3 f = [{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    assert (delete 3 f = [{id=2; tent_dist=2.}; {id=6; tent_dist=2.3};
+			  {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
     assert (delete 0 f = [{id=3; tent_dist =1.};{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}]);
+			  {id=6; tent_dist=2.3};{id=1; tent_dist=3.}]);
+    
     (* test update *)
     let q = update 6 1.2 f in
     assert (q = [{id=3;tent_dist=1.};{id=6;tent_dist=1.2};{id=2;tent_dist=2.};
@@ -333,13 +333,12 @@ struct
 			       {id= 1;tent_dist=infinity}),
 		     Leaf{id=0;tent_dist=infinity})) in
 
-    assert (take test_1 = ({id = 0; tent_dist = 0.}, Tree(TwoBranch (Odd, {id = 1; tent_dist = 1.}, 
-		       (Leaf {id=2;tent_dist=2.}), OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))));
-    
+    assert (take test_1=
+	({id=0;tent_dist=0.},Tree(
+	  TwoBranch(Odd,{id=1;tent_dist=1.},(Leaf {id=2;tent_dist=2.}),
+		    OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))));
 
     (* test add *)
-
-
 
     (* test lookup *)
     assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});
@@ -347,27 +346,26 @@ struct
     assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});
     assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});
     assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});
-    assert((lookup 3 test_2) = Some{id= 3; tent_dist=infinity});
-    assert((lookup 3 test_3)=Some{id=3;tent_dist=infinity});
+    assert((lookup 3 test_2) = Some {id = 3; tent_dist=infinity});
+    assert((lookup 3 test_3) = Some {id = 3; tent_dist=infinity});
 
     (* test update *)
-    assert (update 0 0.2 test_1=Tree
-	(TwoBranch(Even,{id=0;tent_dist=0.2},OneBranch({id=1;tent_dist=1.},
-						       {id=2;tent_dist=2.}), 
+    assert(update 0 0.2 test_1=Tree
+	(TwoBranch(Even,{id=0;tent_dist=0.2},
+		   OneBranch({id=1;tent_dist=1.},{id=2;tent_dist=2.}), 
 		   OneBranch({id=4;tent_dist=4.},{id= 5; tent_dist = 5.}))));
     
     assert(update 4 0.2 test_1 = Tree
-	(TwoBranch (Even,{id=0;tent_dist=0.},OneBranch({id=1;tent_dist=1.},
-						       {id=2; tent_dist=2.}), 
+	(TwoBranch (Even,{id=0;tent_dist=0.},
+		    OneBranch({id=1;tent_dist=1.},{id=2; tent_dist=2.}), 
 		    OneBranch({id=4;tent_dist=0.2},{id=5;tent_dist=5.}))))
-end
-  
+end;;
+
+BinaryHeap.run_tests();
 
 (*****************************************************************************0*)
 (******************   Priority Q using Binary Search Tree **********************)
 (*******************************************************************************)
-
-
 
 (* binary search tree invariant -- if its smaller, then it goes on the 
 left, it its bigger, it goes on the right *)
@@ -376,53 +374,47 @@ struct
 
   type queue =  Leaf | Branch of queue * elt * queue
 
-  let empty () = Leaf
+  let empty () : queue = Leaf
 
-  let print_q (q: queue) = ()
+  let print_q (q: queue) : unit = ()
   
   let is_empty (t: queue) = t = empty () 
 
-  (* the second arguments needs to be a queue and not a tree *)
   let rec add (x : elt) (t : queue) : queue = 
     match t with
     | Leaf -> Branch(Leaf, x, Leaf)
     | Branch (l, v, r) ->
-      if x.tent_dist < v.tent_dist then Branch (add x l, v, r) 
+      if compare x v = Less then Branch (add x l, v, r) 
       else Branch (l, v, add x r) 
         
-   (* helper for take *)
   let rec pull_min (t : queue) : elt * queue =
     match t with
     | Leaf -> raise QueueEmpty
     | Branch (Leaf, v, r) -> (v, r)
-    | Branch (l, v, r) -> let min, t' = pull_min l in (min, Branch (t', v, r))
+    | Branch (l, v, r) ->
+      let min, t' = pull_min l in (min, Branch (t', v, r))
     
-  (* this used to be an elt list -- why would it think that? *)
   let rec take (t : queue) : elt * queue =
     match t with
     | Leaf -> raise QueueEmpty
     | Branch (Leaf, v, r) -> (v, r)
-    | Branch (l, v, r) -> let min, t' = pull_min l in (min, Branch (t', v, r))
-
-(* we want lookup to return an elt option *)
-(* this lookup assumes that our tree is organized based on ids
- !!!!!!!!!!!!!!!!!!!!!! *)
-(* Need to go through the whole tree *) 				       
-  let reconcile (res1: elt option) (res2: elt option) =
-     match (res1, res2) with
-     | (None, None) -> None
-     | (Some x, None) -> Some x
-     | (None, Some x) -> Some x
-     | (Some x, Some y) -> raise (Failure "Impossible")
-
-   let rec lookup (x : int) (t : queue) : elt option = 
-    match t with
-    | Leaf -> None (* q's empty *)
     | Branch (l, v, r) -> 
-       if v.id = x then Some v
-       else reconcile (lookup x l) (lookup x r)
+      let min, t' = pull_min l in (min, Branch (t', v, r))
 
-
+  let reconcile (res1: elt option) (res2: elt option) =
+    match (res1, res2) with
+    | (None, None) -> None
+    | (Some x, None) -> Some x
+    | (None, Some x) -> Some x
+    | (Some x, Some y) -> raise (Failure "Impossible")
+      
+  let rec lookup (x : int) (t : queue) : elt option = 
+    match t with
+    | Leaf -> None
+    | Branch (l, v, r) -> 
+      if v.id = x then Some v
+      else reconcile (lookup x l) (lookup x r)
+	
   let rec delete (x : int) (t : queue) : queue =
     match t with
     | Leaf -> Leaf

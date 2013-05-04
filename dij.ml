@@ -2,19 +2,12 @@ open Prio_q
 open Array
 open Graphs 
 
-exception Not_found
 exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
-
 module My_queue = ListQueue
 
-(*
-open My_queue
-*)
-open My_graph
-  
 let initialize_queue (n: int) (start: node) =
   let rec add_elts pq (to_add: int) = 
     if to_add = (-1) then My_queue.update start 0. pq
@@ -45,7 +38,7 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
 	 (* don't update, do next neighbor *) 
 	 else update_queue pq curr_node (Some tl) dist prev)))
       
-let one_round pq (my_graph : graph) (dist : float array) 
+let one_round pq my_graph (dist : float array) 
     (prev : int option array) = 
   let (curr_node, new_q) = My_queue.take pq in 
   let neighbor_list = My_graph.neighbors my_graph curr_node.id in 
@@ -104,12 +97,8 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
   helper_dist dist 0
 
 
-let dij (start: node) (g: graph) (m : (module PRIOQUEUE)) =
-  let module My_queue = (val (m) : PRIOQUEUE) in
-  
-(*let dij (start : node) (g : graph) a = 
-*)
-  if has_node g start then 
+let dij (start: node) g =
+  if My_graph.has_node g start then 
     let graph_size = My_graph.num_nodes g in
     let dist = Array.make graph_size infinity in 
     let prev = Array.make graph_size (None) in 
@@ -254,7 +243,7 @@ let course_graph = My_graph.from_edges
     let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
   *)
 let burton =
-  from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
+  My_graph.from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
 	      (1,1.,6);(6,1.,1);(1,1.,3);(3,1.,1);(1,1.,11);(11,1.,1);
 	      (1,1.,12);(12,1.,1);(1,1.,13);(13,1.,1);(1,1.,18);(18,1.,1);
 	      (1,1.,19);(19,1.,1);(1,1.,20);(20,1.,1);(1,1.,0);(0,1.,1);
@@ -290,17 +279,7 @@ let burton =
 	      (0,1.,18);(0,1.,19);(0,1.,20)]
 in
 
-let module Two : PRIOQUEUE =
-  DHeap(struct
-    let n = My_graph.num_nodes burton
-    let d = 3
-  end)
-
-in
-let a = (module Two : PRIOQUEUE) in
-dij 1 burton a
+dij 1 burton
 ;;
 
-
 run_tests ();
-
