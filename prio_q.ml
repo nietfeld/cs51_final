@@ -97,10 +97,6 @@ struct
     assert (lookup 1 e = Some {id=1; tent_dist=3.});
     assert (lookup 0 e = Some {id=0; tent_dist=4.});
     (* test delete *)
-    let wrong = delete 3 f in
-   (* print_string "HERERERERERE \n\n\n\n\n";
-    print_queue wrong;
-    print_string " \n\n\n\n\n";*)
     assert (delete 3 f = [{id=2; tent_dist=2.}; 
 		 {id=6; tent_dist=2.3};
 		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
@@ -209,12 +205,9 @@ struct
     | Empty -> raise QueueEmpty 
     | Tree t -> t
 
-let print_elt (e: elt) : unit = 
-    print_string " id: ";
-    print_string (string_of_int e.id);
-    print_string " tent_dist "; 
-    print_string (string_of_float e.tent_dist);
-    print_string " "
+  let print_elt (e: elt) : unit = 
+    print_string (" id: " ^(string_of_int e.id)^" tent_dist: "
+		  ^(string_of_float e.tent_dist)^" ")
 
   let print_q (q:queue) = 
     let rec print_h t =
@@ -329,27 +322,36 @@ let print_elt (e: elt) : unit =
     let test_1 = 
       Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, 
 		       OneBranch({id=1;tent_dist=1.},{id=2;tent_dist=2.}), 
-		       OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.}))) in
-    (* test lookup *)
-    assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});
-    assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});
-    assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});
-    assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});
-    assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});
-    
+    		       OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.}))) in
+
     let test_2 = 
       Tree (TwoBranch (Even, {id= 2; tent_dist= 0.}, 
 		       OneBranch({id=3;tent_dist=infinity},
 				 {id=1;tent_dist=infinity}), 
 		       OneBranch({id=4;tent_dist=infinity},
 				 {id=0;tent_dist=infinity}))) in
-    assert((lookup 3 test_2) = Some{id= 3; tent_dist=infinity});
 
     let test_3 = 
       Tree(TwoBranch(Odd,{id=4;tent_dist=3.},
 		     OneBranch({id=3;tent_dist=infinity},
 			       {id= 1;tent_dist=infinity}),
 		     Leaf{id=0;tent_dist=infinity})) in
+
+    assert (take test_1 = ({id = 0; tent_dist = 0.}, Tree(TwoBranch (Odd, {id = 1; tent_dist = 1.}, 
+		       (Leaf {id=2;tent_dist=2.}), OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))));
+    
+
+    (* test add *)
+
+
+
+    (* test lookup *)
+    assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});
+    assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});
+    assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});
+    assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});
+    assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});
+    assert((lookup 3 test_2) = Some{id= 3; tent_dist=infinity});
     assert((lookup 3 test_3)=Some{id=3;tent_dist=infinity});
 
     (* test update *)
