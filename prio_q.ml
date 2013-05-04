@@ -748,7 +748,8 @@ struct
   
   let lookup (id: int) (q: queue) : elt option =
     let (heap, hash) = q in
-    let node = try Some (Hashtbl.find hash id) with Not_found -> None in
+    let node = try Some (Hashtbl.find hash id)
+      with Not_found -> None in
     match node with 
     | None -> None 
     | Some i -> Some {id=i.key.id;tent_dist=i.data}
@@ -777,12 +778,44 @@ struct
     let _ = add {id=4;tent_dist=2.} a in
     let _ = add {id=5;tent_dist=1.} a in  
 
+
+    (* Tests for add and lookup *)
     assert(lookup 0 a = Some {id=0;tent_dist=6.});
     assert(lookup 1 a = Some {id=1;tent_dist=5.});
     assert(lookup 2 a = Some {id=2;tent_dist=4.});
     assert(lookup 3 a = Some {id=3;tent_dist=3.});
     assert(lookup 4 a = Some {id=4;tent_dist=2.});
     assert(lookup 5 a = Some {id=5;tent_dist=1.});
+    
+    (* Tests for take *)
+    let (el, b) = take a in
+    assert(el = ({id=5;tent_dist=1.}));
+    let (el, c) = take b in
+    assert(el = ({id=4;tent_dist=2.}));
+    let (el, d) = take c in
+    assert(el = ({id=3;tent_dist=3.}));
+    let (el, e) = take d in
+    assert(el = ({id=2;tent_dist=4.}));
+    let (el, f) = take e in
+    assert(el = ({id=1;tent_dist=5.}));
+    let (el, g) = take f in
+    assert(el = ({id=0;tent_dist=6.}));
+ 
+    let a = empty () in
+    let _ = add {id=0;tent_dist=1.} a in
+    let _ = add {id=1;tent_dist=2.} a in
+    let _ = add {id=2;tent_dist=3.} a in
+    let _ = add {id=3;tent_dist=4.} a in
+    let _ = add {id=4;tent_dist=5.} a in
+    let _ = add {id=5;tent_dist=6.} a in  
+    
+    (* Test for update *)   
+    let _ = update 0 6. a in
+    let _ = update 1 5. a in
+    let _ = update 2 4. a in
+    let _ = update 3 3. a in
+    let _ = update 4 2. a in
+    let _ = update 5 1. a in
 
     let (el, b) = take a in
     assert(el = ({id=5;tent_dist=1.}));
@@ -796,9 +829,7 @@ struct
     assert(el = ({id=1;tent_dist=5.}));
     let (el, g) = take f in
     assert(el = ({id=0;tent_dist=6.}));
-    
 
-    
 end;;
 
 FibHeap.run_tests ();;
