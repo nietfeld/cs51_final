@@ -6,7 +6,7 @@ exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
-module My_queue = BinaryHeap
+module My_queue = BinSQueue
 
 let initialize_queue (n: int) (start: node) =
   let rec add_elts pq (to_add: int) = 

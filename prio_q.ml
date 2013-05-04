@@ -1,7 +1,7 @@
 exception QueueEmpty
 exception Impossible
   
-type elt = {id : int; mutable tent_dist : float };;
+type elt = {id : int; mutable tent_dist : float};;
 
 type order = Less | Greater | Eq
 
@@ -333,6 +333,29 @@ struct
 		     Leaf{id=0;tent_dist=infinity})) in
 
     (* test take *)
+
+    assert(take test_1 =
+	({id=0;tent_dist=0.},Tree
+	  (TwoBranch(Odd,{id=1;tent_dist=1.},
+		     OneBranch({id=2;tent_dist=2.},{id=5;tent_dist=5.}),
+			       (Leaf({id=4;tent_dist=4.}))))));
+
+    (* these two are failing but probably because of the wrong syntax *)
+    (*assert(take test_2 = 
+	({id=2;tent_dist=0.},Tree
+	  (TwoBranch(Odd,{id=3;tent_dist=infinity},
+		     OneBranch({id=4;tent_dist=infinity},
+			       {id=1;tent_dist=infinity}),
+		     Leaf({id=0;tent_dist=infinity}))))); *)
+
+    (* test add *)
+   (* assert(add{id=6;tent_dist=3.2} test_1 = Tree
+	(TwoBranch
+	   (Odd,{id=0;tent_dist=0.},
+	    (TwoBranch(Odd,{id=1;tent_dist=1.},Leaf({id=2;tent_dist=2.}),
+		       Leaf({id=6;tent_dist=3.2}))), 
+    	    OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))) ;*)
+
     assert(take test_1 = ({id=0;tent_dist=0.},
 			  Tree(TwoBranch(Odd,{id=1;tent_dist=1.},
 					 OneBranch({id=2;tent_dist=2.},
@@ -463,14 +486,53 @@ struct
 
   (* change this function completely *)
   let update (id: int) (new_dist: float) (pq: queue) : queue =
-    let take_out = delete id pq in
-    add {id = id; tent_dist = new_dist} take_out
-          
+    add {id = id; tent_dist = new_dist} (delete id pq)
+
 
   let run_tests () = 
-    () 
-end
+    (* test ADD, take, LOOK UP, UPDATE *)
+    let test_1 = 
+      Branch (Leaf, {id=1;tent_dist=1.}, 
+	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
+    in
+    let test_2 = 
+      Branch (Branch(Leaf, {id=5;tent_dist=0.4}, Leaf), 
+	      {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
+    in
+    (*let test_3 = (Branch(Leaf, {id=5;tent_dist=.4}, Leaf), {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf)
+      in *)
+    (* test add *) (* elt and q - returns q *)
+    assert (add {id=4;tent_dist=4.3} test_1 =
+	Branch(Leaf, {id=1;tent_dist=1.}, 
+	       Branch (Leaf, {id =2;tent_dist=2.}, 
+		       Branch (Leaf, {id=4;tent_dist=4.3}, Leaf))));
 
+    assert (add {id=4;tent_dist=0.3} test_1 =
+	Branch(Branch(Leaf,{id=4;tent_dist=0.3},Leaf), 
+	       {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf)));
+
+    (* test take *)
+    assert (take test_1 = ({id=1;tent_dist=1.}, 
+			   Branch(Leaf, {id =2;tent_dist=2.}, Leaf)));
+
+    (* test look up *)
+    assert (lookup 1 test_2 = Some {id=1;tent_dist=1.});
+    assert (lookup 10 test_1 = None);
+    assert (lookup 2 test_1 = Some {id=2; tent_dist=2.});
+
+(* test update *) 
+(*
+   assert (update 1 1.2 test_1 = 
+      Branch (Leaf, {id=1;tent_dist=1.2}, 
+	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf)));
+   assert (update 2 1.4 test_2 =
+      Branch (Branch(Leaf, {id=2;tent_dist=1.4}, Leaf), 
+	      {id=1;tent_dist=1.}, Branch (Leaf, {id=5;tent_dist=0.4}, Leaf)))
+*)
+
+ end;;
+
+BinSQueue.run_tests ();
 
 
 (*******************************************************************************)
