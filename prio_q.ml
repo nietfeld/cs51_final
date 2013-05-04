@@ -551,7 +551,6 @@ end
 module DHeap (A : ARG) : PRIOQUEUE = 
 struct 
 
-  (* how do we get the 1000 in there? How do we take the d as argument?? *) 
   let n = A.n
   let d = A.d
     
@@ -560,11 +559,14 @@ struct
 		mutable first_empty: int}
     
   let empty _ : queue = 
-    {heap = Array.make n None; lt = Array.make n None ; first_empty = 0}
+    {heap = Array.make n None; 
+     lt = Array.make n None ; 
+     first_empty = 0}
 
   (* fold over the array- is everything None? *) 
   let is_empty (q: queue) : bool = q.first_empty = 0
 
+  (* functions for testing *) 
   let print_item (x : elt option) : unit = 
     match x with 
     | None -> () 
@@ -576,127 +578,132 @@ struct
     Array.iter (fun x -> print_item x) q.heap;
     print_string "\n"
 
-(* MAKE OPTION OR CHECK WHEN CALLED THAT THERE ARE CHILDREN *) 
-  (* looks at the children from index i, finds the one with the minimum tent_dist. 
-     Returns child's index and element *)
-  let min_child (i:int) (q:queue) : int * elt = 
-    let rec loop (current:int) (last:int) (min_e: int * elt) (q:queue) : int * elt = 
-      let (min_e_index, min_e_elt) = min_e in 
-      if current > last then min_e else 
-	(match q.heap.(current) with 
-	(* reached the end of the queue *) 
-	| None -> min_e
-	| Some x -> (print_string (("child candidate: ")^
-				      (string_of_float x.tent_dist));
-		     if (x.tent_dist < min_e_elt.tent_dist)
-	  then loop (current + 1) last (current, x) q
-	  else loop (current + 1) last min_e q))
-    in 
-    print_string (("current: ")^(string_of_int (d*i +1))^
-		     (" last : ")^(string_of_int ((d*i) + d))^("\n"));
-    (*if ((d*i + 1) < q.first_empty) then *)
-    loop (d*i + 1) (min (d*i+d) (q.first_empty-1))
-      (500, {id=500;tent_dist = infinity}) q
-      
-     
   
-   (*check against first_empty *) 
-  let fix_down (i: int) (q:queue) : queue = 
-    (* need to check d*i to d*i + d-1 and find the minimum to know where to insert*) 
-    let rec fix (i: int) (q:queue) : queue = 
-      let current_elt = match Array.get q.heap i with 
-	| None -> raise (Failure "check fix_down") (* this is wrong *) 
-	| Some e -> e in 
-      let (min_child_index, min_child_elt) = min_child i q in 
-      let swap = Array.set q.heap min_child_index (Some current_elt); 
-        Array.set q.heap i (Some min_child_elt); 
-	Array.set q.lt i (Some min_child_index);
-	Array.set q.lt min_child_index (Some i);
-      in (* swap the parent and child *) 
-      if current_elt.tent_dist > min_child_elt.tent_dist then 
-	(swap;
-	 fix min_child_index q)
-      else q 
-    in fix i q
-
-
-  let deopt (e: elt option) : elt = 
+  let deopt (e: 'a option) : 'a = 
     match e with 
     | None -> raise (Failure "deoptionalize")
     | Some x -> x 
 
+
+(* TESTING 
+	(print_string (("child candidate: ")^(string_of_float child.tent_dist));
+    print_string (("current: ")^(string_of_int (d*i +1))^
+		     (" last : ")^(string_of_int ((d*i) + d))^("\n"));
+*) 
+
+
+(* MAKE OPTION OR CHECK WHEN CALLED THAT THERE ARE CHILDREN *) 
+
+  (* looks at the children from index i, finds the one with the 
+     minimum tent_dist. Returns child's index and element *)
+  let min_child (i:int) (q:queue) : int * elt = 
+    let first_child = (d*i+1) in 
+    let last_child = min (d*i + d) (q.first_empty -1) in
+    let dummy_min = (500, {id=500;tent_dist = infinity}) in
+    let rec loop (current:int) (min_e: int * elt) (q:queue) : int * elt = 
+      let (min_index, min_elt) = min_e in 
+      (********)
+      let child = 
+	match q.heap.(current) with 
+        | None -> print_string "returning none"; min_elt
+	| Some x -> x in
+      if current > last_child then min_e 
+      else 
+	 if (child.tent_dist < min_elt.tent_dist)
+	   then loop (current+1) (current, child) q
+	 else loop (current+1) min_e q
+    in 
+    loop first_child dummy_min q
+      
+  let swap (parent: elt) (child: elt) : queue =
+    let child_index = q.lt.(child.id) in
+    let parent_index = q.lt.(parent.id) in 
+    q.heap.(min_child_index) <- (Some current_elt); 
+    q.heap.(i) <- (Some min_child_elt); 
+    q.lt.(i) <- (Some min_child_index);
+    q.lt.(min_child_index) <- (Some i) 
+     
+  (*MUST check against first_empty *) 
+  let rec fix_down (i: int) (q:queue) : queue = 
+      let parent_elt = deopt q.heap.(i) in 
+      let no_children = ((d*i+1) >= q.first_empty) in
+      let min_child_elt = min_child i q in  
+      if no_children then q
+      else (
+	if min_child_elt.tent_dist < parent_elt.tent_dist
+        then fix_down q.lt.(min_child_elt.id) 
+	  (swap parent_elt min_child_elt)
+        else q 
+      )
+
+
   let rec fix_up (i: int) (q:queue) : queue = 
     let parent_index = (i - 1)/d in 
-    let parent_elt = deopt (Array.get q.heap parent_index) in 
-    let child_elt = deopt (Array.get q.heap i) in 
-    (* WATCH OUT FOR THIS *) 
-    let swap =  (* Swap the items in the heap *) 
-                Array.set q.heap parent_index (Some child_elt); 
-                Array.set q.heap i (Some parent_elt); 
-		(* Update the lookup table *)
-		Array.set q.lt child_elt.id (Some parent_index);
-		Array.set q.lt parent_elt.id (Some i)
-    in 
-    let compare_parent = 
-      (* swap the parent and child *) 
+    let parent_elt = deopt q.heap.(parent_index) in 
+    let child_elt = deopt q.heap.(i) in 
+    let first_child = (d*i+1) in
+    let swap =  (* Swap the items in the heap and update lookup *)
+                q.heap.(parent_index) <- (Some child_elt); 
+                q.heap.(i) <- (Some parent_elt); 
+		q.lt.(child_elt.id) <- (Some parent_index);
+		q.lt.(parent_elt.id) <- (Some i) in 
+    (*let compare_parent =  *)
       if parent_elt.tent_dist > child_elt.tent_dist then 
 	(swap;
-	 (* FOR TESTING *) 
-	 print_string "was swapped: ";
-	 print_q q;
-	 fix_up parent_index q)
-      (* only done if parent is smaller than child*) 
-      else if ((d*i+1) >= q.first_empty) then q 
-      else 
-	(let (mind_child_index, min_child_elt) = min_child parent_index q in
-	   print_string "min child of "; 
+	 fix_up parent_index q) 
+      else if (first_child >= q.first_empty) then q 
+      else
+	let (mind_child_index, min_child_elt) = min_child parent_index q in  
+	(if min_child_elt.tent_dist > parent_elt.tent_dist then q
+	 else (print_string "Caught the problem \n \n"; 
+	       fix_down parent_index q)) 
+    (*in if i <= 0 then q else compare_parent*)
+
+
+
+
+(* Testing : 
+      let test_fix_up = print_string "min child of "; 
 	   print_int parent_index;
 	   print_string " : ";
 	   print_string (("id: ")^(string_of_int min_child_elt.id)^
 			    (" tent_dist : "));
 	   print_string (string_of_float min_child_elt.tent_dist);
-	   print_string "\n";
-	   if min_child_elt.tent_dist > parent_elt.tent_dist then q
-	   else (print_string "Caught the problem \n \n"; 
-		 fix_down parent_index q)) in 
-    (* must end when queue is empty *) 
-    (* WAS JUST q BEFORE *) 
-    if i <= 0 then q else compare_parent
-
+	   print_string "\n" in *) 
   
-let add (e: elt) (q: queue) : queue =
-    (* put an element in the first_empty slot *) 
-    Array.set q.heap q.first_empty (Some e);
-    Array.set q.lt e.id (Some q.first_empty);
+
+  (* put an element in the first_empty slot, update lookup 
+     and last_empty, then fix queue *)
+  let add (e: elt) (q: queue) : queue = 
+    q.heap.(q.first_empty) <- (Some e);
+    q.lt.(e.id) <- (Some q.first_empty);
     q.first_empty <- (q.first_empty + 1);
     fix_up (q.first_empty - 1) q
 
 
+  (* take the first element, then swap with the last and fix *) 
   let take (q: queue) : elt * queue = 
-    print_string "Kittens \n\n\n\n"; flush_all ();
-    let min_elt = deopt (Array.get q.heap 0) in
-    (* get the last element in the heap *) 
-    let new_front = deopt (Array.get q.heap (q.first_empty - 1)) in
-    let updated_q = (Array.set q.heap 0 (Some new_front); 
-		     Array.set q.heap (q.first_empty -1) None; 
-                     q.first_empty <- (q.first_empty - 1); 
-		     fix_down 0 q)
+    let min_elt = deopt q.heap.(0) in
+    let new_front = deopt q.heap.(q.first_empty - 1) in
+    let updated_q = q.heap.(0) <- (Some new_front); 
+		    q.heap.(q.first_empty-1) <- None; 
+                    q.first_empty <- (q.first_empty - 1); 
+		    fix_down 0 q
     in 
     (min_elt, updated_q)
 
 
+  (* look up the element in lookup table *) 
   let lookup (i: int) (q: queue) : elt option = 
     match q.lt.(i) with 
-    | None -> raise QueueEmpty
+    | None -> None
     | Some x -> q.heap.(x)
    
   let update (i: int) (f: float) (q: queue) : queue = 
     (* lookup the index in the array *) 
-    match q.lt.(i) with 
-    | None -> print_string "problem in two-ary heap";  raise (Failure "Impossible") 
-    | Some x -> (fix_up x 
-		   (q.heap.(x) <- (Some {id = i; tent_dist = f});
-		    q))
+    let index = deopt (q.lt.(i)) in 
+    let updated_queue = q.heap.(index) <- (Some {id = i; tent_dist = f}); q in 
+    fix_up index updated_queue
   
   let listify (q: queue) : elt list = 
     List.fold_left (fun y x -> match x with 
