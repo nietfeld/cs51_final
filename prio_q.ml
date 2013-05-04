@@ -333,28 +333,11 @@ struct
 		     Leaf{id=0;tent_dist=infinity})) in
 
     (* test take *)
-
     assert(take test_1 =
 	({id=0;tent_dist=0.},Tree
 	  (TwoBranch(Odd,{id=1;tent_dist=1.},
 		     OneBranch({id=2;tent_dist=2.},{id=5;tent_dist=5.}),
 			       (Leaf({id=4;tent_dist=4.}))))));
-
-    (* these two are failing but probably because of the wrong syntax *)
-    (*assert(take test_2 = 
-	({id=2;tent_dist=0.},Tree
-	  (TwoBranch(Odd,{id=3;tent_dist=infinity},
-		     OneBranch({id=4;tent_dist=infinity},
-			       {id=1;tent_dist=infinity}),
-		     Leaf({id=0;tent_dist=infinity}))))); *)
-
-    (* test add *)
-   (* assert(add{id=6;tent_dist=3.2} test_1 = Tree
-	(TwoBranch
-	   (Odd,{id=0;tent_dist=0.},
-	    (TwoBranch(Odd,{id=1;tent_dist=1.},Leaf({id=2;tent_dist=2.}),
-		       Leaf({id=6;tent_dist=3.2}))), 
-    	    OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))) ;*)
 
     assert(take test_1 = ({id=0;tent_dist=0.},
 			  Tree(TwoBranch(Odd,{id=1;tent_dist=1.},
@@ -495,18 +478,18 @@ struct
       Branch (Leaf, {id=1;tent_dist=1.}, 
 	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
     in
+
     let test_2 = 
-      Branch (Branch(Leaf, {id=5;tent_dist=0.4}, Leaf), 
-	      {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
+      Branch(Branch(Leaf,{id=5;tent_dist=0.4},Leaf),{id=1;tent_dist=1.},
+	     Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
     in
-    (*let test_3 = (Branch(Leaf, {id=5;tent_dist=.4}, Leaf), {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf)
-      in *)
-    (* test add *) (* elt and q - returns q *)
+
+    (* test add *)
     assert (add {id=4;tent_dist=4.3} test_1 =
 	Branch(Leaf, {id=1;tent_dist=1.}, 
 	       Branch (Leaf, {id =2;tent_dist=2.}, 
 		       Branch (Leaf, {id=4;tent_dist=4.3}, Leaf))));
-
+    
     assert (add {id=4;tent_dist=0.3} test_1 =
 	Branch(Branch(Leaf,{id=4;tent_dist=0.3},Leaf), 
 	       {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf)));
@@ -520,17 +503,27 @@ struct
     assert (lookup 10 test_1 = None);
     assert (lookup 2 test_1 = Some {id=2; tent_dist=2.});
 
-(* test update *) 
-(*
-   assert (update 1 1.2 test_1 = 
-      Branch (Leaf, {id=1;tent_dist=1.2}, 
-	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf)));
-   assert (update 2 1.4 test_2 =
-      Branch (Branch(Leaf, {id=2;tent_dist=1.4}, Leaf), 
-	      {id=1;tent_dist=1.}, Branch (Leaf, {id=5;tent_dist=0.4}, Leaf)))
-*)
+    (* test update *) 
+    let a = update 1 1.2 test_1 in
+    
+    let (e, q) = take a in
+    assert (e = {id=1;tent_dist=1.2});
+    let (e, q) = take q in
+    assert (e = {id=2;tent_dist=2.});
+    assert (q = Leaf);
+    
+    let b = update 2 1.4 test_2 in
+    let c = update 1 2.5 b in
+    let d = update 5 1.9 c in
+    
+    let (e, q) = take d in
+    assert (e = {id=2;tent_dist=1.4});
+    let (e, q) = take q in
+    assert (e = {id=5;tent_dist=1.9});
+    let (e, q) = take q in
+    assert (e = {id=1;tent_dist=2.5})
 
- end;;
+end;;
 
 BinSQueue.run_tests ();
 
@@ -775,7 +768,6 @@ struct
     if a.tent_dist < b.tent_dist then (-1)
     else if a.tent_dist > b.tent_dist then 1
     else 0
-  (* ??? *) 
   let min = {id=0;tent_dist=0.}
 end
 
@@ -783,8 +775,6 @@ end
 
 module FibHeap : PRIOQUEUE = 
 struct
-  exception QueueEmpty
-  exception Impossible
   module F = Make(EltOrd)
   open F
 
@@ -871,7 +861,7 @@ struct
     let _ = add {id=4;tent_dist=5.} a in
     let _ = add {id=5;tent_dist=6.} a in  
     
-    (* Test for update *)   
+    (* Tests for update *)   
     let _ = update 0 6. a in
     let _ = update 1 5. a in
     let _ = update 2 4. a in
