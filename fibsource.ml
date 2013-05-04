@@ -522,7 +522,7 @@ module Make (Ord : KeyOrderType) = struct
    * This code will blow your mind. View at your own risk. *)
 
   and max_degree heap =
-    let log2 x = log x /. log 2. in
+    (*let log2 x = log x /. log 2. in*)
     let logphi x = log x /. log ((1. +. sqrt 5.) /. 2.) in
       match heap.n with
         (* This is an InternalError because we shouldn't call this function
