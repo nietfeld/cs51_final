@@ -1,6 +1,6 @@
-open Order
-exception TODO
-
+exception QueueEmpty
+exception Impossible
+  
 type elt = {id : int; mutable tent_dist : float };;
 
 let compare x y = 
@@ -11,13 +11,10 @@ let compare x y =
 
 module type PRIOQUEUE =
 sig
-  exception QueueEmpty
+
   type queue
 
-  (* Returns an empty queue *)
   val empty :  unit -> queue
-
-  (* Takes a queue, and returns whether or not it is empty *)
   val is_empty : queue -> bool
   val add : elt -> queue -> queue
   val take : queue -> elt * queue
@@ -25,6 +22,7 @@ sig
   val update : int -> float -> queue -> queue
   val print_q : queue -> unit
   val run_tests : unit -> unit
+
 end
 
 (*******************************************************************************)
@@ -32,17 +30,12 @@ end
 (*******************************************************************************)
 
 module ListQueue : PRIOQUEUE = 
-struct
-  exception QueueEmpty
-  exception Impossible
-    
+struct    
   type queue = elt list
-    
-  let print_q _ = ()
     
   let empty () = []
   
-  let is_empty (t: queue) = t = empty () 
+  let is_empty (t: queue) = t = []
 
   let rec add (e : elt) (q : queue) =
     match q with
@@ -52,10 +45,11 @@ struct
       | Less -> e::q
       | Greater | Eq -> hd::(add e tl)
 
-  let print_queue (q: queue) : unit = 
-    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
-    print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
-    
+  let print_q (q: queue) : unit = 
+    List.iter (fun x -> (print_string "\n id: "; print_string 
+      (string_of_int x.id); print_string " tent_dist: "; print_string 
+	(string_of_float x.tent_dist);)) q
+      
   let take (q : queue) : (elt * queue) =
     (*print_string "Current:"; print_queue q; print_string "\n ******** \n";*)
     match q with
@@ -75,11 +69,6 @@ struct
     let new_queue = delete a q in
     add {id = a; tent_dist = new_dist} new_queue
 
-
-
- 
-
-      
   let run_tests () = 
     let a = empty () in
     let b = add {id=0; tent_dist=4.} a in
@@ -130,9 +119,6 @@ ListQueue.run_tests ();;
 
 module BinaryHeap : PRIOQUEUE =
 struct
-  
-  exception QueueEmpty
-  exception Impossible
 
   type balance = Even | Odd
 
@@ -389,9 +375,6 @@ end
 left, it its bigger, it goes on the right *)
 module BinSQueue : PRIOQUEUE = 
 struct
-  exception QueueEmpty
-  exception Impossible
-
   type queue =  Leaf | Branch of queue * elt * queue
 
   let empty _ = Leaf
@@ -481,8 +464,6 @@ end
 
 module FibHeap : PRIOQUEUE = 
 struct
-  exception QueueEmpty
-  exception Impossible
   module F = Make(EltOrd)
   open F
 
@@ -505,7 +486,8 @@ struct
     let node = fibheap_extract_min heap in
     Hashtbl.remove hash node.key.id;
     ({id=node.key.id;tent_dist=node.data},q)
-      let lookup (id: int) (q: queue) =
+
+  let lookup (id: int) (q: queue) =
     let (heap, hash) = q in
     let node = Hashtbl.find hash id in
     Some {id=node.key.id;tent_dist=node.data}
@@ -534,7 +516,7 @@ struct
     let _ = add {id=4;tent_dist=5.} a in
     let _ = add {id=5;tent_dist=6.} a in  
 
-    (*assert(print_q a = ());
+    assert(print_q a = ());
     let (el, b) = take a in
     assert(el = ({id=0;tent_dist=1.}));
     assert(print_q b = ());
@@ -544,8 +526,8 @@ struct
     assert(el = ({id=2;tent_dist=3.}));
     let (el, e) = take d in
     assert(el = ({id=3;tent_dist=4.}));
-			    *)
-			assert(1=1)
+			    
+
 end;;
 
 FibHeap.run_tests ();;
