@@ -6,7 +6,7 @@ exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 
-module My_graph = Matrix
+module My_graph = Dictionary
 module My_queue = BinSQueue
 
 let initialize_queue (n: int) (start: node) =
@@ -234,7 +234,6 @@ let course_graph = My_graph.from_edges
 (15,1.03,12)] in
   print_string "RUNNINGINGINGIGNG \n\n\n\n";
   let (dist, prev) = dij 0 course_graph in
-  My_graph.print_graph course_graph;
   print_string "ya done running yall";
 (*  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
     let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
@@ -250,7 +249,7 @@ let burton =
 	      (2,1.,10);(10,1.,2);
 
 	      (3,1.,11);(11,1.,3);(3,1.,12);(12,1.,3);(3,1.,13);(13,1.,3);
-	      (3,1.,14);(14,1.,3);(3,1.,15);(15,1.,3);(3,1.,16);(16,1.,3);
+	      (3,1.,14);(3,0.5,14);(14,1.,3);(3,1.,15);(15,1.,3);(3,1.,16);(16,1.,3);
 	      (3,1.,17);(17,1.,3);
 
 	      (4,1.,5);(4,1.,6);
@@ -276,6 +275,7 @@ let burton =
 	      (0,1.,18);(0,1.,19);(0,1.,20)]
 in
 
+My_graph.print_graph burton;
 dij 1 burton
 ;;
 
