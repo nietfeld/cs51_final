@@ -7,7 +7,7 @@ exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
-module My_queue = FibHeap
+module My_queue = BinSQueue
 
 open My_queue
 open My_graph
@@ -27,7 +27,7 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
     (match Array.get dist n with
     | infinity ->   
       (match (My_queue.lookup n pq) with
-      | None ->  (*print_string "not returuning anything \n";*) pq
+      | None ->  print_string "not returuning anything \n"; pq
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
 	 (*print_string ("N: "^(string_of_int n)^"K: "^(string_of_int k)^"D:  "^

@@ -1,6 +1,6 @@
-exception QueueEmpty
-exception Impossible
-  
+open Order
+exception TODO
+
 type elt = {id : int; mutable tent_dist : float };;
 
 let compare x y = 
@@ -11,10 +11,13 @@ let compare x y =
 
 module type PRIOQUEUE =
 sig
-
+  exception QueueEmpty
   type queue
 
+  (* Returns an empty queue *)
   val empty :  unit -> queue
+
+  (* Takes a queue, and returns whether or not it is empty *)
   val is_empty : queue -> bool
   val add : elt -> queue -> queue
   val take : queue -> elt * queue
@@ -22,7 +25,6 @@ sig
   val update : int -> float -> queue -> queue
   val print_q : queue -> unit
   val run_tests : unit -> unit
-
 end
 
 (*******************************************************************************)
@@ -30,12 +32,17 @@ end
 (*******************************************************************************)
 
 module ListQueue : PRIOQUEUE = 
-struct    
+struct
+  exception QueueEmpty
+  exception Impossible
+    
   type queue = elt list
+    
+  let print_q _ = ()
     
   let empty () = []
   
-  let is_empty (t: queue) = t = []
+  let is_empty (t: queue) = t = empty () 
 
   let rec add (e : elt) (q : queue) =
     match q with
@@ -45,11 +52,10 @@ struct
       | Less -> e::q
       | Greater | Eq -> hd::(add e tl)
 
-  let print_q (q: queue) : unit = 
-    List.iter (fun x -> (print_string "\n id: "; print_string 
-      (string_of_int x.id); print_string " tent_dist: "; print_string 
-	(string_of_float x.tent_dist);)) q
-      
+  let print_queue (q: queue) : unit = 
+    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
+    print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
+    
   let take (q : queue) : (elt * queue) =
     (*print_string "Current:"; print_queue q; print_string "\n ******** \n";*)
     match q with
@@ -69,6 +75,11 @@ struct
     let new_queue = delete a q in
     add {id = a; tent_dist = new_dist} new_queue
 
+
+
+ 
+
+      
   let run_tests () = 
     let a = empty () in
     let b = add {id=0; tent_dist=4.} a in
@@ -119,6 +130,9 @@ ListQueue.run_tests ();;
 
 module BinaryHeap : PRIOQUEUE =
 struct
+  
+  exception QueueEmpty
+  exception Impossible
 
   type balance = Even | Odd
 
@@ -375,6 +389,9 @@ end
 left, it its bigger, it goes on the right *)
 module BinSQueue : PRIOQUEUE = 
 struct
+  exception QueueEmpty
+  exception Impossible
+
   type queue =  Leaf | Branch of queue * elt * queue
 
   let empty _ = Leaf
@@ -388,7 +405,7 @@ struct
     match t with
     | Leaf -> Branch(Leaf, x, Leaf)
     | Branch (l, v, r) ->
-      if x.id < v.id then Branch (add x l, v, r) 
+      if x.tent_dist < v.tent_dist then Branch (add x l, v, r) 
       else Branch (l, v, add x r) 
         
    (* helper for take *)
@@ -408,22 +425,39 @@ struct
 (* we want lookup to return an elt option *)
 (* this lookup assumes that our tree is organized based on ids
  !!!!!!!!!!!!!!!!!!!!!! *)
-  let rec lookup (x : int) (t : queue) : elt option = 
+(* Need to go through the whole tree *) 				       
+  let reconcile (res1: elt option) (res2: elt option) =
+     match (res1, res2) with
+     | (None, None) -> None
+     | (Some x, None) -> Some x
+     | (None, Some x) -> Some x
+     | (Some x, Some y) -> raise (Failure "Impossible")
+
+   let rec lookup (x : int) (t : queue) : elt option = 
     match t with
     | Leaf -> None (* q's empty *)
     | Branch (l, v, r) -> 
        if v.id = x then Some v
-       else if x < v.id then lookup x l
-       else lookup x r
+       else reconcile (lookup x l) (lookup x r)
 
 
   let rec delete (x : int) (t : queue) : queue =
     match t with
-    | Leaf -> failwith "Couldn't find it"
+    | Leaf -> Leaf
+    | Branch (Leaf, v, Leaf) -> 
+      if v.id = x then Leaf else Branch (Leaf, v, Leaf)
+    | Branch (Leaf, v, r) ->
+      if v.id = x then r
+      else Branch (Leaf, v, delete x r) 
+    | Branch (l, v, Leaf) -> 
+      if v.id = x then l 
+      else Branch (delete x l, v, Leaf)
     | Branch (l, v, r) ->
-      if v.id = x then (*????*) Leaf
-      else if v.id < x then Branch (l, v, delete x r)
-      else Branch (delete x l, v, r)
+      if v.id = x then 
+	(match l with 
+	| Leaf -> raise Impossible
+	| Branch (l2, v2, r2) -> Branch (delete v2.id l, v2, r))
+      else Branch (delete x l, v, delete x r)
 
 
   (* change this function completely *)
@@ -457,6 +491,7 @@ struct
     if a.tent_dist < b.tent_dist then (-1)
     else if a.tent_dist > b.tent_dist then 1
     else 0
+  (* ??? *) 
   let min = {id=0;tent_dist=0.}
 end
 
@@ -464,6 +499,8 @@ end
 
 module FibHeap : PRIOQUEUE = 
 struct
+  exception QueueEmpty
+  exception Impossible
   module F = Make(EltOrd)
   open F
 
@@ -486,12 +523,14 @@ struct
     let node = fibheap_extract_min heap in
     Hashtbl.remove hash node.key.id;
     ({id=node.key.id;tent_dist=node.data},q)
-
+  
   let lookup (id: int) (q: queue) =
     let (heap, hash) = q in
-    let node = Hashtbl.find hash id in
-    Some {id=node.key.id;tent_dist=node.data}
-      
+    let node = try Some (Hashtbl.find hash id) with Not_found -> None in
+    match node with 
+    | None -> None 
+    | Some i -> Some {id=i.key.id;tent_dist=i.data}
+
   let delete (id: int) (q: queue) : queue =
     let (heap, hash) = q in
     let node = Hashtbl.find hash id in
@@ -527,12 +566,12 @@ struct
     let (el, e) = take d in
     assert(el = ({id=3;tent_dist=4.}));
 			    
-
+			assert(1=1)
 end;;
 
 FibHeap.run_tests ();;
 
-(*
+
 module Two_aryHeap : PRIOQUEUE = 
 struct 
   exception QueueEmpty
@@ -542,7 +581,9 @@ struct
   let n = 1000
   let d = 2 
 
-  type queue = {heap : elt option array; lt : int option array; mutable first_empty: int}
+  type queue = {heap : elt option array; 
+		lt : int option array; 
+		mutable first_empty: int}
     
   let empty _ : queue = 
     {heap = Array.make n None; lt = Array.make n None ; first_empty = 0}
@@ -569,8 +610,6 @@ struct
   let min_child (i:int) (q:queue) : int * elt = 
     let rec loop (current:int) (last:int) (min_e: int * elt) (q:queue) : int * elt = 
       let (min_e_index, min_e_elt) = min_e in 
-      (* break out when we're done *) 
-      (* ALSO WILL THIS OVERFLOW??? *) 
       if current > last then min_e else 
 	(match q.heap.(current) with 
 	(* reached the end of the queue *) 
@@ -582,8 +621,7 @@ struct
     in 
     print_string (("current: ")^(string_of_int (d*i +1))^
 		     (" last : ")^(string_of_int ((d*i) + d))^("\n"));
-    (*if ((d*i + 1) < q.first_empty) then *)
-      loop (d*i + 1) (min (d*i + d) q.first_empty) (500, {id=500;tent_dist = infinity}) q
+  loop (d*i + 1) (min (d*i+d) (q.first_empty-1)) (500, {id=500;tent_dist = infinity}) q
      
   
    (*check against first_empty *) 
@@ -742,4 +780,4 @@ let run_tests () =
 end ;; 
 
 Two_aryHeap.run_tests ()
-*)
+
