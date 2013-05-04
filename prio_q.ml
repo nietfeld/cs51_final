@@ -333,11 +333,12 @@ struct
 		     Leaf{id=0;tent_dist=infinity})) in
 
     (* test take *)
-    assert(take test_1 =
-	({id=0;tent_dist=0.},Tree
-	  (TwoBranch(Odd,{id=1;tent_dist=1.},
-		     OneBranch({id=2;tent_dist=2.},{id=5;tent_dist=5.}),
-			       (Leaf({id=4;tent_dist=4.}))))));
+    assert(take test_1 = ({id=0;tent_dist=0.},
+			  Tree(TwoBranch(Odd,{id=1;tent_dist=1.},
+					 OneBranch({id=2;tent_dist=2.},
+						   {id=5;tent_dist=5.}),
+					 (Leaf({id=4;tent_dist=4.}))))));
+    
     let (a, q1) = take test_2 in
     let (b, q2) = take q1 in
     let (c, q3) = take q2 in
@@ -476,110 +477,6 @@ end
 (********************    Priority Q using D-ary Heap   *************************)
 (*******************************************************************************)
 
-
-
-(*******************************************************************************)
-(********************    Priority Q using Fib Heap    **************************)
-(*******************************************************************************)
-
-open Fibsource
-
-module EltOrd =
-struct
-  type t = elt
-  let compare a b =
-    if a.tent_dist < b.tent_dist then (-1)
-    else if a.tent_dist > b.tent_dist then 1
-    else 0
-  (* ??? *) 
-  let min = {id=0;tent_dist=0.}
-end
-
-(* INTIALIZED ARRAY WITH 1000 NODES OF DISTANCE INFINITY *)
-
-module FibHeap : PRIOQUEUE = 
-struct
-  exception QueueEmpty
-  exception Impossible
-  module F = Make(EltOrd)
-  open F
-
-  type hashtable = (int, float fibnode) Hashtbl.t
-  type queue = float fibheap * hashtable
-     
-  let hash () = Hashtbl.create 10 
-  
-  let empty () = (fibheap_create (), hash ())
-
-  let is_empty (q: queue) : bool = q = empty ()
-    
-  let add (e: elt) (q: queue) =
-    let (heap, hash) = q in
-    let node = fibnode_new e e.tent_dist in
-    fibheap_insert heap node; Hashtbl.add hash e.id node; q
-      
-  let take (q: queue) : elt * queue =
-    let (heap, hash) = q in
-    let node = fibheap_extract_min heap in
-    Hashtbl.remove hash node.key.id;
-    ({id=node.key.id;tent_dist=node.data},q)
-  
-  let lookup (id: int) (q: queue) : elt option =
-    let (heap, hash) = q in
-    let node = try Some (Hashtbl.find hash id) with Not_found -> None in
-    match node with 
-    | None -> None 
-    | Some i -> Some {id=i.key.id;tent_dist=i.data}
-
-  let delete (id: int) (q: queue) : queue =
-    let (heap, hash) = q in
-    let node = Hashtbl.find hash id in
-    Hashtbl.remove hash id; fibheap_delete heap node; q
-      
-  let update (id: int) (d: float) (q: queue) : queue =
-    let (heap, hash) = q in
-    let node = Hashtbl.find hash id in
-    Hashtbl.remove hash id; fibheap_delete heap node;
-    add {id=id;tent_dist=d} q
-      
-  let print_q (q: queue) =
-    let (heap, hash) = q in
-    fibheap_print string_of_float Format.std_formatter heap
-
-  let run_tests () = 
-    let a = empty () in
-    let _ = add {id=0;tent_dist=6.} a in
-    let _ = add {id=1;tent_dist=5.} a in
-    let _ = add {id=2;tent_dist=4.} a in
-    let _ = add {id=3;tent_dist=3.} a in
-    let _ = add {id=4;tent_dist=2.} a in
-    let _ = add {id=5;tent_dist=1.} a in  
-
-    assert(lookup 0 a = Some {id=0;tent_dist=6.});
-    assert(lookup 1 a = Some {id=1;tent_dist=5.});
-    assert(lookup 2 a = Some {id=2;tent_dist=4.});
-    assert(lookup 3 a = Some {id=3;tent_dist=3.});
-    assert(lookup 4 a = Some {id=4;tent_dist=2.});
-    assert(lookup 5 a = Some {id=5;tent_dist=1.});
-
-    let (el, b) = take a in
-    assert(el = ({id=5;tent_dist=1.}));
-    let (el, c) = take b in
-    assert(el = ({id=4;tent_dist=2.}));
-    let (el, d) = take c in
-    assert(el = ({id=3;tent_dist=3.}));
-    let (el, e) = take d in
-    assert(el = ({id=2;tent_dist=4.}));
-    let (el, f) = take e in
-    assert(el = ({id=1;tent_dist=5.}));
-    let (el, g) = take f in
-    assert(el = ({id=0;tent_dist=6.}));
-    
-
-    
-end;;
-
-FibHeap.run_tests ();;
 
 module type ARG =
 sig
@@ -801,3 +698,107 @@ module Two_aryHeap =
   end);;
 
 Two_aryHeap.run_tests ()
+
+
+(*******************************************************************************)
+(********************    Priority Q using Fib Heap    **************************)
+(*******************************************************************************)
+
+open Fibsource
+
+module EltOrd =
+struct
+  type t = elt
+  let compare a b =
+    if a.tent_dist < b.tent_dist then (-1)
+    else if a.tent_dist > b.tent_dist then 1
+    else 0
+  (* ??? *) 
+  let min = {id=0;tent_dist=0.}
+end
+
+(* INTIALIZED ARRAY WITH 1000 NODES OF DISTANCE INFINITY *)
+
+module FibHeap : PRIOQUEUE = 
+struct
+  exception QueueEmpty
+  exception Impossible
+  module F = Make(EltOrd)
+  open F
+
+  type hashtable = (int, float fibnode) Hashtbl.t
+  type queue = float fibheap * hashtable
+     
+  let hash () = Hashtbl.create 10 
+  
+  let empty () = (fibheap_create (), hash ())
+
+  let is_empty (q: queue) : bool = q = empty ()
+    
+  let add (e: elt) (q: queue) =
+    let (heap, hash) = q in
+    let node = fibnode_new e e.tent_dist in
+    fibheap_insert heap node; Hashtbl.add hash e.id node; q
+      
+  let take (q: queue) : elt * queue =
+    let (heap, hash) = q in
+    let node = fibheap_extract_min heap in
+    Hashtbl.remove hash node.key.id;
+    ({id=node.key.id;tent_dist=node.data},q)
+  
+  let lookup (id: int) (q: queue) : elt option =
+    let (heap, hash) = q in
+    let node = try Some (Hashtbl.find hash id) with Not_found -> None in
+    match node with 
+    | None -> None 
+    | Some i -> Some {id=i.key.id;tent_dist=i.data}
+
+  let delete (id: int) (q: queue) : queue =
+    let (heap, hash) = q in
+    let node = Hashtbl.find hash id in
+    Hashtbl.remove hash id; fibheap_delete heap node; q
+      
+  let update (id: int) (d: float) (q: queue) : queue =
+    let (heap, hash) = q in
+    let node = Hashtbl.find hash id in
+    Hashtbl.remove hash id; fibheap_delete heap node;
+    add {id=id;tent_dist=d} q
+      
+  let print_q (q: queue) =
+    let (heap, hash) = q in
+    fibheap_print string_of_float Format.std_formatter heap
+
+  let run_tests () = 
+    let a = empty () in
+    let _ = add {id=0;tent_dist=6.} a in
+    let _ = add {id=1;tent_dist=5.} a in
+    let _ = add {id=2;tent_dist=4.} a in
+    let _ = add {id=3;tent_dist=3.} a in
+    let _ = add {id=4;tent_dist=2.} a in
+    let _ = add {id=5;tent_dist=1.} a in  
+
+    assert(lookup 0 a = Some {id=0;tent_dist=6.});
+    assert(lookup 1 a = Some {id=1;tent_dist=5.});
+    assert(lookup 2 a = Some {id=2;tent_dist=4.});
+    assert(lookup 3 a = Some {id=3;tent_dist=3.});
+    assert(lookup 4 a = Some {id=4;tent_dist=2.});
+    assert(lookup 5 a = Some {id=5;tent_dist=1.});
+
+    let (el, b) = take a in
+    assert(el = ({id=5;tent_dist=1.}));
+    let (el, c) = take b in
+    assert(el = ({id=4;tent_dist=2.}));
+    let (el, d) = take c in
+    assert(el = ({id=3;tent_dist=3.}));
+    let (el, e) = take d in
+    assert(el = ({id=2;tent_dist=4.}));
+    let (el, f) = take e in
+    assert(el = ({id=1;tent_dist=5.}));
+    let (el, g) = take f in
+    assert(el = ({id=0;tent_dist=6.}));
+    
+
+    
+end;;
+
+FibHeap.run_tests ();;
