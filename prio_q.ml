@@ -486,7 +486,8 @@ struct
 
   (* change this function completely *)
   let update (id: int) (new_dist: float) (pq: queue) : queue =
-    add {id = id; tent_dist = new_dist} (delete id pq)
+    let new_q = delete id pq in
+    add {id = id; tent_dist = new_dist} (new_q)
 
 
   let run_tests () = 
@@ -522,14 +523,15 @@ struct
 
 (* test update *) 
 (*
+
    assert (update 1 1.2 test_1 = 
       Branch (Leaf, {id=1;tent_dist=1.2}, 
 	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf)));
    assert (update 2 1.4 test_2 =
       Branch (Branch(Leaf, {id=2;tent_dist=1.4}, Leaf), 
 	      {id=1;tent_dist=1.}, Branch (Leaf, {id=5;tent_dist=0.4}, Leaf)))
-*)
 
+*)
  end;;
 
 BinSQueue.run_tests ();
