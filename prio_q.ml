@@ -486,18 +486,53 @@ struct
 
   (* change this function completely *)
   let update (id: int) (new_dist: float) (pq: queue) : queue =
-    let take_out = delete id pq in
-    add {id = id; tent_dist = new_dist} take_out
-          
+    add {id = id; tent_dist = new_dist} (delete id pq)
+
 
   let run_tests () = 
-  (* test ADD, take, LOOK UP, UPDATE *)
+    (* test ADD, take, LOOK UP, UPDATE *)
+    let test_1 = 
+      Branch (Leaf, {id=1;tent_dist=1.}, 
+	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
+    in
+    let test_2 = 
+      Branch (Branch(Leaf, {id=5;tent_dist=0.4}, Leaf), 
+	      {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
+    in
+    (*let test_3 = (Branch(Leaf, {id=5;tent_dist=.4}, Leaf), {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf)
+      in *)
+    (* test add *) (* elt and q - returns q *)
+    assert (add {id=4;tent_dist=4.3} test_1 =
+	Branch(Leaf, {id=1;tent_dist=1.}, 
+	       Branch (Leaf, {id =2;tent_dist=2.}, 
+		       Branch (Leaf, {id=4;tent_dist=4.3}, Leaf))));
 
+    assert (add {id=4;tent_dist=0.3} test_1 =
+	Branch(Branch(Leaf,{id=4;tent_dist=0.3},Leaf), 
+	       {id=1;tent_dist=1.}, Branch (Leaf, {id =2;tent_dist=2.}, Leaf)));
 
+    (* test take *)
+    assert (take test_1 = ({id=1;tent_dist=1.}, 
+			   Branch(Leaf, {id =2;tent_dist=2.}, Leaf)));
 
-()
-(* test add *)
-end
+    (* test look up *)
+    assert (lookup 1 test_2 = Some {id=1;tent_dist=1.});
+    assert (lookup 10 test_1 = None);
+    assert (lookup 2 test_1 = Some {id=2; tent_dist=2.});
+
+(* test update *) 
+(*
+   assert (update 1 1.2 test_1 = 
+      Branch (Leaf, {id=1;tent_dist=1.2}, 
+	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf)));
+   assert (update 2 1.4 test_2 =
+      Branch (Branch(Leaf, {id=2;tent_dist=1.4}, Leaf), 
+	      {id=1;tent_dist=1.}, Branch (Leaf, {id=5;tent_dist=0.4}, Leaf)))
+*)
+
+ end;;
+
+BinSQueue.run_tests ();
 
 
 (*******************************************************************************)
