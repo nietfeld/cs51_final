@@ -1,24 +1,16 @@
 open Prio_q
 open Array
 open Graphs 
-open Matrix
-
-open Dictionary
-
-open ListQueue 
-module IntListQueue =  ListQueue
-
-
-(*
-open BinaryHeap 
-module IntHeapQueue = BinaryHeap *)
 
 exception Not_found
 exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
-module My_queue = IntListQueue
+module My_queue = FibHeap
+
+open My_queue
+open My_graph
   
 let initialize_queue (n: int) (start: node) =
   let rec add_elts (pq: queue) (to_add: int) = 
