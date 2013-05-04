@@ -1,8 +1,8 @@
+type node = int
+
 (* A signature for directed graphs with unweighted edges *)
 module type GRAPH =
 sig 
-  type node = int
-
   type graph 
     
   val empty : int -> graph
@@ -32,7 +32,6 @@ end
 module Dictionary : GRAPH =
 struct
   open Order
-  type node = int
     
   (* We'll represent a graph as an edge dictionary:
      dictionary: node -> neighbor set
@@ -137,8 +136,6 @@ end
 
 module Matrix : GRAPH =
 struct
-  type node = int
-    
   type adj_mat = float array array
   type graph = { mutable num_nodes : int; (* nodes added *)
 		 size : int; (* max nodes *)
@@ -148,7 +145,7 @@ struct
   let empty s =
     {num_nodes = 0; size = s; m = Array.create_matrix s s infinity}
       
-  let nodes g = 
+  let nodes g =
     let rec aux (i: int) (lst: int list) : int list =
       if i >= 0
       then aux (i - 1) (i::lst)     
@@ -169,10 +166,10 @@ struct
 
   let print_graph g = 
     let rec aux n i = 
-      if n = g.size then print_string ""
+      if n = g.size then print_string "!"
       else if i = g.size then (print_string "\n"; aux (n+1) 0)
-      else print_string (string_of_int n ^ " - " ^ string_of_int i ^ ": " ^
-			   string_of_float g.m.(n).(i) ^ "; "); aux n (i+1)
+      else (print_string (string_of_int n ^ " - " ^ string_of_int i ^ ": " ^
+			   string_of_float g.m.(n).(i) ^ "; "); aux n (i+1))
     in
     aux 0 0
 
@@ -225,7 +222,8 @@ struct
     assert(g.m.(0).(2) = 2.);
     assert(g.m.(2).(4) = 3.);
     assert(g.m.(3).(4) = 6.);
-    assert(g.m.(2).(3) = 4.)
+    assert(g.m.(2).(3) = 4.);
+    
 end;;
 
 Dictionary.run_tests ();;

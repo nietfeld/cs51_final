@@ -7,13 +7,16 @@ exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
-module My_queue = BinSQueue
 
+module My_queue = ListQueue
+
+(*
 open My_queue
+*)
 open My_graph
   
 let initialize_queue (n: int) (start: node) =
-  let rec add_elts (pq: queue) (to_add: int) = 
+  let rec add_elts pq (to_add: int) = 
     if to_add = (-1) then My_queue.update start 0. pq
     else add_elts (My_queue.add {id = to_add; tent_dist = infinity} pq) 
       (to_add - 1)
@@ -42,8 +45,8 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
 	 (* don't update, do next neighbor *) 
 	 else update_queue pq curr_node (Some tl) dist prev)))
       
-let one_round (pq : queue) (my_graph : graph) (dist : float array) 
-    (prev : int option array) : queue = 
+let one_round pq (my_graph : graph) (dist : float array) 
+    (prev : int option array) = 
   let (curr_node, new_q) = My_queue.take pq in 
   let neighbor_list = My_graph.neighbors my_graph curr_node.id in 
   (*print_string "right before array set" ;*)
@@ -101,8 +104,11 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
   helper_dist dist 0
 
 
-
-let dij (start : node) (g : graph) =
+let dij (start: node) (g: graph) (m : (module PRIOQUEUE)) =
+  let module My_queue = (val (m) : PRIOQUEUE) in
+  
+(*let dij (start : node) (g : graph) a = 
+*)
   if has_node g start then 
     let graph_size = My_graph.num_nodes g in
     let dist = Array.make graph_size infinity in 
@@ -110,7 +116,7 @@ let dij (start : node) (g : graph) =
     let prioq = initialize_queue graph_size start in 
     (*Printf.printf "I'm here and done initializing q \n";*)
     (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
-    let rec iterate (pq : queue) (number_rounds: int) : unit = 
+    let rec iterate pq (number_rounds: int) : unit = 
       match number_rounds with 
       | 0 -> (*Printf.printf "Finished bitches \n"*) ()
       | _ -> let new_q = one_round pq g dist prev in 
@@ -205,7 +211,9 @@ dij 0 g5;;*)
 let g6 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11);(1, 1.2,0);(2, 11.5, 12);(7, 3.4, 8);(10, 0.2, 13);(13, 0.3, 11);(2, 23.5, 8)]
 in 
 dij 1 g6;;*)
-  let course_graph = My_graph.from_edges 
+  
+(*
+let course_graph = My_graph.from_edges 
 [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);
 (0,1.57,13);(0,1.2,14);(0,1.42,15);
 
@@ -244,7 +252,7 @@ dij 1 g6;;*)
   print_string "ya done running yall";
 (*  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
     let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
-
+  *)
 let burton =
   from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
 	      (1,1.,6);(6,1.,1);(1,1.,3);(3,1.,1);(1,1.,11);(11,1.,1);
@@ -262,7 +270,6 @@ let burton =
 	      (4,1.,5);(4,1.,6);
 	      (5,1.,4);(5,1.,6);
 	      (6,1.,5);(6,1.,4);
-
 	      (7,1.,8);(7,1.,9);(7,1.,10);
 	      (8,1.,7);(8,1.,9);(8,1.,10);
 	      (9,1.,7);(9,1.,8);(9,1.,10);
@@ -282,9 +289,18 @@ let burton =
 	      (20,1.,18);(20,1.,19);(20,1.,0);
 	      (0,1.,18);(0,1.,19);(0,1.,20)]
 in
-dij 1 burton
+
+let module Two : PRIOQUEUE =
+  DHeap(struct
+    let n = My_graph.num_nodes burton
+    let d = 3
+  end)
+
+in
+let a = (module Two : PRIOQUEUE) in
+dij 1 burton a
 ;;
 
-(*
+
 run_tests ();
-*)
+

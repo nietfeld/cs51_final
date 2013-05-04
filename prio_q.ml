@@ -13,7 +13,6 @@ let compare x y =
 
 module type PRIOQUEUE =
 sig
-  exception QueueEmpty
   type queue
 
   (* Returns an empty queue *)
@@ -35,12 +34,8 @@ end
 
 module ListQueue : PRIOQUEUE = 
 struct
-  exception QueueEmpty
-  exception Impossible
-    
+
   type queue = elt list
-    
-  let print_q _ = ()
     
   let empty () = []
   
@@ -54,7 +49,7 @@ struct
       | Less -> e::q
       | Greater | Eq -> hd::(add e tl)
 
-  let print_queue (q: queue) : unit = 
+  let print_q (q: queue) : unit = 
     List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
     print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
@@ -76,11 +71,6 @@ struct
   let update (a: int) (new_dist: float) (q: queue) : queue =
     let new_queue = delete a q in
     add {id = a; tent_dist = new_dist} new_queue
-
-
-
- 
-
       
   let run_tests () = 
     let a = empty () in
@@ -119,9 +109,12 @@ struct
 		 {id=1; tent_dist=3.}]);
     (* test update *)
     let q = update 6 1.2 f in
-    assert (q = [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
-    assert (update 2 2.6 q =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])
-
+    assert (q = [{id=3;tent_dist=1.};{id=6;tent_dist=1.2};{id=2;tent_dist=2.};
+		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    assert (update 2 2.6 q = [{id=3;tent_dist=1.};{id=6;tent_dist=1.2};
+			      {id=2;tent_dist=2.6};{id=1;tent_dist=3.};
+			      {id=0;tent_dist=4.}])
+      
 end;;
 
 ListQueue.run_tests ();;
@@ -132,9 +125,6 @@ ListQueue.run_tests ();;
 
 module BinaryHeap : PRIOQUEUE =
 struct
-  
-  exception QueueEmpty
-  exception Impossible
 
   type balance = Even | Odd
 
@@ -142,7 +132,6 @@ struct
               | OneBranch of elt * elt
               | Leaf of elt
 
-  (* A queue is either empty, or a tree *)
   type queue = Empty | Tree of tree
 
   let empty () = Empty
@@ -151,54 +140,37 @@ struct
 
   let hash = Hashtbl.create 10
 
-  (* Adds element e to the queue q *)
   let add (e : elt) (q : queue) : queue =
     Hashtbl.add hash e.id e.tent_dist;
     let rec add_to_tree (e : elt) (t : tree) : tree =
       match t with
-      (* If the tree is just a Leaf, then we end up with a OneBranch *)
       | Leaf e1 ->
         (match compare e e1 with
          | Eq | Greater -> OneBranch (e1, e)
          | Less -> OneBranch (e, e1))
-
-      (* If the tree was a OneBranch, it will now be a TwoBranch *)
       | OneBranch(e1, e2) ->
         (match compare e e1 with
          | Eq | Greater -> TwoBranch (Even, e1, Leaf e2, Leaf e)
          | Less -> TwoBranch (Even, e, Leaf e2, Leaf e1))
-
-      (* If the tree was even, then it will become an odd tree (and the element
-       * is inserted to the left *)
       | TwoBranch(Even, e1, t1, t2) ->
         (match compare e e1 with
          | Eq | Greater -> TwoBranch(Odd, e1, add_to_tree e t1, t2)
          | Less -> TwoBranch(Odd, e, add_to_tree e1 t1, t2))
-
-      (* If the tree was odd, then it will become an even tree (and the element
-       * is inserted to the right *)
       | TwoBranch(Odd, e1, t1, t2) ->
         match compare e e1 with
         | Eq | Greater -> TwoBranch(Even, e1, t1, add_to_tree e t2)
         | Less -> TwoBranch(Even, e, t1, add_to_tree e1 t2)
     in
-    (* If the queue is empty, then e is the only Leaf in the tree.
-     * Else, insert it into the proper location in the pre-existing tree *)
     match q with
     | Empty -> Tree (Leaf e)
     | Tree t -> Tree (add_to_tree e t)
 
-  (* Simply returns the top element of the tree t (i.e., just a single pattern
-   * match in *)
   let get_top (t : tree) : elt =
     match t with
     | Leaf e
     | TwoBranch (_,e,_,_)
     | OneBranch (e,_) -> e
 
-  (* Takes a tree, and if the top node is greater than its children, fixes
-   * it. If fixing it results in a subtree where the node is greater than its
-   * children, then you must (recursively) fix this tree too *)
   type dir = Left | Right | Neither
 
   let compare3 (e1 : elt) (e2 : elt) (e3 : elt) =
@@ -251,9 +223,11 @@ let print_elt (e: elt) : unit =
     | OneBranch (e1, e2) -> 
       (print_string "One Branch(";  print_elt e1; print_elt e2; print_string ")")
     | TwoBranch (Even, e1, t1, t2) -> 
-      (print_string "TwoBranch (Even, "; print_elt e1; print_h t1; print_h t2; print_string ")")
+      (print_string "TwoBranch (Even, "; print_elt e1; print_h t1; print_h t2;
+       print_string ")")
     | TwoBranch (Odd, e1, t1, t2) -> 
-      (print_string "TwoBranch (Odd, "; print_elt e1; print_h t1; print_h t2; print_string ")")
+      (print_string "TwoBranch (Odd, "; print_elt e1; print_h t1; print_h t2; 
+       print_string ")")
     in 
     match q with 
     | Empty -> print_string "Empty String"
@@ -266,9 +240,11 @@ let print_elt (e: elt) : unit =
     | OneBranch (e1, e2) -> 
       (print_string "One Branch(";  print_elt e1; print_elt e2; print_string ")")
     | TwoBranch (Even, e1, t1, t2) -> 
-      (print_string "TwoBranch (Even, "; print_elt e1; print_t t1; print_t t2; print_string ")")
+      (print_string "TwoBranch (Even, "; print_elt e1; print_t t1; print_t t2;
+       print_string ")")
     | TwoBranch (Odd, e1, t1, t2) -> 
-      (print_string "TwoBranch (Odd, "; print_elt e1; print_t t1; print_t t2; print_string ")")
+      (print_string "TwoBranch (Odd, "; print_elt e1; print_t t1; print_t t2; 
+       print_string ")")
 	
   let rec get_last (t : tree) : elt * queue =
     match t with
@@ -277,16 +253,13 @@ let print_elt (e: elt) : unit =
     | TwoBranch (Even, e, t1, t2) ->
       let (last, q2') = get_last t2 in
       (match q2' with
-       | Empty -> last, Tree (OneBranch(e, get_top t1))
+      | Empty -> last, Tree (OneBranch(e, get_top t1))
        | Tree t2' -> last, Tree (TwoBranch(Odd, e, t1, t2')))
     | TwoBranch (Odd, e, t1, t2) ->
       let (last, q1') = get_last t1 in
       last, Tree (TwoBranch(Even, e, extract_tree q1', t2))
-
-  (* Implements the algorithm described in the writeup. You must finish this
-   * implementation, as well as the implementations of get_last and fix, which
-   * take uses *)
-  let take (q : queue) : elt * queue =
+	
+   let take (q : queue) : elt * queue =
     match extract_tree q with
     | Leaf e -> e, Empty
     | OneBranch (e1, e2) -> e1, Tree (Leaf e2)
@@ -325,8 +298,7 @@ let print_elt (e: elt) : unit =
     | Empty -> None
     | Tree t -> match_tree t
 
- (* now we'll need to fix it *) 
-  let update (id: int) (new_dist: float)(q: queue) : queue = 
+   let update (id: int) (new_dist: float)(q: queue) : queue = 
     let new_rec = {id = id; tent_dist = new_dist} in
     let rec helper (id: int) (new_dist: float) (t: tree) : tree =
       match t with
@@ -341,12 +313,12 @@ let print_elt (e: elt) : unit =
 	else OneBranch (l, r)
       | TwoBranch (Even, v, l, r) ->
 	if v.id = id then TwoBranch (Even, new_rec, l, r)
-       (* might be prob here *)
-	else (fix (TwoBranch (Even, v, (helper id new_dist l),  (helper id new_dist r))) )
+ 	else (fix (TwoBranch (Even, v, (helper id new_dist l), 
+			      (helper id new_dist r))) )
       | TwoBranch (Odd, v, l, r) ->
 	if v.id = id then TwoBranch (Odd, new_rec, l, r)
-       (* might be prob here *)
-	else (fix (TwoBranch  (Odd, v, (helper id new_dist l),  (helper id new_dist r))) )
+	else (fix (TwoBranch  (Odd, v, (helper id new_dist l), 
+			       (helper id new_dist r))) )
     in
     match q with  
     | Empty -> raise (Failure "trying to update an empty q")
@@ -354,34 +326,46 @@ let print_elt (e: elt) : unit =
 
 
   let run_tests () = 
-    let test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, 
-				  OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), 
-				  OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.}))) in
+    let test_1 = 
+      Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, 
+		       OneBranch({id=1;tent_dist=1.},{id=2;tent_dist=2.}), 
+		       OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.}))) in
     (* test lookup *)
     assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});
     assert((lookup 5 test_1) = Some {id = 5; tent_dist = 5.});
     assert((lookup 1 test_1) = Some {id = 1; tent_dist = 1.});
     assert((lookup 2 test_1) = Some {id = 2; tent_dist = 2.});
     assert((lookup 4 test_1) = Some {id = 4; tent_dist = 4.});
-    let test_2 = Tree (TwoBranch (Even, {id= 2; tent_dist= 0.}, 
-				  OneBranch ({id= 3; tent_dist=infinity}, {id= 1; tent_dist =infinity}), 
-				  OneBranch ( {id= 4; tent_dist =infinity}, {id= 0; tent_dist =infinity}))) in
+    
+    let test_2 = 
+      Tree (TwoBranch (Even, {id= 2; tent_dist= 0.}, 
+		       OneBranch({id=3;tent_dist=infinity},
+				 {id=1;tent_dist=infinity}), 
+		       OneBranch({id=4;tent_dist=infinity},
+				 {id=0;tent_dist=infinity}))) in
     assert((lookup 3 test_2) = Some{id= 3; tent_dist=infinity});
-    let test_3 = Tree(TwoBranch (Odd, {id= 4; tent_dist =3.}, OneBranch( {id= 3; tent_dist= infinity}, {id= 1; tent_dist = infinity}), Leaf {id= 0; tent_dist =infinity})) in
-    assert((lookup 3 test_3) = Some{id= 3; tent_dist=infinity});
+
+    let test_3 = 
+      Tree(TwoBranch(Odd,{id=4;tent_dist=3.},
+		     OneBranch({id=3;tent_dist=infinity},
+			       {id= 1;tent_dist=infinity}),
+		     Leaf{id=0;tent_dist=infinity})) in
+    assert((lookup 3 test_3)=Some{id=3;tent_dist=infinity});
+
     (* test update *)
-    assert (update 0 0.2 test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.2}, 
-				  OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), 
-				  OneBranch( {id= 4; tent_dist=4.},  {id= 5; tent_dist = 5.}))));
-   assert(update 4 0.2 test_1 = Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, 
-				  OneBranch ({id= 1; tent_dist=1.},{id=2; tent_dist=2.}), 
-				  OneBranch( {id= 4; tent_dist=0.2},  {id= 5; tent_dist = 5.}))))
-
-
+    assert (update 0 0.2 test_1=Tree
+	(TwoBranch(Even,{id=0;tent_dist=0.2},OneBranch({id=1;tent_dist=1.},
+						       {id=2;tent_dist=2.}), 
+		   OneBranch({id=4;tent_dist=4.},{id= 5; tent_dist = 5.}))));
+    
+    assert(update 4 0.2 test_1 = Tree
+	(TwoBranch (Even,{id=0;tent_dist=0.},OneBranch({id=1;tent_dist=1.},
+						       {id=2; tent_dist=2.}), 
+		    OneBranch({id=4;tent_dist=0.2},{id=5;tent_dist=5.}))))
 end
+  
 
-
-(*******************************************************************************)
+(*****************************************************************************0*)
 (******************   Priority Q using Binary Search Tree **********************)
 (*******************************************************************************)
 
@@ -391,12 +375,9 @@ end
 left, it its bigger, it goes on the right *)
 module BinSQueue : PRIOQUEUE = 
 struct
-  exception QueueEmpty
-  exception Impossible
-
   type queue =  Leaf | Branch of queue * elt * queue
 
-  let empty _ = Leaf
+  let empty () = Leaf
 
   let print_q (q: queue) = ()
   
@@ -557,29 +538,34 @@ struct
     let _ = add {id=4;tent_dist=5.} a in
     let _ = add {id=5;tent_dist=6.} a in  
 
-    assert(print_q a = ());
     let (el, b) = take a in
     assert(el = ({id=0;tent_dist=1.}));
-    assert(print_q b = ());
     let (el, c) = take b in
     assert(el = ({id=1;tent_dist=2.}));
     let (el, d) = take c in
     assert(el = ({id=2;tent_dist=3.}));
     let (el, e) = take d in
     assert(el = ({id=3;tent_dist=4.}));
-			    
-			assert(1=1)
+    
+
+    
 end;;
 
 FibHeap.run_tests ();;
 
-module Two_aryHeap : PRIOQUEUE = 
+module type ARG =
+sig
+  val d : int
+  val n : int
+end
+
+module DHeap (A : ARG) : PRIOQUEUE = 
 struct 
 
   (* how do we get the 1000 in there? How do we take the d as argument?? *) 
-  let n = 1000
-  let d = 2 
-
+  let n = A.n
+  let d = A.d
+    
   type queue = {heap : elt option array; 
 		lt : int option array; 
 		mutable first_empty: int}
@@ -594,14 +580,12 @@ struct
     match x with 
     | None -> () 
     | Some x -> 
-      (print_string (("id: ")^(string_of_int x.id)^(" tent_dist: ")^(string_of_float x.tent_dist)))
-
+      (print_string (("id: ")^(string_of_int x.id)^(" tent_dist: ")^
+			(string_of_float x.tent_dist)))
 
   let print_q (q: queue) = 
     Array.iter (fun x -> print_item x) q.heap;
     print_string "\n"
-
-
 
 (* MAKE OPTION OR CHECK WHEN CALLED THAT THERE ARE CHILDREN *) 
   (* looks at the children from index i, finds the one with the minimum tent_dist. 
@@ -613,15 +597,17 @@ struct
 	(match q.heap.(current) with 
 	(* reached the end of the queue *) 
 	| None -> min_e
-	| Some x -> (print_string (("child candidate: ")^(string_of_float x.tent_dist));
-	  if (x.tent_dist < min_e_elt.tent_dist)
+	| Some x -> (print_string (("child candidate: ")^
+				      (string_of_float x.tent_dist));
+		     if (x.tent_dist < min_e_elt.tent_dist)
 	  then loop (current + 1) last (current, x) q
 	  else loop (current + 1) last min_e q))
     in 
     print_string (("current: ")^(string_of_int (d*i +1))^
 		     (" last : ")^(string_of_int ((d*i) + d))^("\n"));
-  (*if ((d*i + 1) < q.first_empty) then *)
-    loop (d*i + 1) (min (d*i+d) (q.first_empty-1)) (500, {id=500;tent_dist = infinity}) q
+    (*if ((d*i + 1) < q.first_empty) then *)
+    loop (d*i + 1) (min (d*i+d) (q.first_empty-1))
+      (500, {id=500;tent_dist = infinity}) q
       
      
   
@@ -677,7 +663,8 @@ struct
 	   print_string "min child of "; 
 	   print_int parent_index;
 	   print_string " : ";
-	   print_string (("id: ")^(string_of_int min_child_elt.id)^(" tent_dist : "));
+	   print_string (("id: ")^(string_of_int min_child_elt.id)^
+			    (" tent_dist : "));
 	   print_string (string_of_float min_child_elt.tent_dist);
 	   print_string "\n";
 	   if min_child_elt.tent_dist > parent_elt.tent_dist then q
@@ -697,6 +684,7 @@ let add (e: elt) (q: queue) : queue =
 
 
   let take (q: queue) : elt * queue = 
+    print_string "Kittens \n\n\n\n"; flush_all ();
     let min_elt = deopt (Array.get q.heap 0) in
     (* get the last element in the heap *) 
     let new_front = deopt (Array.get q.heap (q.first_empty - 1)) in
@@ -720,9 +708,7 @@ let add (e: elt) (q: queue) : queue =
     | Some x -> (fix_up x 
 		   (q.heap.(x) <- (Some {id = i; tent_dist = f});
 		    q))
-   
- 
-      
+  
   let listify (q: queue) : elt list = 
     List.fold_left (fun y x -> match x with 
     | None -> y 
@@ -743,7 +729,7 @@ let run_tests () =
     print_q d;
     let e = add {id=2; tent_dist=2.} d in
     print_string "PRINTING E\n";
-    print_q e;
+    print_q e; flush_all ();
     assert(1 = 1)
     (* test add *)
     (*assert((listify e)= [{id=3; tent_dist=1.};{id=2; tent_dist=2.};  
@@ -779,5 +765,11 @@ let run_tests () =
     assert (q = [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
     assert (update 2 2.6 q =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])*)
 end ;; 
+
+module Two_aryHeap = 
+  DHeap(struct
+    let n = 1000
+    let d = 2
+  end);;
 
 Two_aryHeap.run_tests ()
