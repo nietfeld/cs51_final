@@ -338,22 +338,33 @@ struct
 	  (TwoBranch(Odd,{id=1;tent_dist=1.},
 		     OneBranch({id=2;tent_dist=2.},{id=5;tent_dist=5.}),
 			       (Leaf({id=4;tent_dist=4.}))))));
-(*    
-    assert(take test_2 = 
-	({id=2;tent_dist=0.},Tree
-	  (TwoBranch(Odd,{id=3;tent_dist=infinity},
-		     OneBranch({id=4;tent_dist=infinity},
-			       {id=1;tent_dist=infinity}),
-		     Leaf({id=0;tent_dist=infinity}))))); 
+    let (a, q1) = take test_2 in
+    let (b, q2) = take q1 in
+    let (c, q3) = take q2 in
+    let (d, q4) = take q3 in
+    let (e, q5) = take q4 in    
+    assert(a = {id=2;tent_dist=0.});
+    assert(b = {id=0;tent_dist=infinity});
+    assert(c = {id=1;tent_dist=infinity});
+    assert(d = {id=4;tent_dist=infinity});
+    assert(e = {id=3;tent_dist=infinity});
+    assert(q5 = Empty);
 
-    (* test add *)
-    assert(add{id=6;tent_dist=3.2} test_1 = Tree
-	(TwoBranch
-	   (Odd,{id=0;tent_dist=0.},
-	    (TwoBranch(Odd,{id=1;tent_dist=1.},Leaf({id=2;tent_dist=2.}),
-		       Leaf({id=6;tent_dist=3.2}))), 
-    	    OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))) ;
-*)
+   (* test add *)
+    let q0 = add {id=6;tent_dist=3.2} test_1 in
+    let (a, q1) = take q0 in
+    let (b, q2) = take q1 in
+    let (c, q3) = take q2 in
+    let (d, q4) = take q3 in
+    let (e, q5) = take q4 in    
+    let (f, q6) = take q5 in
+    assert(a = {id=0;tent_dist=0.});
+    assert(b = {id=1;tent_dist=1.});
+    assert(c = {id=2;tent_dist=2.});
+    assert(d = {id=6;tent_dist=3.2});
+    assert(e = {id=4;tent_dist=4.});
+    assert(f = {id=5;tent_dist=5.});
+    assert(q6 = Empty);
 
     (* test lookup *)
     assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});
