@@ -8,7 +8,7 @@ exception QueueEmpty
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
 
-module My_queue = ListQueue
+module My_queue = BinaryHeap
 
 (*
 open My_queue
