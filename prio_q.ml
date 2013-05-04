@@ -1,7 +1,7 @@
 exception QueueEmpty
 exception Impossible
   
-type elt = {id : int; mutable tent_dist : float };;
+type elt = {id : int; mutable tent_dist : float};;
 
 type order = Less | Greater | Eq
 
@@ -332,12 +332,20 @@ struct
 			       {id= 1;tent_dist=infinity}),
 		     Leaf{id=0;tent_dist=infinity})) in
 
+    let test_4 = Tree (TwoBranch(Odd, {id=l; tent_dist=1.}, OneBranch(id=2; tent_dist=2.},{id=4; tent_dist=4.}), Leaf {id=3; tent_dist=3.}))
+in
+
     (* test take *)
     assert(take test_1 =
 	({id=0;tent_dist=0.},Tree
 	  (TwoBranch(Odd,{id=1;tent_dist=1.},
 		     OneBranch({id=2;tent_dist=2.},{id=5;tent_dist=5.}),
 			       (Leaf({id=4;tent_dist=4.}))))));
+  
+    assert((take (Tree (TwoBranch(Odd, {id=l; tent_dist=1.}, OneBranch(id=2; tent_dist=2.},{id=4; tent_dist=4.}), Leaf {id=3; tent_dist=3.})))) =
+      (x, Tree (TwoBranch(Even, x2, Leaf x4, Leaf x3))))
+
+
 (*    
     assert(take test_2 = 
 	({id=2;tent_dist=0.},Tree
