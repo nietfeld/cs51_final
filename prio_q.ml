@@ -313,7 +313,6 @@ struct
     | Empty -> raise (Failure "trying to update an empty q")
     | Tree t -> Tree (helper id new_dist t)
 
-
   let run_tests () = 
     let test_1 = 
       Tree (TwoBranch (Even, {id = 0; tent_dist = 0.}, 
@@ -333,12 +332,28 @@ struct
 			       {id= 1;tent_dist=infinity}),
 		     Leaf{id=0;tent_dist=infinity})) in
 
-    assert (take test_1=
-	({id=0;tent_dist=0.},Tree(
-	  TwoBranch(Odd,{id=1;tent_dist=1.},(Leaf {id=2;tent_dist=2.}),
-		    OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))));
+    (* test take *)
+    assert(take test_1 =
+	({id=0;tent_dist=0.},Tree
+	  (TwoBranch(Odd,{id=1;tent_dist=1.},
+		     OneBranch({id=2;tent_dist=2.},{id=5;tent_dist=5.}),
+			       (Leaf({id=4;tent_dist=4.}))))));
+(*    
+    assert(take test_2 = 
+	({id=2;tent_dist=0.},Tree
+	  (TwoBranch(Odd,{id=3;tent_dist=infinity},
+		     OneBranch({id=4;tent_dist=infinity},
+			       {id=1;tent_dist=infinity}),
+		     Leaf({id=0;tent_dist=infinity}))))); 
 
     (* test add *)
+    assert(add{id=6;tent_dist=3.2} test_1 = Tree
+	(TwoBranch
+	   (Odd,{id=0;tent_dist=0.},
+	    (TwoBranch(Odd,{id=1;tent_dist=1.},Leaf({id=2;tent_dist=2.}),
+		       Leaf({id=6;tent_dist=3.2}))), 
+    	    OneBranch({id=4;tent_dist=4.},{id=5;tent_dist=5.})))) ;
+*)
 
     (* test lookup *)
     assert((lookup 0 test_1) = Some {id = 0; tent_dist = 0.});
