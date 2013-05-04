@@ -6,7 +6,7 @@ exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 module My_graph = Dictionary
-module My_queue = BinSQueue
+module My_queue = Two_aryHeap
 
 let initialize_queue (n: int) (start: node) =
   let rec add_elts pq (to_add: int) = 
@@ -282,5 +282,5 @@ in
 dij 1 burton
 ;;
 
-(*
-run_tests ();*)
+
+run_tests ();
