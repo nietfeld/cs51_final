@@ -550,7 +550,7 @@ end;;
 
 FibHeap.run_tests ();;
 
-
+(*
 module Two_aryHeap : PRIOQUEUE = 
 struct 
   exception QueueEmpty
@@ -568,6 +568,20 @@ struct
   (* fold over the array- is everything None? *) 
   let is_empty (q: queue) : bool = q.first_empty = 0
 
+  let print_item (x : elt option) : unit = 
+    match x with 
+    | None -> () 
+    | Some x -> 
+      (print_string (("id: ")^(string_of_int x.id)^(" tent_dist: ")^(string_of_float x.tent_dist)))
+
+
+  let print_q (q: queue) = 
+    Array.iter (fun x -> print_item x) q.heap;
+    print_string "\n"
+
+
+
+(* MAKE OPTION OR CHECK WHEN CALLED THAT THERE ARE CHILDREN *) 
   (* looks at the children from index i, finds the one with the minimum tent_dist. 
      Returns child's index and element *)
   let min_child (i:int) (q:queue) : int * elt = 
@@ -576,17 +590,22 @@ struct
       (* break out when we're done *) 
       (* ALSO WILL THIS OVERFLOW??? *) 
       if current > last then min_e else 
-	(match Array.get q.heap current with 
+	(match q.heap.(current) with 
 	(* reached the end of the queue *) 
 	| None -> min_e
-	| Some x -> if (x.tent_dist < min_e_elt.tent_dist)
+	| Some x -> (print_string (("child candidate: ")^(string_of_float x.tent_dist));
+	  if (x.tent_dist < min_e_elt.tent_dist)
 	  then loop (current + 1) last (current, x) q
-	  else loop (current + 1) last min_e q)
-    in loop (d*i + 1) ((d+1)*i) (500, {id=500;tent_dist = infinity}) q
+	  else loop (current + 1) last min_e q))
+    in 
+    print_string (("current: ")^(string_of_int (d*i +1))^
+		     (" last : ")^(string_of_int ((d*i) + d))^("\n"));
+    (*if ((d*i + 1) < q.first_empty) then *)
+      loop (d*i + 1) (min (d*i + d) q.first_empty) (500, {id=500;tent_dist = infinity}) q
      
   
    (*check against first_empty *) 
-  let fix_down (q:queue) : queue = 
+  let fix_down (i: int) (q:queue) : queue = 
     (* need to check d*i to d*i + d-1 and find the minimum to know where to insert*) 
     let rec fix (i: int) (q:queue) : queue = 
       let current_elt = match Array.get q.heap i with 
@@ -602,7 +621,7 @@ struct
 	(swap;
 	 fix min_child_index q)
       else q 
-    in fix 0 q
+    in fix i q
 
 
   let deopt (e: elt option) : elt = 
@@ -626,12 +645,29 @@ struct
       (* swap the parent and child *) 
       if parent_elt.tent_dist > child_elt.tent_dist then 
 	(swap;
+	 (* FOR TESTING *) 
+	 print_string "was swapped: ";
+	 print_q q;
 	 fix_up parent_index q)
-      else q in 
+      (* only done if parent is smaller than child*) 
+      else if ((d*i+1) >= q.first_empty) then q 
+      else 
+	(let (mind_child_index, min_child_elt) = min_child parent_index q in
+	   print_string "min child of "; 
+	   print_int parent_index;
+	   print_string " : ";
+	   print_string (("id: ")^(string_of_int min_child_elt.id)^(" tent_dist : "));
+	   print_string (string_of_float min_child_elt.tent_dist);
+	   print_string "\n";
+	   if min_child_elt.tent_dist > parent_elt.tent_dist then q
+	   else (print_string "Caught the problem \n \n"; 
+		 fix_down parent_index q)) in 
     (* must end when queue is empty *) 
+    (* WAS JUST q BEFORE *) 
     if i <= 0 then q else compare_parent
 
-  let add (e: elt) (q: queue) : queue =
+  
+let add (e: elt) (q: queue) : queue =
     (* put an element in the first_empty slot *) 
     Array.set q.heap q.first_empty (Some e);
     Array.set q.lt e.id (Some q.first_empty);
@@ -646,7 +682,7 @@ struct
     let updated_q = (Array.set q.heap 0 (Some new_front); 
 		     Array.set q.heap (q.first_empty -1) None; 
                      q.first_empty <- (q.first_empty - 1); 
-		     fix_down q)
+		     fix_down 0 q)
     in 
     (min_elt, updated_q)
 
@@ -664,15 +700,64 @@ struct
 		   (q.heap.(x) <- (Some {id = i; tent_dist = f});
 		    q))
    
-  let print_item (x : elt option) : unit = 
-    match x with 
-    | None -> () 
-    | Some x -> 
-      (print_string (("id: ")^(string_of_int x.id)^(" tent_dist: ")^(string_of_float x.tent_dist)))
-
-
-      let print_q (q: queue) = 
-	Array.iter (fun x -> print_item x) q.heap
+ 
       
-  let run_tests _ = ()
+  let listify (q: queue) : elt list = 
+    List.fold_left (fun y x -> match x with 
+    | None -> y 
+    | Some z -> z::y) [] (Array.to_list q.heap)
+
+let run_tests () = 
+    let a = empty () in
+    print_string "PRINTING A\n";
+    print_q a;
+    let b = add {id=0; tent_dist=4.} a in
+    print_string "PRINTING B\n";
+    print_q b;
+    let c = add {id=3; tent_dist=1.} b in
+    print_string "PRINTING C\n";
+    print_q c;
+    let d = add {id=1; tent_dist=3.} c in
+    print_string "PRINTING D\n";
+    print_q d;
+    let e = add {id=2; tent_dist=2.} d in
+    print_string "PRINTING E\n";
+    print_q e;
+    assert(1 = 1)
+    (* test add *)
+    (*assert((listify e)= [{id=3; tent_dist=1.};{id=2; tent_dist=2.};  
+		 {id=1; tent_dist=3.};  {id=0; tent_dist=4.}]);
+    let f = add {id=6; tent_dist=2.3} e in
+    assert (f = [{id=3; tent_dist=1.};{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    (* test take *)
+    let (e1,q1) = take f in
+    assert (e1 = {id=3; tent_dist=1.});
+    assert (q1 = [{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    (* test lookup *)
+    assert (lookup 3 e = Some {id=3; tent_dist=1.});
+    assert (lookup 2 e = Some {id=2; tent_dist=2.});
+    assert (lookup 1 e = Some {id=1; tent_dist=3.});
+    assert (lookup 0 e = Some {id=0; tent_dist=4.});
+    (* test delete *)
+    let wrong = delete 3 f in
+   (* print_string "HERERERERERE \n\n\n\n\n";
+    print_queue wrong;
+    print_string " \n\n\n\n\n";*)
+    assert (delete 3 f = [{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    assert (delete 0 f = [{id=3; tent_dist =1.};{id=2; tent_dist=2.}; 
+		 {id=6; tent_dist=2.3};
+		 {id=1; tent_dist=3.}]);
+    (* test update *)
+    let q = update 6 1.2 f in
+    assert (q = [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    assert (update 2 2.6 q =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])*)
 end ;; 
+
+Two_aryHeap.run_tests ()
+*)

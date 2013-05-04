@@ -293,6 +293,6 @@ in
 dij 1 burton
 ;;
 
-
+(*
 run_tests ();
-
+*)
