@@ -550,7 +550,7 @@ end;;
 
 FibHeap.run_tests ();;
 
-(*
+
 module Two_aryHeap : PRIOQUEUE = 
 struct 
   exception QueueEmpty
@@ -562,7 +562,7 @@ struct
 
   type queue = {heap : elt option array; lt : int option array; mutable first_empty: int}
     
-  let empty : queue = 
+  let empty _ : queue = 
     {heap = Array.make n None; lt = Array.make n None ; first_empty = 0}
 
   (* fold over the array- is everything None? *) 
@@ -612,7 +612,6 @@ struct
 
   let rec fix_up (i: int) (q:queue) : queue = 
     let parent_index = (i - 1)/d in 
-    (* PATTERN MATCH *) 
     let parent_elt = deopt (Array.get q.heap parent_index) in 
     let child_elt = deopt (Array.get q.heap i) in 
     (* WATCH OUT FOR THIS *) 
@@ -636,32 +635,34 @@ struct
     (* put an element in the first_empty slot *) 
     Array.set q.heap q.first_empty (Some e);
     Array.set q.lt e.id (Some q.first_empty);
-    fix_up q.first_empty q;
     q.first_empty <- (q.first_empty + 1);
-    q
+    fix_up (q.first_empty - 1) q
 
 
   let take (q: queue) : elt * queue = 
     let min_elt = deopt (Array.get q.heap 0) in
     (* get the last element in the heap *) 
     let new_front = deopt (Array.get q.heap (q.first_empty - 1)) in
-    let updated_q = Array.set q.heap 0 (Some new_front); 
+    let updated_q = (Array.set q.heap 0 (Some new_front); 
 		     Array.set q.heap (q.first_empty -1) None; 
                      q.first_empty <- (q.first_empty - 1); 
-		     fix_down q
+		     fix_down q)
     in 
     (min_elt, updated_q)
 
-  let lookup (i: int) (q: queue) = 
-    match Array.get lookup_table i with 
+
+  let lookup (i: int) (q: queue) : elt option = 
+    match q.lt.(i) with 
     | None -> raise QueueEmpty
-    | Some x -> Array.get x q
+    | Some x -> q.heap.(x)
    
-  let update (i: int) (f: float) (q: queue) = 
+  let update (i: int) (f: float) (q: queue) : queue = 
     (* lookup the index in the array *) 
-    match Array.get i lookup_table with 
+    match q.lt.(i) with 
     | None -> print_string "problem in two-ary heap";  raise (Failure "Impossible") 
-    | Some x -> fix_up x (Array.set q x {id = i; tent_dist = f})
+    | Some x -> (fix_up x 
+		   (q.heap.(x) <- (Some {id = i; tent_dist = f});
+		    q))
    
   let print_item (x : elt option) : unit = 
     match x with 
@@ -675,5 +676,3 @@ struct
       
   let run_tests _ = ()
 end ;; 
-
-*)
