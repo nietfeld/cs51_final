@@ -5,10 +5,11 @@ open Graphs
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 (* Dictionary, Matrix *)
 module My_graph = Dictionary
-
-(* ListQueue, BinSQueue, BinaryHeap, DHeap (takes an d module), FibHeap *)
-(*module My_queue = BinSQueue *)
-module My_queue = DHeap (d = 2; n = 1000)
+(*module My_queue = BinSQueue*)
+module My_queue = DHeap(
+  struct
+    let d = 2
+  end)
 
 (* create a priority queue tracking all of the nodes in the graph *) 
 let initialize_queue (n: int) (start: node) =
@@ -312,7 +313,7 @@ let run_tests () =
   assert (dist_array_5 = "28.18.68.627.824.630.6infinf29.121.815.57.10.1.2");
   assert (prev_array_course = "0000014871740000_");
   assert (dist_array_course = 
-      "1.421.21.571.032.081.892.911.731.413.062.581.152.1.741.050.");;
+      "1.421.21.571.032.081.892.911.731.413.062.581.152.1.741.050.");
   assert (prev_array_burton = "1113333111222211211_1"); 
   assert (dist_array_burton = "5.5.2.6.6.5.4.5.5.3.6.6.6.6.5.5.4.1.1.0.5.");;
 

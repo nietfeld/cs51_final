@@ -668,40 +668,34 @@ let run_tests () =
     let c = add {id=3; tent_dist=1.} b in
     let d = add {id=1; tent_dist=3.} c in
     let e = add {id=2; tent_dist=2.} d in
-    assert (1=1)
-    (* test add *)
-    (*assert((listify e)= [{id=3; tent_dist=1.};{id=2; tent_dist=2.};  
-		 {id=1; tent_dist=3.};  {id=0; tent_dist=4.}]);
     let f = add {id=6; tent_dist=2.3} e in
-    assert (f = [{id=3; tent_dist=1.};{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+
     (* test take *)
     let (e1,q1) = take f in
     assert (e1 = {id=3; tent_dist=1.});
-    assert (q1 = [{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
+    let (e2, q2) = take q1 in
+    assert (e2 = {id=2;tent_dist=2.});
+    let (e3, q3) = take q2 in
+    assert (e3 = {id=6; tent_dist=2.3});
+    let (e4, q4) = take q3 in
+    assert (e4 = {id=1; tent_dist=3.});
+    let (e5, q5) = take q4 in
+    assert (e5 = {id=0; tent_dist=4.});
+    assert (is_empty q5 = true);
+
     (* test lookup *)
     assert (lookup 3 e = Some {id=3; tent_dist=1.});
     assert (lookup 2 e = Some {id=2; tent_dist=2.});
     assert (lookup 1 e = Some {id=1; tent_dist=3.});
     assert (lookup 0 e = Some {id=0; tent_dist=4.});
-    (* test delete *)
-    let wrong = delete 3 f in
-   (* print_string "HERERERERERE \n\n\n\n\n";
-    print_queue wrong;
-    print_string " \n\n\n\n\n";*)
-    assert (delete 3 f = [{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
-    assert (delete 0 f = [{id=3; tent_dist =1.};{id=2; tent_dist=2.}; 
-		 {id=6; tent_dist=2.3};
-		 {id=1; tent_dist=3.}]);
+
+
     (* test update *)
-    let q = update 6 1.2 f in
+(*    let q = update 6 1.2 f in
     assert (q = [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
-    assert (update 2 2.6 q =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])*)
+    assert (update 2 2.6 q =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])
+*)
+
 end ;; 
 
 module Two_aryHeap = 
