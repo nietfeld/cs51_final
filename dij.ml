@@ -39,7 +39,7 @@ let one_round pq my_graph (dist : float array)
     (prev : int option array) = 
   let (curr_node, new_q) = My_queue.take pq in 
   let neighbor_list = My_graph.neighbors my_graph curr_node.id in 
-  dist.(curr_node.id) curr_node.tent_dist; 
+  dist.(curr_node.id) <- curr_node.tent_dist; 
   update_queue new_q (curr_node.id, curr_node.tent_dist) neighbor_list dist prev
     
 
@@ -83,7 +83,7 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
     else (print_string ((string_of_int start_node)^
 			   (reconstruct_help n start_node prev)^"->"^
 			   (string_of_int n)^"("^
-			   (string_of_float (dist.(n))^ ") \n");
+			   (string_of_float (dist.(n))^ ") \n"));
 	  helper_dist dist (n+1))
   in
   helper_dist dist 0
@@ -168,7 +168,7 @@ let run_tests () =
   in 
   let (dist_5, prev_5) = dij 1 g5 in
 
-  let dist_array_5 =
+  let prev_array_5 =
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_5) in
   let dist_array_5 =
     List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_5) in  
@@ -250,7 +250,7 @@ let run_tests () =
 			 (0,1.,18);(0,1.,19);(0,1.,20)]
   in
   let (dist_burton, prev_burton) = dij 1 burton in
-  let dist_array_burton =
+  let prev_array_burton =
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_burton) in
   let dist_array_burton =
     List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_burton) in  
@@ -262,28 +262,20 @@ let run_tests () =
   assert (dist_array_2 = "9.2inf5.13.21.10." );
   assert (print_string prev_array_3 = ());
   assert (prev_array_3 = "433__3_"); 
-  assert (dist_array_3 ="13.47.211.20.inf0.2inf");; 
-
-
-
-(* 4, 5, course, burton *)
-
-  assert (dist_4.(1) = 6.2); 
-  assert (prev_4.(1) = (Some 0));
-  assert (dist_4.(2) = 13.3); 
-  assert (prev_4.(2) = (Some 1));
-  assert (dist_array_4 = "35.934.30.8___28.21.713.36.20.");
-  assert (prev_array_4 = "1094____3210_");
-  assert (prev_array_4 = "00_"); 
-  assert (dist_array_4 = "2.1.0.");
-  assert (dist_5.(2) = 7.1);
-  assert (prev_5.(2) = (Some 1));
-  assert (prev_array_5 = "00_"); 
-  assert (dist_array_5 = "2.1.0.");
-  assert (prev_array_course = "00_"); 
-  assert (dist_array_course = "2.1.0.");
+  assert (dist_array_3 ="13.47.211.20.inf0.2inf");
+  (* 4, 5, course, burton *)
+  assert (dist_array_4 = "7.434.30.8infinfinf35.328.21.713.36.20.");
+  assert (prev_array_4 = "094___43210_");
+  assert (prev_array_5 = "1020942__4321_1"); 
+  assert (dist_array_5 = "28.18.68.627.824.630.6infinf29.121.815.57.10.1.2");
+    print_string "array 5: \n" ;
+  assert (print_string prev_array_course = ());
+  print_string "\n";
+  assert (print_string dist_array_course = ());
+  assert (prev_array_course = "0000014871740000_");;
+ (* assert (dist_array_course = "28.18.68.627.824.630.6infinf29.121.815.57.10.1.2");
   assert (prev_array_burton = "00_"); 
-  assert (dist_array_burton = "2.1.0.");
+  assert (dist_array_burton = "2.1.0.");;*)
  
 run_tests ();
 
