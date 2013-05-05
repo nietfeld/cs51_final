@@ -23,31 +23,13 @@ sig
   type t
   val compare : t -> t -> Order.order
   val string_of_t : t -> string
-
-  (* The functions below are used for testing. See TESTING
-   * EXPLANATION *)
-
-  (* Generate a value of type t. The same t is always returned *)
   val gen : unit -> t
-
-  (* Generate a random value of type t. *)
   val gen_random : unit -> t
-
-  (* Generate a t greater than the argument. *)
   val gen_gt : t -> unit -> t
-
-  (* Generate a t less than the argument. *)
   val gen_lt : t -> unit -> t
-
-  (* Generate a t between the two arguments. Return None if no such
-   * t exists. *)
   val gen_between : t -> t -> unit -> t option
 end
 
-
-
-(* An example implementation of our COMPARABLE signature. Use this
- * struct for testing. *)
 module IntComparable : COMPARABLE =
 struct
   open Order
@@ -65,22 +47,21 @@ struct
     if higher - lower < 2 then None else Some (higher - 1)
 end
 
-
-
-(* A simple, list-based implementation of sets. *)
 module ListSet(C: COMPARABLE) : (SET with type elt = C.t) = 
 struct
   open Order
   type elt = C.t 
   type set = elt list
 
-  (* INVARIANT: sorted, no duplicates *)
   let empty = []
+
   let is_empty xs = 
     match xs with 
       | [] -> true
       | _ -> false
+
   let singleton x = [x]
+
   let rec insert x xs = 
     match xs with 
       | [] -> [x]
@@ -90,6 +71,7 @@ struct
           | Less -> x::xs)
 
   let union xs ys = List.fold_right insert xs ys
+
   let rec remove y xs = 
     match xs with 
       | [] -> []
@@ -126,14 +108,6 @@ struct
     let f = (fun y e -> y ^ "; " ^ C.string_of_t e) in
     "set([" ^ (List.fold_left f "" s) ^ "])"
 
-
-  (****************************************************************)
-  (* Tests for our ListSet functor                                *)
-  (* These are just examples of tests, your tests should be a lot *)
-  (* more thorough than these.                                    *)
-  (****************************************************************)
-
-  (* adds a list of (key,value) pairs in left-to-right order *)
   let insert_list (d: set) (lst: elt list) : set = 
     List.fold_left (fun r k -> insert k r) d lst
 
@@ -189,6 +163,9 @@ struct
 
 end
 
+module IntListSet = ListSet(IntComparable) ;;
+IntListSet.run_tests();;
+
 
 (******************************************************************)
 (* DictSet: a functor that creates a SET by calling our           *)
@@ -226,57 +203,34 @@ struct
   let fold f = D.fold (fun k v a -> f k a)
 
   let member = D.member 
+
   let insert e s = D.insert s e ()
+
   let singleton e = insert e empty
+
   let remove a b = D.remove b a
+
   let choose x =
     match D.choose x with
     | None -> None
     | Some (k, v, d) -> Some (k, d)
 
   let union = fold insert
+
   let intersect one two = fold (fun x y ->
     if member one x then insert x y else y) empty two
         
   let is_empty x = x = empty
 
-    
-  (* implement the rest of the functions in the signature! *)
-
   let string_of_elt = D.string_of_key
   let string_of_set s = D.string_of_dict s
 
-  (****************************************************************)
-  (* Tests for our DictSet functor                                *)
-  (* Use the tests from the ListSet functor to see how you should *)
-  (* write tests. However, you must write a lot more              *)
-  (* comprehensive tests to test ALL your functions.              *)
-  (****************************************************************)
-
-  (* add your test functions to run_tests *)
   let run_tests () = 
     ()
 end
 
-
-
-
-(******************************************************************)
-(* Run our tests.                                                 *)
-(******************************************************************)
-
-(* Create a set of ints using our ListSet functor. *)
-module IntListSet = ListSet(IntComparable) ;;
-IntListSet.run_tests();;
-
-(* Create a set of ints using our DictSet functor
- * 
- * Uncomment out the lines below when you are ready to test your
- * 2-3 dict set implementation *)
-
 module IntDictSet = DictSet(IntComparable) ;;
 IntDictSet.run_tests();;
-
 
 
 (******************************************************************)
@@ -284,8 +238,4 @@ IntDictSet.run_tests();;
 (* ListSet or DictSet functors                                    *)
 (******************************************************************)
 module Make(C : COMPARABLE) : (SET with type elt = C.t) = 
-  (* Change this line to use our dictionary implementation when your are 
-   * finished. *)
-
   DictSet (C)
-    
