@@ -2,8 +2,6 @@ open Prio_q
 open Array
 open Graphs 
 
-exception QueueEmpty
-  
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 (* possibilities for what we could substitute *)
 module My_graph = Dictionary
@@ -69,7 +67,7 @@ let deopt_p (x: int option) : string =
   | Some i -> string_of_int i
     
 let print_dist_array arr =
-  print_string ("Dist array:"^ (List.fold_left (fun x y -> (string_of_float y)^x) 
+  print_string ("Dist array:"^(List.fold_left (fun x y -> (string_of_float y)^x) 
 				  "" (Array.to_list arr))^"\n")
 
 let print_prev_array arr =
@@ -101,7 +99,8 @@ let dij (start: node) g =
     let prev = Array.make graph_size (None) in 
     let prioq = initialize_queue graph_size start in 
     (*Printf.printf "I'm here and done initializing q \n";*)
-    (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
+    (* we want to do an infinite loop and then catch an exception, 
+       but instead we'll just loop through *) 
     let rec iterate pq (number_rounds: int) : unit = 
       match number_rounds with 
       | 0 -> (*Printf.printf "Finished bitches \n"*) ()
@@ -121,7 +120,7 @@ let exe_time f g ss =
   Printf.printf "Duration = (%5.5f)\n" (t1 -. t0) ;;
 
 
-(* the array being printed here are simpl in reverse order *)
+(* the arrays being printed here are simple in reverse order *)
 let run_tests () =
   let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
@@ -129,7 +128,8 @@ let run_tests () =
   let prev_array = 
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev) in
   let dist_array =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist) in  
+    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist) in
+  
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
   let (dist_1, prev_1) = dij 2 g1 in
