@@ -7,6 +7,7 @@ open Graphs
 module My_graph = Dictionary
 module My_queue = BinSQueue
 
+(* create a priority queue tracking all of the nodes in the graph *) 
 let initialize_queue (n: int) (start: node) =
   let rec add_elts pq (to_add: int) = 
     if to_add = (-1) then My_queue.update start 0. pq
@@ -14,6 +15,7 @@ let initialize_queue (n: int) (start: node) =
       (to_add - 1)
   in (add_elts (My_queue.empty ()) (n-1))
 
+(* check if we've found a shorted distance to any neighbor *) 
 let rec update_queue pq (curr_node: int*float) neighbor_list dist prev = 
   let (node_id, distance_from_start) = curr_node in 
   match neighbor_list with 
@@ -25,22 +27,19 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
 	 if new_dist < d then 
-	   (Array.set prev n (Some node_id); 
+	   (prev.(n) <- (Some node_id); 
 	    let new_pq =
 	      My_queue.update n new_dist pq in 
 	    update_queue new_pq curr_node (Some tl) dist prev)
-	 (* don't update, do next neighbor *) 
 	 else update_queue pq curr_node (Some tl) dist prev))
       else update_queue pq curr_node (Some tl) dist prev
 
+(* runs dijkstra's on one node *) 
 let one_round pq my_graph (dist : float array) 
     (prev : int option array) = 
   let (curr_node, new_q) = My_queue.take pq in 
   let neighbor_list = My_graph.neighbors my_graph curr_node.id in 
-  (*print_string "right before array set" ;*)
-  (*print_string (string_of_int curr_node.id); print_string "\n";*)
-  Array.set dist curr_node.id curr_node.tent_dist; (* update dist array*)
-  (*print_string "Finished array set \n";*)
+  dist.(curr_node.id) curr_node.tent_dist; 
   update_queue new_q (curr_node.id, curr_node.tent_dist) neighbor_list dist prev
     
 
@@ -53,8 +52,6 @@ let deopt (x: int option) : int =
 (* helper functions for printing out the result *)
 let rec reconstruct_help (end_node: int) (start_node : int)
     (prev: int option array) : string =
-  (* if start_node = end_node then "" (* meow *)
-     else *)
   let last = (Array.get prev end_node) in
   if (last = None || start_node = deopt last) then ""
   else ("->"^(string_of_int (deopt last))
@@ -86,29 +83,26 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
     else (print_string ((string_of_int start_node)^
 			   (reconstruct_help n start_node prev)^"->"^
 			   (string_of_int n)^"("^
-			   (string_of_float (Array.get dist n))^ ") \n");
+			   (string_of_float (dist.(n))^ ") \n");
 	  helper_dist dist (n+1))
   in
   helper_dist dist 0
 
-
+(* Run dijkstra's over the wholegraph *) 
 let dij (start: node) g =
   if My_graph.has_node g start then 
     let graph_size = My_graph.num_nodes g in
     let dist = Array.make graph_size infinity in 
     let prev = Array.make graph_size (None) in 
     let prioq = initialize_queue graph_size start in 
-    (*Printf.printf "I'm here and done initializing q \n";*)
-    (* we want to do an infinite loop and then catch an exception, 
-       but instead we'll just loop through *) 
     let rec iterate pq (number_rounds: int) : unit = 
       match number_rounds with 
       | 0 -> ()
       | _ -> let new_q = one_round pq g dist prev in 
 	     iterate new_q (number_rounds-1) 
-    in iterate prioq graph_size; (* used to be -1 *)
+    in iterate prioq graph_size; 
     print_results dist prev (graph_size) start;
-    (dist,prev) (* return this for testing *)
+    (dist,prev) 
   else failwith "dij: node unknown";; 
 
 let exe_time f g ss =
@@ -131,7 +125,6 @@ let run_tests () =
   
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
-  assert (My_graph.has_node g1 1 = true);
   let (dist_1, prev_1) = dij 2 g1 in
   let prev_array_1 = 
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_1) in
@@ -174,12 +167,12 @@ let run_tests () =
 
   in 
   let (dist_5, prev_5) = dij 1 g5 in
+
   let dist_array_5 =
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_5) in
   let dist_array_5 =
     List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_5) in  
 
-  
   print_string "\n This is the courses graph: \n";
   let course_graph = My_graph.from_edges 
     [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);
@@ -272,16 +265,25 @@ let run_tests () =
   assert (dist_array_3 ="13.47.211.20.inf0.2inf");; 
 
 
+
 (* 4, 5, course, burton *)
-(*
+
+  assert (dist_4.(1) = 6.2); 
+  assert (prev_4.(1) = (Some 0));
+  assert (dist_4.(2) = 13.3); 
+  assert (prev_4.(2) = (Some 1));
+  assert (dist_array_4 = "35.934.30.8___28.21.713.36.20.");
+  assert (prev_array_4 = "1094____3210_");
   assert (prev_array_4 = "00_"); 
   assert (dist_array_4 = "2.1.0.");
+  assert (dist_5.(2) = 7.1);
+  assert (prev_5.(2) = (Some 1));
   assert (prev_array_5 = "00_"); 
   assert (dist_array_5 = "2.1.0.");
   assert (prev_array_course = "00_"); 
   assert (dist_array_course = "2.1.0.");
   assert (prev_array_burton = "00_"); 
-  assert (dist_array_burton = "2.1.0.");*)
+  assert (dist_array_burton = "2.1.0.");
  
 run_tests ();
 
