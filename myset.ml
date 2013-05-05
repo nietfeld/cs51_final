@@ -1,55 +1,23 @@
-(* Definitions for sets. *)
-
-exception TODO
-
-(* An interface for set modules *)
 module type SET = 
 sig
-  type elt  (* type of elements in the set *)
-  type set  (* abstract type for the set *)
+  type elt
+  type set
 
   val empty : set
-
   val is_empty : set -> bool
-
   val insert : elt -> set -> set
-
-  (* same as insert x empty *)
   val singleton : elt -> set
-
   val union : set -> set -> set
   val intersect : set -> set -> set
-
-  (* remove an element from the set -- if the
-   * element isn't present, does nothing. *)
   val remove : elt -> set -> set
-
-  (* returns true iff the element is in the set *)
   val member : set -> elt -> bool
-
-  (* chooses some member from the set, removes it 
-   * and returns that element plus the new set.  
-   * If the set is empty, returns None. *)
   val choose : set -> (elt * set) option
-
-  (* fold a function across the elements of the set
-   * in some unspecified order. *)
   val fold : (elt -> 'a -> 'a) -> 'a -> set -> 'a
-
-  (* functions to convert our types to a string. useful for debugging. *)
   val string_of_set : set -> string
   val string_of_elt : elt -> string
-
-  (* runs our tests. See TESTING EXPLANATION *)
   val run_tests : unit -> unit
 end
 
-
-
-(* parameter to Set modules -- we must pass in some 
- * type for the elements of a set, a comparison
- * function, and a way to stringify it.
- *)
 module type COMPARABLE = 
 sig
   type t
@@ -60,7 +28,7 @@ sig
    * EXPLANATION *)
 
   (* Generate a value of type t. The same t is always returned *)
- (* val gen : unit -> t
+  val gen : unit -> t
 
   (* Generate a random value of type t. *)
   val gen_random : unit -> t
@@ -73,7 +41,7 @@ sig
 
   (* Generate a t between the two arguments. Return None if no such
    * t exists. *)
-  val gen_between : t -> t -> unit -> t option *)
+  val gen_between : t -> t -> unit -> t option
 end
 
 
@@ -86,7 +54,7 @@ struct
   type t = int
   let compare x y = if x < y then Less else if x > y then Greater else Eq
   let string_of_t = string_of_int
-  (*let gen () = 0
+  let gen () = 0
   let gen_random =
     let _ = Random.self_init () in
     (fun () -> Random.int 10000)
@@ -94,7 +62,7 @@ struct
   let gen_lt x () = x - 1
   let gen_between x y () = 
     let (lower, higher) = (min x y, max x y) in
-    if higher - lower < 2 then None else Some (higher - 1) *)
+    if higher - lower < 2 then None else Some (higher - 1)
 end
 
 
@@ -169,7 +137,7 @@ struct
   let insert_list (d: set) (lst: elt list) : set = 
     List.fold_left (fun r k -> insert k r) d lst
 
-  (*let rec generate_random_list (size: int) : elt list =
+  let rec generate_random_list (size: int) : elt list =
     if size <= 0 then []
     else (C.gen_random()) :: (generate_random_list (size - 1))
 
@@ -217,8 +185,7 @@ struct
     test_fold () ;
     test_is_empty () ;
     test_singleton () ;
-    () *)
-  let run_tests () = ();
+    ()
 
 end
 
@@ -227,17 +194,53 @@ end
 (* DictSet: a functor that creates a SET by calling our           *)
 (* Dict.Make functor                                              *)
 (******************************************************************)
-(*
+
 module DictSet(C : COMPARABLE) : (SET with type elt = C.t) = 
 struct
-  module D = Dict.Make(struct
-      ??? fill this in!
-  end)
+
+  module D = Dict.Make
+
+    (struct
+      type key = C.t 
+      type value = unit
+
+      let compare = C.compare 
+
+      let string_of_key = C.string_of_t
+      let string_of_value = fun () -> ""
+
+      let gen_key = C.gen
+      let gen_key_random = C.gen_random
+      let gen_key_gt = C.gen_gt
+      let gen_key_lt = C.gen_lt
+      let gen_key_between = C.gen_between
+      let gen_value= fun () -> ()
+      let gen_pair = fun () -> (gen_key (), gen_value ())
+     end)
 
   type elt = D.key
   type set = D.dict
-  let empty = ???
 
+  let empty = D.empty
+
+  let fold f = D.fold (fun k v a -> f k a)
+
+  let member = D.member 
+  let insert e s = D.insert s e ()
+  let singleton e = insert e empty
+  let remove a b = D.remove b a
+  let choose x =
+    match D.choose x with
+    | None -> None
+    | Some (k, v, d) -> Some (k, d)
+
+  let union = fold insert
+  let intersect one two = fold (fun x y ->
+    if member one x then insert x y else y) empty two
+        
+  let is_empty x = x = empty
+
+    
   (* implement the rest of the functions in the signature! *)
 
   let string_of_elt = D.string_of_key
@@ -254,7 +257,7 @@ struct
   let run_tests () = 
     ()
 end
-*)
+
 
 
 
@@ -270,10 +273,10 @@ IntListSet.run_tests();;
  * 
  * Uncomment out the lines below when you are ready to test your
  * 2-3 dict set implementation *)
-(*
+
 module IntDictSet = DictSet(IntComparable) ;;
 IntDictSet.run_tests();;
-*)
+
 
 
 (******************************************************************)
@@ -283,5 +286,6 @@ IntDictSet.run_tests();;
 module Make(C : COMPARABLE) : (SET with type elt = C.t) = 
   (* Change this line to use our dictionary implementation when your are 
    * finished. *)
-  ListSet (C)
-  (* DictSet (C) *)
+
+  DictSet (C)
+    
