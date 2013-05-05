@@ -21,4 +21,4 @@ To run Djikstra's, the user first creates a graph by calling from_edges on a lis
 To run Djikstra's the user types :
    dij <index of starting node> graph
 
-To chose between the type of graph or priority queue, the user can choose which fields to uncomment at the top of dij.ml
+To chose between the type of graph or priority queue, the user can choose which fields to uncomment at the top of dij.ml. For D-ary heaps, the user creates a module passing in the desired "d". 
