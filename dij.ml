@@ -73,8 +73,8 @@ let print_prev_array arr =
 
 
 (* this printing function prints backwards???? *)
-let print_results (dist : float array) (prev: int option array) (graph_size: int)
-    (start_node: int) : unit =
+let print_results (dist : float array) (prev: int option array) 
+    (graph_size: int) (start_node: int) : unit =
   print_prev_array prev;
   print_dist_array dist;
   print_string "\n Done \n";
@@ -119,24 +119,30 @@ let run_tests () =
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g  in
   let prev_array = 
-    List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev) in
+    List.fold_left (fun x y -> (deopt_p y)^x) 
+      "" (Array.to_list prev) in
   let dist_array =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist) in
+    List.fold_left (fun x y -> (string_of_float y)^x) 
+      "" (Array.to_list dist) in
   
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
   let (dist_1, prev_1) = dij 2 g1 in
   let prev_array_1 = 
-    List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_1) in
+    List.fold_left (fun x y -> (deopt_p y)^x) 
+      "" (Array.to_list prev_1) in
   let dist_array_1 =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_1) in 
+    List.fold_left (fun x y -> (string_of_float y)^x) 
+      "" (Array.to_list dist_1) in 
   
   let g2 = 
     My_graph.from_edges [(0,1.1,1); (1, 2.1, 2); (2, 3.1, 3); (4, 6.1, 3);
 			 (3, 4.1, 1); (0, 5.1, 3); (1, 8.1, 5); (4, 7.1, 5)] in
   let (dist_2, prev_2) = dij 0 g2 in
-  let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
-  let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
+  let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) ""
+			 (Array.to_list prev_2)) in
+  let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) ""
+			(Array.to_list dist_2)) in 
 
   let g3 =
     My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);
@@ -146,23 +152,28 @@ let run_tests () =
   let prev_array_3 = 
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_3) in
   let dist_array_3 =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3) in  
+    List.fold_left (fun x y -> (string_of_float y)^x) 
+      "" (Array.to_list dist_3) in  
 
   let g4 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);
-				(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);
-				(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);
-				(11, 11.1, 0);(0, 7.4, 11)]
+				(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);
+				(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);
+				(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);
+				(0, 7.4, 11)]
   in 
   let (dist_4, prev_4) = dij 0 g4 in
   let prev_array_4 = 
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_4) in
   let dist_array_4 =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_4) in  
+    List.fold_left (fun x y -> (string_of_float y)^x) 
+      "" (Array.to_list dist_4) in  
 
   let g5 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);
-				(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);
-				(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);
-				(0, 7.4, 11);(1, 1.2,0);(2, 11.5, 12);(7, 3.4, 8);
+				(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);
+				(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);
+				(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);
+				(11, 11.1, 0);(0, 7.4, 11);(1, 1.2,0);
+				(2, 11.5, 12);(7, 3.4, 8);
 				(10, 0.2, 13);(13, 0.3, 11);(2, 23.5, 8)] 
 
   in 
@@ -171,16 +182,19 @@ let run_tests () =
   let prev_array_5 =
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_5) in
   let dist_array_5 =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_5) in  
+    List.fold_left (fun x y -> (string_of_float y)^x) 
+      "" (Array.to_list dist_5) in  
 
   print_string "\n This is the courses graph: \n";
   let course_graph = My_graph.from_edges 
     [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);
      (0,1.57,13);(0,1.2,14);(0,1.42,15);
 
-     (1,2.0,3);(1,1.15,4);(1,0.36,7);(1,2.08,11);(1,1.03,12);(1,1.57,13);(1,1.2,14);(1,1.42,15);
+     (1,2.0,3);(1,1.15,4);(1,0.36,7);(1,2.08,11);(1,1.03,12);(1,1.57,13);
+     (1,1.2,14);(1,1.42,15);
 
-     (2,1.15,4);(2,0.36,7);(2,2.08,11);(2,1.03,12);(2,1.57,13);(2,1.2,14);(2,1.42,15);
+     (2,1.15,4);(2,0.36,7);(2,2.08,11);(2,1.03,12);(2,1.57,13);(2,1.2,14);
+     (2,1.42,15);
 
      (3,1.43,5);(3,1.42,15);(3,1.03,12);
 
@@ -210,22 +224,25 @@ let run_tests () =
      (15,1.03,12)] in
 
   let (dist_course, prev_course) = dij 0 course_graph in
-  let prev_array_course =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_course)) in 
-  let dist_array_course = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_course)) in 
+  let prev_array_course =  (List.fold_left (fun x y -> (deopt_p y)^x) 
+			      "" (Array.to_list prev_course)) in 
+  let dist_array_course = (List.fold_left (fun x y -> (string_of_float y)^x) 
+			     "" (Array.to_list dist_course)) in 
 
   let burton =
     My_graph.from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
 			 (1,1.,6);(6,1.,1);(1,1.,3);(3,1.,1);(1,1.,11);(11,1.,1);
-			 (1,1.,12);(12,1.,1);(1,1.,13);(13,1.,1);(1,1.,18);(18,1.,1);
-			 (1,1.,19);(19,1.,1);(1,1.,20);(20,1.,1);(1,1.,0);(0,1.,1);
+			 (1,1.,12);(12,1.,1);(1,1.,13);(13,1.,1);(1,1.,18);
+			 (18,1.,1);(1,1.,19);(19,1.,1);(1,1.,20);(20,1.,1);
+			 (1,1.,0);(0,1.,1);
 			 
 			 (2,1.,4);(4,1.,2);(2,1.,5);(5,1.,2);(2,1.,6);(6,1.,2);
 			 (2,1.,7);(7,1.,2);(2,1.,8);(8,1.,2);(2,1.,9);(9,1.,2);
 			 (2,1.,10);(10,1.,2);
 
-			 (3,1.,11);(11,1.,3);(3,1.,12);(12,1.,3);(3,1.,13);(13,1.,3);
-			 (3,1.,14);(3,0.5,14);(14,1.,3);(3,1.,15);(15,1.,3);(3,1.,16);(16,1.,3);
-			 (3,1.,17);(17,1.,3);
+			 (3,1.,11);(11,1.,3);(3,1.,12);(12,1.,3);(3,1.,13);
+			 (13,1.,3);(3,1.,14);(3,0.5,14);(14,1.,3);(3,1.,15);
+			 (15,1.,3);(3,1.,16);(16,1.,3);(3,1.,17);(17,1.,3);
 
 			 (4,1.,5);(4,1.,6);
 			 (5,1.,4);(5,1.,6);
@@ -253,7 +270,9 @@ let run_tests () =
   let prev_array_burton =
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_burton) in
   let dist_array_burton =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_burton) in  
+    List.fold_left (fun x y -> (string_of_float y)^x) 
+      "" (Array.to_list dist_burton) in  
+  
   assert (prev_array = "00_");
   assert (dist_array = "2.1.0.");
   assert (prev_array_1 = "22___");
@@ -263,13 +282,16 @@ let run_tests () =
   assert (print_string prev_array_3 = ());
   assert (prev_array_3 = "433__3_"); 
   assert (dist_array_3 ="13.47.211.20.inf0.2inf");
+
   (* 4, 5, course, burton *)
+  
   assert (dist_array_4 = "7.434.30.8infinfinf35.328.21.713.36.20.");
   assert (prev_array_4 = "094___43210_");
   assert (prev_array_5 = "1020942__4321_1"); 
   assert (dist_array_5 = "28.18.68.627.824.630.6infinf29.121.815.57.10.1.2");
   assert (prev_array_course = "0000014871740000_");
-  assert (dist_array_course = "1.421.21.571.032.081.892.911.731.413.062.581.152.1.741.050.");
+  assert (dist_array_course = 
+      "1.421.21.571.032.081.892.911.731.413.062.581.152.1.741.050.");
   assert (prev_array_burton = "1113333111222211111_1"); 
   assert (dist_array_burton = "1.1.1.2.2.2.1.51.1.1.2.2.2.2.1.1.1.1.1.0.1.");;
  
