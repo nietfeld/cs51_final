@@ -536,7 +536,6 @@ BinSQueue.run_tests ();
 module type ARG =
 sig
   val d : int
-  val n : int
 end
 
 module DHeap (A : ARG) : PRIOQUEUE = 
