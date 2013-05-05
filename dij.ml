@@ -21,7 +21,8 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
   | Some ((n,e)::tl) -> 
     if dist.(n) = infinity then
       (match (My_queue.lookup n pq) with
-      | None -> failwith "Update_queue lookup failing with None."
+      | None -> failwith (string_of_int n ^ 
+			    "  Update_queue lookup failing with None.")
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
 	 if new_dist < d then 
@@ -132,6 +133,8 @@ let run_tests () =
   
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
+  assert (My_graph.has_node 1 = true);
+  assert (My_graph.lookup 1 g1 = Some 1);
   let (dist_1, prev_1) = dij 2 g1 in
   let prev_array_1 = 
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_1) in
