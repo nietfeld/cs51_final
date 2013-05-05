@@ -93,7 +93,6 @@ let print_results (dist : float array) (prev: int option array) (graph_size: int
 
 
 let dij (start: node) g =
-  if My_graph.has_node g start then 
     let graph_size = My_graph.num_nodes g in
     let dist = Array.make graph_size infinity in 
     let prev = Array.make graph_size (None) in 
@@ -109,8 +108,7 @@ let dij (start: node) g =
     in iterate prioq graph_size; (* used to be -1 *)
     print_results dist prev (graph_size) start;
     (dist,prev) (* return this for testing *)
-  else failwith "dij: node unknown";; 
-
+ 
 let exe_time f g ss =
   let t0 = Sys.time() in
   Printf.printf "Start (%5.5f)\n" t0;

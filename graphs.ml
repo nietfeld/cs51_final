@@ -3,16 +3,10 @@ type node = int
 module type GRAPH =
 sig 
   type graph 
-
   val empty : int -> graph
-  val nodes : graph -> node list
-  val is_empty : graph -> bool
-  val add_node : graph -> node -> graph
-  val add_edge : graph -> node -> node -> float -> graph
   val neighbors : graph -> int -> (node * float) list option
-  val has_node : graph -> node -> bool
   val num_nodes : graph -> int
-  val print_graph : graph -> unit
+(*  val print_graph : graph -> unit *)
   val from_edges : (node * float * node) list -> graph
   val run_tests : unit -> unit
 end
@@ -92,9 +86,6 @@ struct
 	index_to_node_map =
           IntNode.insert g.index_to_node_map g.num_nodes n }
 
-  let nodes g =
-    EdgeDict.fold (fun k v r -> k :: r) [] g.edges
-      
   let is_empty g = (g.num_nodes = 0)
           
   let add_edge g src dst wt =
@@ -117,11 +108,6 @@ struct
     match ns with
     | [] -> None
     | l -> Some l
-
-  let has_node g n = 
-    match EdgeDict.lookup g.edges n with
-      | None -> false
-      | _ -> true
 
   let num_nodes g =
     g.num_nodes
@@ -171,19 +157,8 @@ struct
   (* seems problematic *) 
   let empty s =
     {num_nodes = 0; size = s; m = Array.create_matrix s s infinity}
-      
-  let nodes g =
-    let rec aux (i: int) (lst: int list) : int list =
-      if i >= 0
-      then aux (i - 1) (i::lst)     
-      else lst
-    in
-    aux (g.num_nodes - 1) []
 
-  let is_empty g = g.num_nodes = 0
-    
   (* Checks if the node n is contained in the graph g. *)
-  (* IMPROVE THIS *) 
   let has_node g n =
     n < g.num_nodes
 
@@ -202,7 +177,7 @@ struct
 
   (* and the weight of that edge *)
   let add_edge g x y c =
-    g.m.(x).(y) <- c; g
+    g.m.(x).(y) <- c; g 
   
   (* Return None if no neighbors. *)
   let neighbors g n =
@@ -230,7 +205,7 @@ struct
 	if List.mem head newtail then newtail else head :: newtail
     in
     List.length (unique all)
-      
+   
   let from_edges es =
     let s = sized es in
     let emptyg = empty s in
@@ -238,7 +213,7 @@ struct
       if src = dst then g else
 	let a = add_node g src in 
 	let b = add_node a dst in
-	add_edge b src dst wt) emptyg es
+	add_edge b src dst wt) emptyg es 
       
   let run_tests () =
     let g = from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
