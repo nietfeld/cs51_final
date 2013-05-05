@@ -6,7 +6,6 @@ sig
   val empty : int -> graph
   val neighbors : graph -> int -> (node * float) list option
   val num_nodes : graph -> int
-(*  val print_graph : graph -> unit *)
   val from_edges : (node * float * node) list -> graph
   val run_tests : unit -> unit
 end
