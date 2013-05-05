@@ -5,10 +5,10 @@ open Graphs
 exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
-
 module My_graph = Dictionary
-module My_queue = BinSQueue
+module My_queue = BinaryHeap
 
+(* create a priority queue with an element for each node in the graph *) 
 let initialize_queue (n: int) (start: node) =
   let rec add_elts pq (to_add: int) = 
     if to_add = (-1) then My_queue.update start 0. pq
@@ -16,25 +16,30 @@ let initialize_queue (n: int) (start: node) =
       (to_add - 1)
   in (add_elts (My_queue.empty ()) (n-1))
 
+(* for each neighboring node, see if we've found a shorter distance *) 
 let rec update_queue pq (curr_node: int*float) neighbor_list dist prev = 
   let (node_id, distance_from_start) = curr_node in 
   match neighbor_list with 
   | None | Some [] -> pq
   | Some ((n,e)::tl) -> 
-    if dist.(n) = infinity then
+    (match Array.get dist n with
+    | infinity ->   
       (match (My_queue.lookup n pq) with
-      | None -> failwith "Update_queue lookup failing with None."
+      | None ->  print_string "not returuning anything \n"; pq
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
+	 (*print_string ("N: "^(string_of_int n)^"K: "^(string_of_int k)^"D:  "^
+			  (string_of_float d));
+	 print_string ("THIS IS THE NEW DIST:"^(string_of_float new_dist)^"\n");*)
 	 if new_dist < d then 
 	   (Array.set prev n (Some node_id); 
 	    let new_pq =
 	      My_queue.update n new_dist pq in 
+	    (*My_queue.print_q new_pq;*)
 	    update_queue new_pq curr_node (Some tl) dist prev)
 	 (* don't update, do next neighbor *) 
-	 else update_queue pq curr_node (Some tl) dist prev))
-      else update_queue pq curr_node (Some tl) dist prev
-
+	 else update_queue pq curr_node (Some tl) dist prev)))
+      
 let one_round pq my_graph (dist : float array) 
     (prev : int option array) = 
   let (curr_node, new_q) = My_queue.take pq in 
@@ -198,7 +203,7 @@ let g6 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4
 in 
 dij 1 g6;;*)
   
-
+(*
 let course_graph = My_graph.from_edges 
 [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);
 (0,1.57,13);(0,1.2,14);(0,1.42,15);
@@ -234,10 +239,11 @@ let course_graph = My_graph.from_edges
 (15,1.03,12)] in
   print_string "RUNNINGINGINGIGNG \n\n\n\n";
   let (dist, prev) = dij 0 course_graph in
+  print_graph course_graph;
   print_string "ya done running yall";
 (*  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
     let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
-  
+  *)
 let burton =
   My_graph.from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
 	      (1,1.,6);(6,1.,1);(1,1.,3);(3,1.,1);(1,1.,11);(11,1.,1);
@@ -249,7 +255,7 @@ let burton =
 	      (2,1.,10);(10,1.,2);
 
 	      (3,1.,11);(11,1.,3);(3,1.,12);(12,1.,3);(3,1.,13);(13,1.,3);
-	      (3,1.,14);(3,0.5,14);(14,1.,3);(3,1.,15);(15,1.,3);(3,1.,16);(16,1.,3);
+	      (3,1.,14);(14,1.,3);(3,1.,15);(15,1.,3);(3,1.,16);(16,1.,3);
 	      (3,1.,17);(17,1.,3);
 
 	      (4,1.,5);(4,1.,6);
@@ -275,9 +281,8 @@ let burton =
 	      (0,1.,18);(0,1.,19);(0,1.,20)]
 in
 
-My_graph.print_graph burton;
 dij 1 burton
 ;;
 
-
-run_tests ();
+(*
+run_tests ();*)
