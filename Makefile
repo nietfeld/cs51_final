@@ -1,7 +1,7 @@
 all: cs51_final
 
 # These must be in the right order--no forward refs
-FILES = order.ml dict.ml myset.ml fibsource.ml prio_q.ml graphs.ml dij.ml
+FILES = order.ml dict.ml myset.ml fibsource.ml prio_q.ml graphs.ml matrix.ml dij.ml
 
 cs51_final: $(FILES)
 	ocamlc -g -o cs51_final  str.cma graphics.cma  -cclib -lgraphics -cclib -L/usr/X11/lib -cclib -lX11  $(FILES)
