@@ -54,8 +54,8 @@ let rec reconstruct_help (end_node: int) (start_node : int)
     (prev: int option array) : string =
   let last = (Array.get prev end_node) in
   if (last = None || start_node = deopt last) then ""
-  else ("->"^(string_of_int (deopt last))
-	^(reconstruct_help (deopt last) start_node prev))
+  else ((reconstruct_help (deopt last) start_node prev)^"->"
+	^(string_of_int (deopt last)))
     
 (* just some debugging functions *)
 let deopt_p (x: int option) : string =
