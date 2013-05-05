@@ -4,7 +4,9 @@ open Graphs
 
 exception QueueEmpty
   
-(* SPECIFY AND THE GRAPH AND Q BEING USED *)
+
+(* possibilities for what we could substitute *)
+
 module My_graph = Dictionary
 module My_queue = BinaryHeap
 
@@ -128,7 +130,6 @@ let exe_time f g ss =
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
- (*
   let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g  in
@@ -151,7 +152,7 @@ let run_tests () =
   let prev_array_2 =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_2)) in
   let dist_array_2 = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_2)) in 
 
-let g3 =
+  let g3 =
     My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);
 			 (6, 4.2, 5);(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5);
 			 (1, 5.2, 3); (0, 1.2, 3); (3, 0.2, 1)] in
@@ -161,47 +162,24 @@ let g3 =
   let dist_array_3 =
     List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3) in  
 
-  assert (prev_array = "00_"); 
-  assert (dist_array = "2.1.0.");
-  assert (prev_array_1 = "22___"); 
-  assert (dist_array_1 = "3.4.0.infinf");
-  assert (prev_array_2 = "1_010_");
-  assert (dist_array_2 = "9.2inf5.13.21.10." );
-  assert (print_string prev_array_3 = ()); 
-  assert (prev_array_3 = "433__3_");
-  assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
-;;
 
-run_tests ();
+  (* NEEDS ASSERT *)
+  let g4 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);
+				(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);
+				(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);
+				(11, 11.1, 0);(0, 7.4, 11)]
+  in 
+  let (dist_4, prev_4) = dij 0 g4 in
 
-(* here is where we could do the timing functions *)
-
-  let g3 = My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);
-				(4, 2.2, 6);(6, 4.2, 5);(3, 11.2, 4);
-				(3, 7.2, 5);(2, 3.2, 5); (1, 5.2, 3);
-				(0, 1.2, 3); (3, 0.2, 1)] in
-  exe_time dij 3 g3;;
-
-
-
- 
-let g3 = 
-  My_graph.from_edges [(0, 2.2, 1);(0, 4.2, 2);(2, 1.2, 4);(4, 2.2, 6);
-		       (6, 4.2, 5);(3, 11.2, 4);(3, 7.2, 5);(2, 3.2, 5);
-		       (1, 5.2, 3);(0, 1.2, 3); (3, 0.2, 1)] in
-  exe_time dij 3 g3;;
-
-
-(* this one still works fine *)
-let g5 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11)]
-in 
-dij 0 g5;;*)
-
+  let g5 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);
+			      (3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);
+			      (7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);
+			      (0, 7.4, 11);(1, 1.2,0);(2, 11.5, 12);(7, 3.4, 8);
+			      (10, 0.2, 13);(13, 0.3, 11);(2, 23.5, 8)] in
 
 (*
-let g6 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);(0, 7.4, 11);(1, 1.2,0);(2, 11.5, 12);(7, 3.4, 8);(10, 0.2, 13);(13, 0.3, 11);(2, 23.5, 8)]
 in 
-dij 1 g6;;*)
+dij 1 g5;;
   
 (*
 let course_graph = My_graph.from_edges 
@@ -286,3 +264,32 @@ dij 1 burton
 
 (*
 run_tests ();*)
+=======
+
+*)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  assert (prev_array = "00_"); 
+  assert (dist_array = "2.1.0.");
+  assert (prev_array_1 = "22___"); 
+  assert (dist_array_1 = "3.4.0.infinf");
+  assert (prev_array_2 = "1_010_");
+  assert (dist_array_2 = "9.2inf5.13.21.10." );
+  assert (print_string prev_array_3 = ()); 
+  assert (prev_array_3 = "433__3_");
+  assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
+;;
+
+run_tests ();
