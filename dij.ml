@@ -2,8 +2,6 @@ open Prio_q
 open Array
 open Graphs 
 
-exception QueueEmpty
-  
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 (* possibilities for what we could substitute *)
 module My_graph = Dictionary
@@ -66,7 +64,7 @@ let deopt_p (x: int option) : string =
   | Some i -> string_of_int i
     
 let print_dist_array arr =
-  print_string ("Dist array:"^ (List.fold_left (fun x y -> (string_of_float y)^x) 
+  print_string ("Dist array:"^(List.fold_left (fun x y -> (string_of_float y)^x) 
 				  "" (Array.to_list arr))^"\n")
 
 let print_prev_array arr =
@@ -116,14 +114,15 @@ let exe_time f g ss =
   Printf.printf "Duration = (%5.5f)\n" (t1 -. t0) ;;
 
 
-(* the array being printed here are simpl in reverse order *)
+(* the arrays being printed here are simple in reverse order *)
 let run_tests () =
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g  in
   let prev_array = 
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev) in
   let dist_array =
-    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist) in  
+    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist) in
+  
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
   let (dist_1, prev_1) = dij 2 g1 in
