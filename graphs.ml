@@ -34,6 +34,12 @@ struct
       type t = node * float
       let compare (n1, w1) (n2, w2) = int_compare n1 n2
       let string_of_t (n, w) = "("^string_of_int n^", "^string_of_float w^")"
+      
+      let gen () = 0
+      let gen_random () = Random.int 100
+      let gen_gt x () = x + 1
+      let gen_lt x () = x - 1
+      let gen_between x y () = None
     end)
     
   module EdgeDict = Dict.Make(
@@ -43,6 +49,13 @@ struct
       let compare = int_compare
       let string_of_key = string_of_int
       let string_of_value = NeighborSet.string_of_set
+
+      let gen_key () = 0
+      let gen_key_gt x () = x + 1
+      let gen_key_lt x () = x - 1
+      let gen_key_between x y () = None
+      let gen_value () = NeighborSet.empty
+      let gen_pair () = (gen_key (), gen_value ())
     end)
     
   module IntNode = Dict.Make(
@@ -112,6 +125,8 @@ struct
       if src = dst then g else add_edge g src dst wt) (empty 0) es
   
   let run_tests () =
+    EdgeDict.run_tests ();
+    IntNode.run_tests ();
     let g = from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 			(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
     assert(g.num_nodes = 5);

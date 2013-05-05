@@ -1,17 +1,9 @@
-(* Interfaces and implementations of dictionaries.  A dictionary
- * is used to associate a value with a key.  In our case, we will
- * be using a dictionary to build an index for the web, associating
- * a set of URLs with each word that we find as we crawl the web.
- *)
-exception TODO
-
 module type DICT = 
 sig
   type key   
   type value 
   type dict
 
-  (* An empty dictionary *)
   val empty : dict 
   val fold : (key -> value -> 'a -> 'a) -> 'a -> dict -> 'a
   val lookup : dict -> key -> value option
@@ -22,12 +14,9 @@ sig
   val string_of_key: key -> string
   val string_of_value : value -> string
   val string_of_dict : dict -> string
-
   val run_tests : unit -> unit
 end
 
-
-(* Argument module signature to our DICT functors *)
 module type DICT_ARG =
 sig
   type key
@@ -36,200 +25,25 @@ sig
   val string_of_key : key -> string
   val string_of_value : value -> string
 
-(*  val gen_key : unit -> key
+  val gen_key : unit -> key
   val gen_key_random : unit -> key
   val gen_key_gt : key -> unit -> key
   val gen_key_lt : key -> unit -> key
   val gen_key_between : key -> key -> unit -> key option
   val gen_value : unit -> value
-  val gen_pair : unit -> key * value *)
+  val gen_pair : unit -> key * value
+
 end
-
-
-(* An example implementation of our DICT_ARG signature. Use this struct
- * for testing. *)
-module IntStringDictArg : DICT_ARG =
-struct
-  open Order
-  type key = int
-  type value = string
-  let compare x y = if x < y then Less else if x > y then Greater else Eq
-  let string_of_key = string_of_int
-  let string_of_value v = v
- (* let gen_key () = 0
-  let gen_key_gt x () = x + 1
-  let gen_key_lt x () = x - 1
-  let gen_key_between x y () = 
-    let (lower, higher) = (min x y, max x y) in
-    if higher - lower < 2 then None else Some (higher - 1)
-  let gen_key_random =
-    let _ = Random.self_init () in
-    (fun () -> Random.int 10000)
- *)
-
-  (* returns the nth string in lst, or "cow" n > length of list *)
-  let rec lst_n (lst: string list) (n: int) : string =
-    match lst with
-      | [] -> "cow"
-      | hd::tl -> if n = 0 then hd else lst_n tl (n-1)
-
-  (* list of possible values to generate *)
-  let possible_values = ["a";"c";"d";"e";"f";"g";"h";"i";"j";"k";"m";"n";
-                         "o";"p";"q";"r";"s";"t";"u";"v";"w";"x";"y";"z";
-                         "zzzzzz";"cheese";"foo";"bar";"baz";"quux";"42"]
-  let num_values = List.length possible_values
-  (* gen_value will return the string at this current index *)
-  let current_index = ref 0
-  (*let gen_value () =
-    let index = !current_index in
-    if index >= num_values then
-      (current_index := 0; lst_n possible_values index)
-    else
-      (current_index := index + 1; lst_n possible_values index)
-  let gen_pair () = (gen_key_random(), gen_value()) *)
-end
-
-
-
-(* An association list implementation of our DICT signature. *)
-module AssocListDict(D:DICT_ARG) : (DICT with type key = D.key
-  with type value = D.value) = 
-struct
-  open Order;;
-  type key = D.key;;
-  type value = D.value;;
-  type dict = (key * value) list;;
-
-  (* INVARIANT: sorted by key, no duplicates *)
-
-  let empty = [] ;;
-
-  let fold f d = List.fold_left (fun a (k,v) -> f k v a) d 
-
-  let rec lookup d k = 
-    match d with 
-      | [] -> None
-      | (k1,v1)::d1 -> 
-        (match D.compare k k1 with
-          | Eq -> Some v1
-          | Greater -> lookup d1 k 
-          | _ -> None)
-
-  let member d k = 
-    match lookup d k with 
-      | None -> false 
-      | Some _ -> true
-
-  let rec insert d k v = 
-    match d with 
-      | [] -> [(k,v)]
-      | (k1,v1)::d1 -> 
-        (match D.compare k k1 with 
-          | Less -> (k,v)::d
-          | Eq -> (k,v)::d1
-          | Greater -> (k1,v1)::(insert d1 k v))
-
-  let rec remove d k = 
-    match d with 
-      | [] -> []
-      | (k1,v1)::d1 ->
-	(match D.compare k k1 with 
-          | Eq -> d1
-          | Greater -> (k1,v1)::(remove d1 k)
-          | _ -> d)
-	  
-  let choose d = 
-    match d with 
-      | [] -> None
-      | (k,v)::rest -> Some(k,v,rest)
-
-  let string_of_key = D.string_of_key
-  let string_of_value = D.string_of_value
-  let string_of_dict (d: dict) : string = 
-    let f = (fun y (k,v) -> y ^ "\n key: " ^ D.string_of_key k ^ 
-      "; value: (" ^ D.string_of_value v ^ ")") in
-    List.fold_left f "" d
-
-  (* adds a list of (key,value) pairs in left-to-right order *)
-  let insert_list (d: dict) (lst: (key * value) list) : dict = 
-    List.fold_left (fun r (k,v) -> insert r k v) d lst
-
-  (* adds a list of (key,value) pairs in right-to-left order *)
-  let insert_list_reversed (d: dict) (lst: (key * value) list) : dict =
-    List.fold_right (fun (k,v) r -> insert r k v) lst d
-
- (* (* generates a (key,value) list with n distinct keys in increasing order *)
-  let generate_pair_list (size: int) : (key * value) list =
-    let rec helper (size: int) (current: key) : (key * value) list =
-      if size <= 0 then []
-      else 
-        let new_current = D.gen_key_gt current () in
-        (new_current, D.gen_value()) :: (helper (size - 1) new_current)
-    in
-    helper size (D.gen_key ())
-
-   (* generates a (key,value) list with keys in random order *)
-  let rec generate_random_list (size: int) : (key * value) list =
-    if size <= 0 then []
-    else 
-      (D.gen_key_random(), D.gen_value()) :: (generate_random_list (size - 1))
-
-  let test_insert () =
-    let pairs1 = generate_pair_list 26 in
-    let d1 = insert_list empty pairs1 in
-    List.iter (fun (k,v) -> assert(lookup d1 k = Some v)) pairs1 ;
-    ()
-
-  let test_remove () =
-    let pairs1 = generate_pair_list 26 in
-    let d1 = insert_list empty pairs1 in
-    List.iter 
-      (fun (k,v) -> 
-        let r = remove d1 k in
-        List.iter 
-          (fun (k2,v2) ->
-            if k = k2 then assert(lookup r k2 = None)
-            else assert(lookup r k2 = Some v2)
-          ) pairs1
-      ) pairs1 ;
-    ()
-
-  let test_lookup () =
-    ()
-
-  let test_choose () =
-    ()
-
-  let test_member () =
-    ()
-
-  let test_fold () =
-    ()
-
-  let run_tests () = 
-    test_insert() ;
-    test_remove() ;
-    test_lookup() ;
-    test_choose() ;
-    test_member() ;
-    test_fold() ;
-    () *)
-  let run_tests () = ()
-
-end    
-
 
 (******************************************************************)
 (* BTDict: a functor that implements our DICT signature           *)
 (* using a balanced tree (2-3 trees)                              *)
 (******************************************************************)
 
-module BTDict(D:DICT_ARG) : (DICT with type key = D.key
+module BTDict (D:DICT_ARG) : (DICT with type key = D.key
 with type value = D.value) =
 struct
   open Order
-
-  exception TODO
 
   type key = D.key
   type value = D.value
@@ -390,7 +204,6 @@ struct
       | Left3,_,_,_,_,_ | Mid3,_,_,_,_,_ | Right3,_,_,_,_,_ ->
         Absorbed(rem,Three(Leaf,n1,Leaf,n2,Leaf))
 
-  (* DO NOT EDIT THIS *)
   let rec remove_downward (d: dict) (k: key) : hole =
     match d with
       | Leaf -> Absorbed(None,d)
@@ -408,7 +221,6 @@ struct
       | Two(l,n,r) -> remove_downward_two k n l r
       | Three(l,n1,m,n2,r) -> remove_downward_three k n1 n2 l m r
 
-  (* DO NOT EDIT THIS *)
   and remove_downward_two (k: key) ((k1,v1): pair) 
       (left: dict) (right: dict) : hole =
     match D.compare k k1 with
@@ -431,7 +243,6 @@ struct
           | Absorbed(rem,t) -> Absorbed(rem,Two(left,(k1,v1),t))
         )
 
-  (* DO NOT EDIT THIS *)
   and remove_downward_three (k: key) ((k1,v1): pair) ((k2,v2): pair)
       (left: dict) (middle: dict) (right: dict) : hole =
     match D.compare k k1, D.compare k k2 with
@@ -492,7 +303,6 @@ struct
           | Absorbed(rem,t) -> Absorbed(rem,Three(t,n1,middle,n2,right))
         )
 
-  (* DO NOT EDIT THIS *)
   let remove (d: dict) (k: key) : dict =
     match remove_downward d k with
       | Hole(_,d') -> d'
@@ -516,8 +326,6 @@ struct
 	| Less -> lookup m k
 	| Greater -> lookup r k
        
-  (* TODO:
-   * Write a function to test if a given key is in our dictionary *)
   let rec member (d: dict) (k: key) : bool =
     match d with
     | Leaf -> false
@@ -560,22 +368,13 @@ struct
     b
 
 
-  (********************************************************************)
-  (*       TESTS                                                      *)
-  (* You must write more comprehensive tests, using our remove tests  *)
-  (* below as an example                                              *)
-  (********************************************************************)
-
-  (* adds a list of (key,value) pairs in left-to-right order *)
   let insert_list (d: dict) (lst: (key * value) list) : dict = 
     List.fold_left (fun r (k,v) -> insert r k v) d lst
 
-  (* adds a list of (key,value) pairs in right-to-left order *)
   let insert_list_reversed (d: dict) (lst: (key * value) list) : dict =
     List.fold_right (fun (k,v) r -> insert r k v) lst d
 
-  (* generates a (key,value) list with n distinct keys in increasing order *)
-  (*let generate_pair_list (size: int) : (key * value) list =
+  let generate_pair_list (size: int) : (key * value) list =
     let rec helper (size: int) (current: key) : (key * value) list =
       if size <= 0 then []
       else 
@@ -584,12 +383,10 @@ struct
     in
     helper size (D.gen_key ())
 
-  (* generates a (key,value) list with keys in random order *)
-  let rec generate_random_list (size: int) : (key * value) list =
+   let rec generate_random_list (size: int) : (key * value) list =
     if size <= 0 then []
     else 
       (D.gen_key_random(), D.gen_value()) :: (generate_random_list (size - 1))
-
 
   let test_balance () =
     let d1 = Leaf in
@@ -749,39 +546,10 @@ struct
     test_remove_reverse_order() ;
     test_remove_random_order() ; 
     ()
-  *)
+
   let run_tests () = ()
 end
 
-
-
-
-(******************************************************************)
-(* Run our tests.                                                 *)
-(******************************************************************)
-
-(* Create a dictionary mapping ints to strings using our 
- * AssocListDict functor and run the tests *)
-module IntStringListDict = AssocListDict(IntStringDictArg) ;;
-IntStringListDict.run_tests();;
-
-(* Create a dictionary mapping ints to strings using our 
- * BTDict functor and run the tests.
- * 
- * Uncomment out the lines below when you are ready to test your
- * 2-3 tree implementation. *)
-
-module IntStringBTDict = BTDict(IntStringDictArg) ;;
-IntStringBTDict.run_tests();;
-
-
-(******************************************************************)
-(* Make: a functor that creates a DICT by calling our             *)
-(* AssocListDict or BTDict functors                               *)
-(******************************************************************)
 module Make (D:DICT_ARG) : (DICT with type key = D.key
   with type value = D.value) = 
-  (* Change this line to the BTDict implementation when you are
-   * done implementing your 2-3 trees. *)
-  (* AssocListDict(D) *)
    BTDict(D) 
