@@ -208,6 +208,7 @@ let run_tests () =
      (14,0.69,10);(14,1.03,12);(14,1.42,15);
 
      (15,1.03,12)] in
+(*
   let (dist_course, prev_course) = dij 0 course_graph in
   print_string "ya done running yall";
 (*  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
@@ -253,8 +254,6 @@ let run_tests () =
   My_graph.print_graph burton;
   dij 1 burton
 ;;
-
-
 *)
 
 
