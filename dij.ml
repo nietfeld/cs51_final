@@ -268,14 +268,10 @@ let run_tests () =
   assert (prev_array_4 = "094___43210_");
   assert (prev_array_5 = "1020942__4321_1"); 
   assert (dist_array_5 = "28.18.68.627.824.630.6infinf29.121.815.57.10.1.2");
-    print_string "array 5: \n" ;
-  assert (print_string prev_array_course = ());
-  print_string "\n";
-  assert (print_string dist_array_course = ());
-  assert (prev_array_course = "0000014871740000_");;
- (* assert (dist_array_course = "28.18.68.627.824.630.6infinf29.121.815.57.10.1.2");
-  assert (prev_array_burton = "00_"); 
-  assert (dist_array_burton = "2.1.0.");;*)
+  assert (prev_array_course = "0000014871740000_");
+  assert (dist_array_course = "1.421.21.571.032.081.892.911.731.413.062.581.152.1.741.050.");
+  assert (prev_array_burton = "1113333111222211111_1"); 
+  assert (dist_array_burton = "1.1.1.2.2.2.1.51.1.1.2.2.2.2.1.1.1.1.1.0.1.");;
  
 run_tests ();
 
