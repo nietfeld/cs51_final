@@ -51,7 +51,6 @@ struct
     print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
     
   let take (q : queue) : (elt * queue) =
-    (*print_string "Current:"; print_queue q; print_string "\n ******** \n";*)
     match q with
     | [] -> raise QueueEmpty 
     | hd::tl -> hd, tl
@@ -543,8 +542,9 @@ end
 module DHeap (A : ARG) : PRIOQUEUE = 
 struct 
 
-  let n = A.n
+  (*let n = A.n*)
   let d = A.d
+  let n = 1000
     
   type queue = {heap : elt option array; 
 		lt : int option array; 
