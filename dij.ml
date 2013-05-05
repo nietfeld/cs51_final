@@ -83,14 +83,13 @@ let print_results (dist : float array) (prev: int option array)
     else (print_string ((string_of_int start_node)^
 			   (reconstruct_help n start_node prev)^"->"^
 			   (string_of_int n)^"("^
-			   (string_of_float (dist.(n))^ ") \n"));
-	  helper_dist dist (n+1))
+			   (string_of_float (dist.(n))^ ") \n");
+			helper_dist dist (n+1)))
   in
   helper_dist dist 0
 
 (* Run dijkstra's over the wholegraph *) 
 let dij (start: node) g =
-  if My_graph.has_node g start then 
     let graph_size = My_graph.num_nodes g in
     let dist = Array.make graph_size infinity in 
     let prev = Array.make graph_size (None) in 
@@ -102,9 +101,8 @@ let dij (start: node) g =
 	     iterate new_q (number_rounds-1) 
     in iterate prioq graph_size; 
     print_results dist prev (graph_size) start;
-    (dist,prev) 
-  else failwith "dij: node unknown";; 
-
+    (dist,prev) (* return this for testing *)
+ 
 let exe_time f g ss =
   let t0 = Sys.time() in
   Printf.printf "Start (%5.5f)\n" t0;
