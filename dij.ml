@@ -25,7 +25,7 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
   | Some ((n,e)::tl) -> 
     if dist.(n) = infinity then
       (match (My_queue.lookup n pq) with
-      | None -> failwith "Update_queue lookup failing with None."
+      | None -> pq
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
 	 if new_dist < d then 
@@ -118,7 +118,6 @@ let exe_time f g ss =
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
-  let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g  in
   let prev_array = 
@@ -150,22 +149,17 @@ let run_tests () =
   let dist_array_3 =
     List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_3) in  
 
-
-  (* NEEDS ASSERT *)
   let g4 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);(3, 6.3, 4);
 				(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);
 				(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);
 				(11, 11.1, 0);(0, 7.4, 11)]
   in 
   let (dist_4, prev_4) = dij 0 g4 in
-  assert(dist_4.(1) = 6.2); 
-  assert(prev_4.(1) = (Some 0));
-  assert(dist_4.(2) = 13.3); 
-  assert(prev_4.(2) = (Some 1));
-  (*MORE ASSERTS *)
+  let prev_array_4 = 
+    List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_4) in
+  let dist_array_4 =
+    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_4) in  
 
-
-  (* NEEDS ASSERT *)
   let g5 = My_graph.from_edges [(0, 6.2, 1);(1, 7.1, 2);(2, 8.4, 3);
 				(3, 6.3, 4);(4, 7.3, 5);(6, 6.7, 5);(7, 11.4, 6);(8, 6.1, 4);
 				(7, 5.6, 5);(4, 2.8, 9);(9, 3.2, 10);(10, 1.9, 11);(11, 11.1, 0);
@@ -174,10 +168,12 @@ let run_tests () =
 
   in 
   let (dist_5, prev_5) = dij 1 g5 in
-  assert(dist_5.(2) = 7.1);
-  assert(prev_5.(2) = (Some 1));
-  assert(
-  
+
+  let dist_array_5 =
+    List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_5) in
+  let dist_array_5 =
+    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_5) in  
+
   print_string "\n This is the courses graph: \n";
   let course_graph = My_graph.from_edges 
     [(0,1.05,1);(0,1.74,2);(0,2.0,3);(0,1.15,4);(0,2.08,11);(0,1.03,12);
@@ -211,13 +207,13 @@ let run_tests () =
 
      (14,0.69,10);(14,1.03,12);(14,1.42,15);
 
+
      (15,1.03,12)] in
-(*
+
   let (dist_course, prev_course) = dij 0 course_graph in
-  print_string "ya done running yall";
-(*  let prev_array =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev)) in 
-    let dist_array = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist)) in *)
-  
+  let prev_array_course =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_course)) in 
+  let dist_array_course = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_course)) in 
+
   let burton =
     My_graph.from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
 			 (1,1.,6);(6,1.,1);(1,1.,3);(3,1.,1);(1,1.,11);(11,1.,1);
@@ -243,7 +239,7 @@ let run_tests () =
 			 (11,1.,12);(11,1.,13);
 			 (12,1.,11);(12,1.,13);
 			 (13,1.,11);(13,1.,12);
-
+			 
 			 (14,1.,15);(14,1.,16);(14,1.,17);
 			 (15,1.,14);(15,1.,16);(15,1.,17);
 			 (16,1.,14);(16,1.,15);(16,1.,17);
@@ -254,35 +250,41 @@ let run_tests () =
 			 (20,1.,18);(20,1.,19);(20,1.,0);
 			 (0,1.,18);(0,1.,19);(0,1.,20)]
   in
-
-  My_graph.print_graph burton;
-  dij 1 burton
-;;
-*)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  assert (prev_array = "00_"); 
+  let (dist_burton, prev_burton) = dij 1 burton in
+  let dist_array_burton =
+    List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_burton) in
+  let dist_array_burton =
+    List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_burton) in  
+  assert (prev_array = "00_");
   assert (dist_array = "2.1.0.");
-  assert (prev_array_1 = "22___"); 
+  assert (prev_array_1 = "22___");
   assert (dist_array_1 = "3.4.0.infinf");
   assert (prev_array_2 = "1_010_");
   assert (dist_array_2 = "9.2inf5.13.21.10." );
-  assert (print_string prev_array_3 = ()); 
-  assert (prev_array_3 = "433__3_");
-  assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
-;;
+  assert (print_string prev_array_3 = ());
+  assert (prev_array_3 = "433__3_"); 
+  assert (dist_array_3 ="13.47.211.20.inf0.2inf");; 
 
+
+
+(* 4, 5, course, burton *)
+
+  assert (dist_4.(1) = 6.2); 
+  assert (prev_4.(1) = (Some 0));
+  assert (dist_4.(2) = 13.3); 
+  assert (prev_4.(2) = (Some 1));
+  assert (dist_array_4 = "35.934.30.8___28.21.713.36.20.");
+  assert (prev_array_4 = "1094____3210_");
+  assert (prev_array_4 = "00_"); 
+  assert (dist_array_4 = "2.1.0.");
+  assert (dist_5.(2) = 7.1);
+  assert (prev_5.(2) = (Some 1));
+  assert (prev_array_5 = "00_"); 
+  assert (dist_array_5 = "2.1.0.");
+  assert (prev_array_course = "00_"); 
+  assert (dist_array_course = "2.1.0.");
+  assert (prev_array_burton = "00_"); 
+  assert (dist_array_burton = "2.1.0.");
+ 
 run_tests ();
 
