@@ -5,8 +5,10 @@ open Graphs
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 (* Dictionary, Matrix *)
 module My_graph = Dictionary
+
 (* ListQueue, BinSQueue, BinaryHeap, DHeap (takes and argument), FibHeap *)
-module My_queue = BinSQueue
+(*module My_queue = BinSQueue *)
+module My_queue = DHeap (d = 2; n = 1000) *)
 
 (* create a priority queue tracking all of the nodes in the graph *) 
 let initialize_queue (n: int) (start: node) =

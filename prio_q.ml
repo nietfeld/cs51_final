@@ -542,8 +542,9 @@ end
 module DHeap (A : ARG) : PRIOQUEUE = 
 struct 
 
-  let n = A.n
+  (*let n = A.n*)
   let d = A.d
+  let n = 1000
     
   type queue = {heap : elt option array; 
 		lt : int option array; 
@@ -668,6 +669,7 @@ let run_tests () =
     let c = add {id=3; tent_dist=1.} b in
     let d = add {id=1; tent_dist=3.} c in
     let e = add {id=2; tent_dist=2.} d in
+    assert (1=1)
     (* test add *)
     (*assert((listify e)= [{id=3; tent_dist=1.};{id=2; tent_dist=2.};  
 		 {id=1; tent_dist=3.};  {id=0; tent_dist=4.}]);
