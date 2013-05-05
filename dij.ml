@@ -280,7 +280,7 @@ let run_tests () =
   assert (prev_array_course = "00_"); 
   assert (dist_array_course = "2.1.0.");
   assert (prev_array_burton = "00_"); 
-  assert (dist_array_burton = "2.1.0.");*)
+  assert (dist_array_burton = "2.1.0."); *)
  
 run_tests ();
 
