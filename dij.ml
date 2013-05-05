@@ -131,8 +131,6 @@ let run_tests () =
   
   let g1 = My_graph.from_edges [(0,1.,1); (1, 5., 4); (0, 2., 2); 
 				(2, 3., 4); (3, 6., 4); (2, 4., 3)] in
-  assert (My_graph.has_node 1 = true);
-  assert (My_graph.lookup 1 g1 = Some 1);
   let (dist_1, prev_1) = dij 2 g1 in
   let prev_array_1 = 
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_1) in
