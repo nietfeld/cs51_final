@@ -35,10 +35,10 @@ struct
       let compare (n1, w1) (n2, w2) = int_compare n1 n2
       let string_of_t (n, w) = "("^string_of_int n^", "^string_of_float w^")"
       
-      let gen () = 0
-      let gen_random () = Random.int 100
-      let gen_gt x () = x + 1
-      let gen_lt x () = x - 1
+      let gen () = (0, 0.)
+      let gen_random () = (Random.int 100, Random.float 100.)
+      let gen_gt (x,y) () = (x + 1, y +. 1.)
+      let gen_lt (x,y) () = (x - 1, y -. 1.)
       let gen_between x y () = None
     end)
     
@@ -54,6 +54,7 @@ struct
       let gen_key_gt x () = x + 1
       let gen_key_lt x () = x - 1
       let gen_key_between x y () = None
+      let gen_key_random () = Random.int 100
       let gen_value () = NeighborSet.empty
       let gen_pair () = (gen_key (), gen_value ())
     end)
@@ -65,6 +66,14 @@ struct
       let compare = int_compare
       let string_of_key = string_of_int
       let string_of_value = string_of_int
+	
+      let gen_key () = 0
+      let gen_key_gt x () = x + 1
+      let gen_key_lt x () = x - 1
+      let gen_key_between x y () = None
+      let gen_key_random () = Random.int 100
+      let gen_value () = gen_key ()
+      let gen_pair () = (gen_key (), gen_value ())
     end)
     
   type graph = { edges : EdgeDict.dict ;
