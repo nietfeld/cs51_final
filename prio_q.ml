@@ -47,9 +47,11 @@ struct
       | Greater | Eq -> hd::(add e tl)
 
   let print_q (q: queue) : unit = 
-    List.iter (fun x -> (print_string "\n id: "; print_string (string_of_int x.id);
-    print_string " tent_dist: "; print_string (string_of_float x.tent_dist);)) q
-    
+    List.iter (fun x -> (print_string "\n id: "; 
+			 print_string (string_of_int x.id);
+			 print_string " tent_dist: "; 
+			 print_string (string_of_float x.tent_dist);)) q
+      
   let take (q : queue) : (elt * queue) =
     match q with
     | [] -> raise QueueEmpty 
@@ -465,15 +467,12 @@ struct
 	| Branch (l2, v2, r2) -> Branch (delete v2.id l, v2, r))
       else Branch (delete x l, v, delete x r)
 
-
-  (* change this function completely *)
   let update (id: int) (new_dist: float) (pq: queue) : queue =
     let new_q = delete id pq in
     add {id = id; tent_dist = new_dist} (new_q)
 
-
+      
   let run_tests () = 
-    (* test ADD, take, LOOK UP, UPDATE *)
     let test_1 = 
       Branch (Leaf, {id=1;tent_dist=1.}, 
 	      Branch (Leaf, {id =2;tent_dist=2.}, Leaf))
@@ -541,7 +540,6 @@ end
 module DHeap (A : ARG) : PRIOQUEUE = 
 struct 
 
-  (*let n = A.n*)
   let d = A.d
   let n = 1000
     
@@ -689,18 +687,10 @@ let run_tests () =
     assert (lookup 1 e = Some {id=1; tent_dist=3.});
     assert (lookup 0 e = Some {id=0; tent_dist=4.});
 
-
-    (* test update *)
-(*    let q = update 6 1.2 f in
-    assert (q = [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
-    assert (update 2 2.6 q =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])
-*)
-
 end ;; 
 
 module Two_aryHeap = 
   DHeap(struct
-    let n = 1000
     let d = 2
   end);;
 
@@ -722,8 +712,6 @@ struct
     else 0
   let min = {id=0;tent_dist=0.}
 end
-
-(* INTIALIZED ARRAY WITH 1000 NODES OF DISTANCE INFINITY *)
 
 module FibHeap : PRIOQUEUE = 
 struct

@@ -220,6 +220,7 @@ struct
     assert(g.size = 5);
     assert(num_nodes g = 5);
     assert(g.m.(0).(1) = 1.);
+    assert(g.m.(0).(1) = 1.);
     assert(g.m.(1).(4) = 5.);
     assert(g.m.(0).(2) = 2.);
     assert(g.m.(2).(4) = 3.);
