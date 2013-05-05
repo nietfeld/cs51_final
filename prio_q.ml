@@ -536,7 +536,6 @@ BinSQueue.run_tests ();
 module type ARG =
 sig
   val d : int
-  val n : int
 end
 
 module DHeap (A : ARG) : PRIOQUEUE = 
@@ -577,14 +576,6 @@ struct
     | Some x -> x 
 
 
-(* TESTING 
-	(print_string (("child candidate: ")^(string_of_float child.tent_dist));
-    print_string (("current: ")^(string_of_int (d*i +1))^
-		     (" last : ")^(string_of_int ((d*i) + d))^("\n"));
-*) 
-
-
-
   (* look up the element in lookup table *) 
   let lookup (i: int) (q: queue) : elt option = 
     match q.lt.(i) with 
@@ -610,7 +601,6 @@ struct
     compare_children first_child (deopt (lookup first_child q))
 
 
-
   let swap (parent: elt) (child: elt) (q: queue) : queue =
     let child_index = deopt (q.lt.(child.id)) in
     let parent_index = deopt (q.lt.(parent.id)) in 
@@ -619,8 +609,7 @@ struct
     q.lt.(parent.id) <- (Some child_index);
     q.lt.(child.id) <- (Some parent_index);
     q
-     
-  (*MUST check against first_empty *) 
+      
   let rec fix_down (i: int) (q:queue) : queue = 
       let parent_elt = deopt q.heap.(i) in 
       let no_children = ((d*i+1) >= q.first_empty) in
@@ -641,17 +630,6 @@ struct
       if parent.tent_dist > child.tent_dist then 
 	(fix_up parent_index (swap parent child q))
       else q
-
-
-(* Testing : 
-      let test_fix_up = print_string "min child of "; 
-	   print_int parent_index;
-	   print_string " : ";
-	   print_string (("id: ")^(string_of_int min_child_elt.id)^
-			    (" tent_dist : "));
-	   print_string (string_of_float min_child_elt.tent_dist);
-	   print_string "\n" in *) 
-  
 
   (* put an element in the first_empty slot, update lookup 
      and last_empty, then fix queue *)
@@ -674,11 +652,9 @@ struct
     (min_elt, updated_q)
 
  let update (i: int) (f: float) (q: queue) : queue = 
-    (* lookup the index in the array *) 
     let index = deopt (q.lt.(i)) in 
     let updated_queue = q.heap.(index) <- (Some {id = i; tent_dist = f}); q in 
     fix_up index updated_queue
-
 
   
   let listify (q: queue) : elt list = 
@@ -688,21 +664,11 @@ struct
 
 let run_tests () = 
     let a = empty () in
-    print_string "PRINTING A\n";
-    print_q a;
     let b = add {id=0; tent_dist=4.} a in
-    print_string "PRINTING B\n";
-    print_q b;
     let c = add {id=3; tent_dist=1.} b in
-    print_string "PRINTING C\n";
-    print_q c;
     let d = add {id=1; tent_dist=3.} c in
-    print_string "PRINTING D\n";
-    print_q d;
     let e = add {id=2; tent_dist=2.} d in
-    print_string "PRINTING E\n";
-    print_q e; flush_all ();
-    assert(1 = 1)
+    assert (1=1)
     (* test add *)
     (*assert((listify e)= [{id=3; tent_dist=1.};{id=2; tent_dist=2.};  
 		 {id=1; tent_dist=3.};  {id=0; tent_dist=4.}]);
