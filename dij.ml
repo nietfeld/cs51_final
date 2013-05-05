@@ -5,7 +5,7 @@ open Graphs
 exception QueueEmpty
   
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
-(* possibilities for what we could substritute *)
+(* possibilities for what we could substitute *)
 module My_graph = Dictionary
 module My_queue = BinSQueue
 
@@ -213,12 +213,13 @@ let run_tests () =
 
      (14,0.69,10);(14,1.03,12);(14,1.42,15);
 
+
      (15,1.03,12)] in
 
   let (dist_course, prev_course) = dij 0 course_graph in
-  let prev_array_course =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_course)) in 
+ let prev_array_course =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_course)) in 
   let dist_array_course = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_course)) in 
-  
+ 
   let burton =
     My_graph.from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
 			 (1,1.,6);(6,1.,1);(1,1.,3);(3,1.,1);(1,1.,11);(11,1.,1);
@@ -244,7 +245,7 @@ let run_tests () =
 			 (11,1.,12);(11,1.,13);
 			 (12,1.,11);(12,1.,13);
 			 (13,1.,11);(13,1.,12);
-
+			 
 			 (14,1.,15);(14,1.,16);(14,1.,17);
 			 (15,1.,14);(15,1.,16);(15,1.,17);
 			 (16,1.,14);(16,1.,15);(16,1.,17);
@@ -282,8 +283,8 @@ let run_tests () =
   assert (dist_array_course = "2.1.0.");
   assert (prev_array_burton = "00_"); 
   assert (dist_array_burton = "2.1.0.");*)
-
 ;;
 
+ 
 run_tests ();
 
