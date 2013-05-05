@@ -128,37 +128,7 @@ struct
     List.iter (fun k -> assert(not (member s2 k))) elts ;
     ()
 
-  let test_union () =
-    ()
-
-  let test_intersect () =
-    ()
-
-  let test_member () =
-    ()
-
-  let test_choose () =
-    ()
-
-  let test_fold () =
-    ()
-
-  let test_is_empty () =
-    ()
-
-  let test_singleton () =
-    ()
-
   let run_tests () = 
-    test_insert () ;
-    test_remove () ;
-    test_union () ;
-    test_intersect () ;
-    test_member () ;
-    test_choose () ;
-    test_fold () ;
-    test_is_empty () ;
-    test_singleton () ;
     ()
 
 end
