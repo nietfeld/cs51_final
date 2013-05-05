@@ -83,8 +83,8 @@ let print_results (dist : float array) (prev: int option array)
     else (print_string ((string_of_int start_node)^
 			   (reconstruct_help n start_node prev)^"->"^
 			   (string_of_int n)^"("^
-			   (string_of_float (dist.(n))^ ") \n");
-			helper_dist dist (n+1)))
+			   (string_of_float (dist.(n))^ ") \n"));
+			helper_dist dist (n+1))
   in
   helper_dist dist 0
 
