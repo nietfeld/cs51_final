@@ -23,7 +23,7 @@ let rec update_queue pq (curr_node: int*float) neighbor_list dist prev =
   | Some ((n,e)::tl) -> 
     if dist.(n) = infinity then
       (match (My_queue.lookup n pq) with
-      | None -> failwith "Update_queue lookup failing with None."
+      | None -> pq
       | Some {id=k; tent_dist=d} -> 
 	(let new_dist = e +. distance_from_start in 
 	 if new_dist < d then 
@@ -104,7 +104,7 @@ let dij (start: node) g =
     (* we want to do an infinite loop and then catch an exception, but instead we'll just loop through *) 
     let rec iterate pq (number_rounds: int) : unit = 
       match number_rounds with 
-      | 0 -> (*Printf.printf "Finished bitches \n"*) ()
+      | 0 -> ()
       | _ -> let new_q = one_round pq g dist prev in 
 	     iterate new_q (number_rounds-1) 
     in iterate prioq graph_size; (* used to be -1 *)
@@ -123,7 +123,6 @@ let exe_time f g ss =
 
 (* the array being printed here are simpl in reverse order *)
 let run_tests () =
-  let pq = My_queue.empty () in
   let g = My_graph.from_edges [(0,1.,1); (0,2.,2)] in
   let (dist,prev) = dij 0 g  in
   let prev_array = 
@@ -217,9 +216,9 @@ let run_tests () =
      (15,1.03,12)] in
 
   let (dist_course, prev_course) = dij 0 course_graph in
- let prev_array_course =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_course)) in 
+  let prev_array_course =  (List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_course)) in 
   let dist_array_course = (List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_course)) in 
- 
+
   let burton =
     My_graph.from_edges [(1,1.,2);(2,1.,1);(1,1.,4);(4,1.,1);(1,1.,5);(5,1.,1);
 			 (1,1.,6);(6,1.,1);(1,1.,3);(3,1.,1);(1,1.,11);(11,1.,1);
@@ -261,19 +260,18 @@ let run_tests () =
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_burton) in
   let dist_array_burton =
     List.fold_left (fun x y -> (string_of_float y)^x) "" (Array.to_list dist_burton) in  
-
-  assert (prev_array = "00_"); 
+  assert (prev_array = "00_");
   assert (dist_array = "2.1.0.");
-  assert (prev_array_1 = "22___"); 
+  assert (prev_array_1 = "22___");
   assert (dist_array_1 = "3.4.0.infinf");
   assert (prev_array_2 = "1_010_");
   assert (dist_array_2 = "9.2inf5.13.21.10." );
-  assert (print_string prev_array_3 = ()); 
-  assert (prev_array_3 = "433__3_");
-  assert (dist_array_3 = "13.47.211.20.inf0.2inf") 
+  assert (print_string prev_array_3 = ());
+  assert (prev_array_3 = "433__3_"); 
+  assert (dist_array_3 ="13.47.211.20.inf0.2inf");; 
 
 
-  (* 4, 5, course, burton *)
+(* 4, 5, course, burton *)
 (*
   assert (prev_array_4 = "00_"); 
   assert (dist_array_4 = "2.1.0.");
@@ -283,8 +281,6 @@ let run_tests () =
   assert (dist_array_course = "2.1.0.");
   assert (prev_array_burton = "00_"); 
   assert (dist_array_burton = "2.1.0.");*)
-;;
-
  
 run_tests ();
 
