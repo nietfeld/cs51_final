@@ -452,7 +452,6 @@ struct
     let d1 = insert_list empty pairs1 in
     assert (balanced d1);
     ()
-
      
   let test_remove () =
     let pairs1 = generate_pair_list 5 in
@@ -547,8 +546,7 @@ struct
     test_remove_random_order() ; 
     ()
 
-  let run_tests () = ()
-end
+end;;
 
 module Make (D:DICT_ARG) : (DICT with type key = D.key
   with type value = D.value) = 

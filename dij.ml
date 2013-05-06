@@ -5,11 +5,18 @@ open Graphs
 (* SPECIFY AND THE GRAPH AND Q BEING USED *)
 (* Dictionary, Matrix *)
 module My_graph = Dictionary
-(*module My_queue = BinSQueue*)
-module My_queue = DHeap(
-  struct
+
+(* ListQueue, BinSQueue, BinaryHeap, DHeap (takes an d module), FibHeap *)
+(*module My_queue = BinSQueue *)
+(*
+module Two_aryHeap = 
+  DHeap(struct
     let d = 2
-  end)
+  end);;
+
+module My_queue = Two_aryHeap*)
+
+module My_queue = ListQueue
 
 (* create a priority queue tracking all of the nodes in the graph *) 
 let initialize_queue (n: int) (start: node) =
@@ -294,18 +301,15 @@ let run_tests () =
     List.fold_left (fun x y -> (deopt_p y)^x) "" (Array.to_list prev_burton) in
   let dist_array_burton =
     List.fold_left (fun x y -> (string_of_float y)^x) 
-      "" (Array.to_list dist_burton) in  
-
+      "" (Array.to_list dist_burton) in 
   assert (prev_array = "00_");
   assert (dist_array = "2.1.0.");
   assert (prev_array_1 = "22___");
   assert (dist_array_1 = "3.4.0.infinf");
   assert (prev_array_2 = "1_010_");
   assert (dist_array_2 = "9.2inf5.13.21.10." );
-  assert (print_string prev_array_3 = ());
   assert (prev_array_3 = "433__3_"); 
   assert (dist_array_3 ="13.47.211.20.inf0.2inf");
-
   (* 4, 5, course, burton *)
   assert (dist_array_4 = "7.434.30.8infinfinf35.328.21.713.36.20.");
   assert (prev_array_4 = "094___43210_");
@@ -318,4 +322,5 @@ let run_tests () =
   assert (dist_array_burton = "5.5.2.6.6.5.4.5.5.3.6.6.6.6.5.5.4.1.1.0.5.");;
 
 run_tests ();
+
 
