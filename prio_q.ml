@@ -695,10 +695,11 @@ let run_tests () =
     assert (lookup 1 e = Some {id=1; tent_dist=3.});
     assert (lookup 0 e = Some {id=0; tent_dist=4.});
     let f = add {id=6; tent_dist=2.3} e in
-    (*(* test take *)*)
     let (e1,q1) = take f in
     assert (e1 = {id=3; tent_dist=1.});
+
     (*unit tests that don't pass*)
+
     (*assert ((listify q1) = [{id=2; tent_dist=2.}; 
 		 {id=6; tent_dist=2.3};
 		 {id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
@@ -706,6 +707,7 @@ let run_tests () =
     let q = update 6 1.2 f in
     assert ((listify q) = [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}]);
     assert (listify (update 2 2.6 q) =  [{id=3; tent_dist=1.}; {id=6; tent_dist=1.2};{id=2; tent_dist=2.6};{id=1; tent_dist=3.}; {id=0; tent_dist=4.}])*)
+
 end ;; 
 
 module Two_aryHeap = 
